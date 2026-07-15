@@ -1,0 +1,7 @@
+sources/lua_modules.c
+sources/lua_modules.h
+sources/lua_scripts.c
+sources/lua_scripts.h
+paper-folder.exe
+paper-folder
+.vscode/
