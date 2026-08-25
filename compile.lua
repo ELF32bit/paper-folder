@@ -1,38 +1,24 @@
-C_COMPILER = "gcc"
+EMBED_LUA_SCRIPTS_AS_BYTECODE = true
 
-C_COMPILER_FLAGS = {
-	"-std=c11",
-	"-O2 -DNDEBUG",
-	"-I. -Isources",
-	"-Ithirdparty/lua -DLUA_USE_POSIX",
-	"-Ithirdparty/yyjson",
-	"-Ithirdparty/nanosvg",
-	"-Wall -Wextra",
-}
-
-C_LINKER_FLAGS = {
-	"-llua -lm ",
-}
-
--- requires linking Lua statically
-EMBED_LUA_SCRIPTS_AS_BYTECODE = false
-
-function os_find_files(directory, extension)
-	local find_command = 'find "%s" -type f -name "*%s"'
-	find_command = find_command:format(directory, extension)
-	local found_files = assert(io.popen(find_command, "r"))
-
-	local sorted_files = {}
-	for path in found_files:lines() do
-		table.insert(sorted_files, path)
+local function parse_arguments(string)
+	local arguments = {}
+	for argument in string:gmatch("%S+") do
+		table.insert(arguments, argument)
 	end
-
-	found_files:close()
-	table.sort(sorted_files)
-	return sorted_files
+	return arguments
 end
 
-function parse_lua_module_c_function_name(line)
+local modules_directory = arg[1]
+local modules_header = arg[2]
+local modules_code = arg[3]
+local modules = parse_arguments(arg[4])
+
+local scripts_directory = arg[5]
+local scripts_header = arg[6]
+local scripts_code = arg[7]
+local scripts = parse_arguments(arg[8])
+
+local function parse_lua_module_c_function_name(line)
 	local LFN1 = "^%s*int%s+([%a_][%w_]*)%s*%((.*)%)"
 	local LFN2 = "^%s*static%s+inline%s+int%s+([%a_][%w_]*)%s*%((.*)%)"
 	local LFP1 = "^%s*const%s+lua_State%s*%*%s*([%a_][%w_]*)%s*$"
@@ -45,7 +31,7 @@ function parse_lua_module_c_function_name(line)
 	end
 end
 
-function write_lua_modules_header(path)
+local function write_lua_modules_header(path)
 	local file = assert(io.open(path, "w"))
 	file:write("#ifndef LUA_MODULES_H\n")
 	file:write("#define LUA_MODULES_H\n\n")
@@ -59,16 +45,13 @@ function write_lua_modules_header(path)
 	file:close()
 end
 
-function write_lua_modules(directory, path)
+local function write_lua_modules(directory, path)
 	local file = assert(io.open(path, "w"))
 	file:write('#include "lua_modules.h"\n\n')
 	file:write("#include <lua.h>\n")
 	file:write("#include <lauxlib.h>\n\n")
 
-	local modules = os_find_files(directory, ".h")
-
 	-- including C modules from the project directory
-	table.insert(C_COMPILER_FLAGS, "-I.")
 	for _, module_path in ipairs(modules) do
 		file:write(('#include "%s"\n'):format(module_path))
 	end
@@ -147,7 +130,7 @@ function write_lua_modules(directory, path)
 	file:close()
 end
 
-function string_to_formatted_bytes(data)
+local function string_to_formatted_bytes(data)
 	local bytes = {}
 	local data_size = data:len()
 	for index = 1, data_size do
@@ -160,7 +143,7 @@ function string_to_formatted_bytes(data)
 	return table.concat(bytes)
 end
 
-function lua_script_to_formatted_bytes(path)
+local function lua_script_to_formatted_bytes(path)
 	local file = assert(io.open(path, "rb"))
 	local data = file:read("*a")
 	if EMBED_LUA_SCRIPTS_AS_BYTECODE then
@@ -171,7 +154,7 @@ function lua_script_to_formatted_bytes(path)
 	return string_to_formatted_bytes(data)
 end
 
-function write_lua_scripts_header(path)
+local function write_lua_scripts_header(path)
 	local file = assert(io.open(path, "w"))
 	file:write("#ifndef LUA_SCRIPTS_H\n")
 	file:write("#define LUA_SCRIPTS_H\n\n")
@@ -186,12 +169,11 @@ function write_lua_scripts_header(path)
 	file:close()
 end
 
-function write_lua_scripts(directory, path)
+local function write_lua_scripts(directory, path)
 	local file = assert(io.open(path, "w"))
 	file:write('#include "lua_scripts.h"\n\n')
 
 	-- finding module names for Lua scripts
-	local scripts = os_find_files(directory, ".lua")
 	local scripts_prefix = ("^%s/"):format(directory)
 	for index, script_path in ipairs(scripts) do
 		local module = script_path:gsub(".lua$", "")
@@ -220,39 +202,10 @@ function write_lua_scripts(directory, path)
 	file:close()
 end
 
-function compile_c(directories, path)
-	local sources = {}
-	for _, directory in ipairs(directories) do
-		for _, source in ipairs(os_find_files(directory, ".c")) do
-			table.insert(sources, source)
-		end
-	end
-
-	local arguments = { C_COMPILER }
-	for _, argument in ipairs(C_COMPILER_FLAGS) do
-		table.insert(arguments, argument)
-	end
-	for _, source_path in ipairs(sources) do
-		table.insert(arguments, ('"%s"'):format(source_path))
-	end
-	for _, argument in ipairs(C_LINKER_FLAGS) do
-		table.insert(arguments, argument)
-	end
-	table.insert(arguments, "-o")
-	table.insert(arguments, ('"%s"'):format(path))
-
-	local command = table.concat(arguments, " ")
-	local result = assert(io.popen(command, "r"))
-	io.write(result:read("*a"))
-end
-
 -- generating Lua modules from C sources
-write_lua_modules_header("sources/lua_modules.h")
-write_lua_modules("sources/lua_modules", "sources/lua_modules.c")
+write_lua_modules_header(modules_header)
+write_lua_modules(modules_directory, modules_code)
 
 -- embedding Lua scripts into C sources
-write_lua_scripts_header("sources/lua_scripts.h")
-write_lua_scripts("sources/lua_scripts", "sources/lua_scripts.c")
-
--- compiling C sources
-compile_c({ "sources", "thirdparty" }, "paper-folder")
+write_lua_scripts_header(scripts_header)
+write_lua_scripts(scripts_directory, scripts_code)

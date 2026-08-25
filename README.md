@@ -7,10 +7,10 @@ Export precomputed folding animation as an easy to parse series of meshes.<br>
 * FOLD specification (version 1.2) validation.
 
 ## Building the project
-Run the command inside any **non-Windows** terminal.<br>
+Run the command inside a terminal.<br>
 ```Bash
-lua compile.lua &&
-./paper-folder "assets/rabbit-ear/kissing-squares.fold"
+make && ./paper-folder \
+"assets/rabbit-ear/kissing-squares.fold"
 ```
 ```Go
 ⛔INVALID: "assets/rabbit-ear/kissing-squares.fold"
