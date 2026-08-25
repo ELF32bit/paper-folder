@@ -27,6 +27,10 @@ typedef struct SetIterator {
 	void* key;
 } SetIterator;
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 void set_create(Set* set, usize key_size,
 	SetHashFunction hash, SetEqualsFunction equals);
 void set_create_managed(Set* set, usize key_size,
@@ -49,9 +53,16 @@ void set_create_managed(Set* set, usize key_size,
 
 #define Set_destroy set_destroy
 void set_destroy(Set* set);
+
 void set_recreate(Set* set);
 
 void set_view(Set* set, const Set* source_set);
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+Error set_reserve(Set* set, usize capacity);
 
 Error set_add(Set* set, const void* key, bool* exists);
 bool set_remove(Set* set, const void* key);
@@ -60,6 +71,10 @@ bool set_has(const Set* set, const void* key);
 
 #define Set_copy set_copy
 Error set_copy(Set* set, const Set* source_set);
+
+/* ========================================================================= */
+/* Iterators & Traversal                                                     */
+/* ========================================================================= */
 
 SetIterator set_iterator(const Set* set);
 bool set_iterator_next(SetIterator* it);

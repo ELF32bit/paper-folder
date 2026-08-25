@@ -24,6 +24,10 @@ typedef struct ArrayIterator {
 	void* element;
 } ArrayIterator;
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 void array_create(Array* array, usize element_size);
 void array_create_managed(Array* array, usize element_size,
 	ArrayDestroyFunction destroy, ArrayCopyFunction copy);
@@ -40,9 +44,14 @@ void array_create_managed(Array* array, usize element_size,
 
 #define Array_destroy array_destroy
 void array_destroy(Array* array);
+
 void array_recreate(Array* array);
 
 void array_view(Array* array, const Array* source);
+
+/* ========================================================================= */
+/* Get & Set                                                                 */
+/* ========================================================================= */
 
 void* array_get(const Array* array, usize index);
 void* array_get_start(const Array* array);
@@ -51,6 +60,25 @@ void* array_get_end(const Array* array);
 void array_set(Array* array, usize index, const void* element);
 void array_set_start(Array* array, const void* element);
 void array_set_end(Array* array, const void* element);
+
+#define ARRAY_SET(array, index, type, element) do { \
+	type _element = (element); \
+	array_set((array), (index), &_element); \
+} while (0)
+
+#define ARRAY_SET_START(array, index, type, element) do { \
+	type _element = (element); \
+	array_set_start((array), (index), &_element); \
+} while (0)
+
+#define ARRAY_SET_END(array, index, type, element) do { \
+	type _element = (element); \
+	array_set_end((array), (index), &_element); \
+} while (0)
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
 
 Error array_resize(Array* array, usize size);
 
@@ -68,12 +96,20 @@ Error array_append_array(Array* array, const Array* another);
 void array_remove(Array* array, usize index);
 void array_remove_range(Array* array, usize start, usize end);
 
+void array_reverse(Array* array);
+
+/* ========================================================================= */
+/* Sorting                                                                   */
+/* ========================================================================= */
+
 void array_sort(Array* array,
 	ArraySortFunction compare);
 void array_sort_range(Array* array, usize start, usize end,
 	ArraySortFunction compare);
 
-void array_reverse(Array* array);
+/* ========================================================================= */
+/* Iterators & Traversal                                                     */
+/* ========================================================================= */
 
 ArrayIterator array_iterator(const Array* array);
 bool array_iterator_next(ArrayIterator* iterator);

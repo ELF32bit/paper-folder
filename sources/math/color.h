@@ -264,7 +264,8 @@ static inline Color color_desaturate(Color c, real factor) {
 	};
 }
 
-static inline bool color_is_equal(Color c1, Color c2) {
+#define Color_equals color_equals
+static inline bool color_equals(Color c1, Color c2) {
 	return
 		ABS(c1.r - c2.r) < COLOR_EPSILON &&
 		ABS(c1.g - c2.g) < COLOR_EPSILON &&

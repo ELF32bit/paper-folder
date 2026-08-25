@@ -185,4 +185,11 @@ TEST_FILES.SVG_FILES = {
 	"assets/origami-simulator/needsCollisions/rose.svg",
 }
 
+function TEST_FILES.print_fold_file(file, pretty)
+	local fold, fold_error = FOLD.new(), nil
+	fold, fold_error = fold:from_json_file(file)
+	if (fold == nil) then error(fold_error) end
+	io.write((fold:to_json_string(pretty)))
+end
+
 return TEST_FILES

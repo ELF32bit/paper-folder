@@ -5,6 +5,8 @@
 #include "collections/array2.h"
 #include "collections/string.h"
 
+#include "collections/map.h"
+
 #define FOLD_GRAPH_NULL USIZE_MAX
 
 #define FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY 'B'
@@ -24,6 +26,13 @@
 	(assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_CUT || \
 	(assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN)
 
+#define FOLD_GRAPH_EDGE_ASSIGNMENT_INVERT(assignment) ( \
+	((assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN) \
+	? FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY \
+	: ((assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY) \
+	? FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN \
+	: (assignment))
+
 #define FOLD_GRAPH_ORDER_POSITIVE 1
 #define FOLD_GRAPH_ORDER_NEGATIVE 0
 #define FOLD_GRAPH_ORDER_UNKNOWN 2
@@ -33,7 +42,7 @@
 	(order) == FOLD_GRAPH_ORDER_NEGATIVE || \
 	(order) == FOLD_GRAPH_ORDER_UNKNOWN)
 
-#define FOLD_GRAPH_ORDER_INVERSE(order) ( \
+#define FOLD_GRAPH_ORDER_INVERT(order) ( \
 	((order) == FOLD_GRAPH_ORDER_POSITIVE) \
 	? FOLD_GRAPH_ORDER_NEGATIVE \
 	: ((order) == FOLD_GRAPH_ORDER_NEGATIVE) \
@@ -47,8 +56,6 @@
 #define FOLD_GRAPH_FACE_ORDER_ABOVE FOLD_GRAPH_ORDER_POSITIVE
 #define FOLD_GRAPH_FACE_ORDER_BELOW FOLD_GRAPH_ORDER_NEGATIVE
 #define FOLD_GRAPH_FACE_ORDER_UNKNOWN FOLD_GRAPH_ORDER_UNKNOWN
-
-typedef char FoldGraphEdgeAssignment;
 
 typedef struct FoldGraphExtensions {
 	Array VCC; /* vertices_color_code */
@@ -75,10 +82,10 @@ typedef struct FoldGraph {
 	union {
 		FoldGraphExtensions extensions;
 		struct {
-			Array VCC;
-			Array VTC;
-			Array VNC;
-			Array FM;
+			Array VCC; /* vertices_color_code */
+			Array VTC; /* vertices_texture_coords */
+			Array VNC; /* vertices_normal_coords */
+			Array FM; /* faces_material */
 		};
 	};
 } FoldGraph;
@@ -89,6 +96,8 @@ typedef struct FoldGraphEdge {
 		usize components[2];
 	};
 } FoldGraphEdge;
+
+typedef char FoldGraphEdgeAssignment;
 
 typedef struct FoldGraphOrder {
 	union {
@@ -111,42 +120,84 @@ typedef struct FoldGraphFaceOrder {
 	};
 } FoldGraphFaceOrder;
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 void fold_graph_create(FoldGraph* graph);
+
+#define FoldGraph_destroy fold_graph_destroy
 void fold_graph_destroy(FoldGraph* graph);
+
 void fold_graph_recreate(FoldGraph* graph);
+
+/* ========================================================================= */
+/* Serialization & Deserialization                                           */
+/* ========================================================================= */
 
 Error fold_graph_from_json(FoldGraph* graph, void* JSON, void* Object);
 Error fold_graph_to_json(const FoldGraph* graph, void* JSON, void* Object);
 
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+#define FoldGraph_copy fold_graph_copy
 Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source_graph);
+
 void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source_graph);
 bool fold_graph_is_inherited(const FoldGraph* graph);
 
-Error fold_graph_validate(const FoldGraph* graph, bool* is_valid, String* errors);
-Error fold_graph_validate_inherited(FoldGraph* graph, bool* is_valid, String* errors);
+/* ========================================================================= */
+/* Validation                                                                */
+/* ========================================================================= */
+
+Error fold_graph_validate(const FoldGraph* graph, bool* is, String* errors);
+Error fold_graph_validate_inherited(FoldGraph* graph, bool* is, String* errors);
+
+/* ========================================================================= */
+/* Attributes                                                                */
+/* ========================================================================= */
 
 bool fold_graph_is_abstract(const FoldGraph* graph);
 bool fold_graph_is_2D(const FoldGraph* graph);
 bool fold_graph_is_3D(const FoldGraph* graph);
 bool fold_graph_is_manifold(const FoldGraph* graph);
-bool fold_graph_is_orientable(const FoldGraph* graph);
+
+Error fold_graph_is_orientable(const FoldGraph* graph, bool* is);
+Error fold_graph_is_self_touching(const FoldGraph* graph, bool* is);
+Error fold_graph_is_self_intersecting(const FoldGraph* graph, bool* is);
+
 bool fold_graph_has_cuts(const FoldGraph* graph);
 bool fold_graph_has_joins(const FoldGraph* graph);
-bool fold_graph_is_self_touching(const FoldGraph* graph);
-bool fold_graph_is_self_intersecting(const FoldGraph* graph);
-bool fold_graph_has_non_convex_faces(const FoldGraph* graph);
+bool fold_graph_has_concave_faces(const FoldGraph* graph);
+
+/* ========================================================================= */
+/* Vertices Building                                                         */
+/* ========================================================================= */
 
 Error fold_graph_VV_from_EV(FoldGraph* graph);
 Error fold_graph_VV_from_FV(FoldGraph* graph);
-Error fold_graph_VE_from_VV(FoldGraph* graph);
+Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map);
 Error fold_graph_VF_from_VV(FoldGraph* graph);
 
-Error fold_graph_EL_from_EVC(FoldGraph* graph);
-Error fold_graph_EFA_from_EA(FoldGraph* graph);
-Error fold_graph_EA_from_EFA(FoldGraph* graph);
-Error fold_graph_EF_from_FV(FoldGraph* graph);
+/* ========================================================================= */
+/* Edges Building                                                            */
+/* ========================================================================= */
 
-Error fold_graph_FE_from_FV(FoldGraph* graph);
+Error fold_graph_get_EV_map(const FoldGraph* graph, Map* map);
+
+Error fold_graph_EF_from_FV(FoldGraph* graph);
+Error fold_graph_EA_from_EF(FoldGraph* graph);
+Error fold_graph_EA_from_EFA(FoldGraph* graph);
+Error fold_graph_EFA_from_EA(FoldGraph* graph);
+Error fold_graph_EL_from_EVC(FoldGraph* graph);
+
+/* ========================================================================= */
+/* Faces Building                                                            */
+/* ========================================================================= */
+
+Error fold_graph_FE_from_FV(FoldGraph* graph, const Map* EV_map);
 Error fold_graph_FF_from_FV(FoldGraph* graph);
 
 Error fold_graph_FV_triangulate(FoldGraph* graph);

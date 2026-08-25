@@ -6,7 +6,7 @@
 #include "float.h"
 
 /* ========================================================================= */
-/* I8 Section                                                                */
+/* I8                                                                        */
 /* ========================================================================= */
 
 static inline int i8_sort_ascending(const void* a, const void* b) {
@@ -22,7 +22,7 @@ static inline int i8_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* I16 Section                                                               */
+/* I16                                                                       */
 /* ========================================================================= */
 
 static inline int i16_sort_ascending(const void* a, const void* b) {
@@ -38,7 +38,7 @@ static inline int i16_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* I32 Section                                                               */
+/* I32                                                                       */
 /* ========================================================================= */
 
 static inline int i32_sort_ascending(const void* a, const void* b) {
@@ -54,7 +54,7 @@ static inline int i32_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* I64 Section                                                               */
+/* I64                                                                       */
 /* ========================================================================= */
 
 static inline int i64_sort_ascending(const void* a, const void* b) {
@@ -70,7 +70,7 @@ static inline int i64_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* ISIZE Section                                                             */
+/* ISIZE                                                                     */
 /* ========================================================================= */
 
 static inline int isize_sort_ascending(const void* a, const void* b) {
@@ -86,7 +86,7 @@ static inline int isize_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* U8 Section                                                                */
+/* U8                                                                        */
 /* ========================================================================= */
 
 static inline int u8_sort_ascending(const void* a, const void* b) {
@@ -102,7 +102,7 @@ static inline int u8_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* U16 Section                                                               */
+/* U16                                                                       */
 /* ========================================================================= */
 
 static inline int u16_sort_ascending(const void* a, const void* b) {
@@ -118,7 +118,7 @@ static inline int u16_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* U32 Section                                                               */
+/* U32                                                                       */
 /* ========================================================================= */
 
 static inline int u32_sort_ascending(const void* a, const void* b) {
@@ -134,7 +134,7 @@ static inline int u32_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* U64 Section                                                               */
+/* U64                                                                       */
 /* ========================================================================= */
 
 static inline int u64_sort_ascending(const void* a, const void* b) {
@@ -150,7 +150,7 @@ static inline int u64_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* USIZE Section                                                             */
+/* USIZE                                                                     */
 /* ========================================================================= */
 
 static inline int usize_sort_ascending(const void* a, const void* b) {
@@ -166,7 +166,7 @@ static inline int usize_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* F32 Section                                                               */
+/* F32                                                                       */
 /* ========================================================================= */
 
 static inline int f32_sort_ascending(const void* a, const void* b) {
@@ -182,7 +182,7 @@ static inline int f32_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* F64 Section                                                               */
+/* F64                                                                       */
 /* ========================================================================= */
 
 static inline int f64_sort_ascending(const void* a, const void* b) {
@@ -198,7 +198,7 @@ static inline int f64_sort_descending(const void* a, const void* b) {
 }
 
 /* ========================================================================= */
-/* REAL Section                                                              */
+/* REAL                                                                      */
 /* ========================================================================= */
 
 static inline int real_sort_ascending(const void* a, const void* b) {

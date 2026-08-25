@@ -3,6 +3,21 @@
 
 #include <math.h>
 
+#ifdef F32_EPSILON
+#define F32_INFINITY ((f32)INFINITY)
+#define F32_NAN ((f32)NAN)
+#endif
+
+#ifdef F64_EPSILON
+#define F64_INFINITY ((f64)INFINITY)
+#define F64_NAN ((f64)NAN)
+#endif
+
+#ifdef REAL_EPSILON
+#define REAL_INFINITY ((real)INFINITY)
+#define REAL_NAN ((real)NAN)
+#endif
+
 /* ========================================================================= */
 /* Trigonometric Functions                                                   */
 /* ========================================================================= */
@@ -90,7 +105,7 @@
 )
 
 /* ========================================================================= */
-/* Exponential and Logarithmic Functions                                     */
+/* Exponential & Logarithmic Functions                                       */
 /* ========================================================================= */
 
 #define EXP(x) _Generic((x), \
@@ -148,7 +163,7 @@
 )
 
 /* ========================================================================= */
-/* Power and Absolute-Value Functions                                        */
+/* Power & Absolute-Value Functions                                          */
 /* ========================================================================= */
 
 #define CBRT(x) _Generic((x), \
@@ -184,7 +199,7 @@
 )
 
 /* ========================================================================= */
-/* Error and Gamma Functions                                                 */
+/* Error & Gamma Functions                                                   */
 /* ========================================================================= */
 
 #define ERF(x) _Generic((x), \
@@ -284,7 +299,7 @@
 )
 
 /* ========================================================================= */
-/* Minimum, Maximum, and Positive Difference Functions                       */
+/* Minimum, Maximum, & Positive Difference Functions                         */
 /* ========================================================================= */
 
 #define FDIM(x, y) _Generic((x) + (y), \

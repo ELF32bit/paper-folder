@@ -38,22 +38,17 @@ local function format_validation_errors(file, is_valid, errors)
 	end
 end
 
-function TEST_VALIDATE.run_file(file, print_contents)
+function TEST_VALIDATE.run_file(file)
 	local fold, fold_error = FOLD.new(), nil
 	fold, fold_error = fold:from_json_file(file)
 	if (fold == nil) then error(fold_error) end
-
 	io.write(format_validation_errors(
 		file, fold:validate()))
-
-	if print_contents then
-		print((fold:to_json_string(false)))
-	end
 end
 
-function TEST_VALIDATE.run_all(print_contents)
+function TEST_VALIDATE.run_all()
 	for _, file in ipairs(TEST_FILES.FOLD_FILES) do
-		TEST_VALIDATE.run_file(file, print_contents)
+		TEST_VALIDATE.run_file(file)
 	end
 end
 

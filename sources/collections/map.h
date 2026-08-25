@@ -26,6 +26,10 @@ typedef struct MapIterator {
 	void* value;
 } MapIterator;
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 void map_create(Map* map, usize key_size, usize value_size,
 	MapHashFunction hash, MapEqualsFunction equals);
 void map_create_managed(Map* map, usize key_size, usize value_size,
@@ -36,24 +40,47 @@ void map_create_managed(Map* map, usize key_size, usize value_size,
 #define MAP_CREATE(map, key_type, value_type) \
 	Map map; \
 	map_create(&map, sizeof(key_type), sizeof(value_type), \
-		(SetHashFunction)key_type##_hash, \
-		(SetEqualsFunction)key_type##_equals)
+		(MapHashFunction)key_type##_hash, \
+		(MapEqualsFunction)key_type##_equals)
 
 #define MAP_CREATE_MANAGED(map, key_type, value_type) \
 	Map map; \
 	map_create_managed(&map, sizeof(key_type), sizeof(value_type), \
-		(SetHashFunction)key_type##_hash, \
-		(SetEqualsFunction)key_type##_equals, \
+		(MapHashFunction)key_type##_hash, \
+		(MapEqualsFunction)key_type##_equals, \
 		(ArrayDestroyFunction)key_type##_destroy, \
 		(ArrayCopyFunction)key_type##_copy, \
 		(ArrayDestroyFunction)value_type##_destroy, \
 		(ArrayCopyFunction)value_type##_copy)
 
+#define MAP_CREATE_MANAGED_KEYS(map, key_type, value_type) \
+	Map map; \
+	map_create_managed(&map, sizeof(key_type), sizeof(value_type), \
+		(MapHashFunction)key_type##_hash, \
+		(MapEqualsFunction)key_type##_equals, \
+		(ArrayDestroyFunction)key_type##_destroy, \
+		(ArrayCopyFunction)key_type##_copy, NULL, NULL) \
+
+#define MAP_CREATE_MANAGED_VALUES(map, key_type, value_type) \
+	Map map; \
+	map_create_managed(&map, sizeof(key_type), sizeof(value_type), \
+		(MapHashFunction)key_type##_hash, \
+		(MapEqualsFunction)key_type##_equals, NULL, NULL,\
+		(ArrayDestroyFunction)value_type##_destroy, \
+		(ArrayCopyFunction)value_type##_copy)
+
 #define Map_destroy map_destroy
 void map_destroy(Map* map);
+
 void map_recreate(Map* map);
 
 void map_view(Map* map, const Map* source_map);
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+Error map_reserve(Map* map, usize capacity);
 
 Error map_add(Map* map, const void* key, const void* value, bool* exists);
 bool map_remove(Map* map, const void* key);
@@ -65,6 +92,10 @@ Error map_get_or_add(Map* map, const void* key, const void* default_value,
 
 #define Map_copy map_copy
 Error map_copy(Map* map, const Map* source_map);
+
+/* ========================================================================= */
+/* Iterators & Traversal                                                     */
+/* ========================================================================= */
 
 MapIterator map_iterator(const Map* map);
 bool map_iterator_next(MapIterator* iterator);

@@ -4,21 +4,24 @@
 
 #define SET_MIN_CAPACITY 8
 
-static inline u8 _get_flag(const Array* flags, usize i) {
+static inline
+u8 _get_flag(const Array* flags, usize i) {
 	if (flags->data == NULL) return SET_FLAG_EMPTY;
 	ASSERT((i >> 2) < flags->capacity);
 	u8* byte = array_get(flags, i >> 2);
 	return (*byte >> ((i & 3) << 1)) & 3;
 }
 
-static inline void _set_flag(Array* flags, usize i, u8 value) {
+static inline
+void _set_flag(Array* flags, usize i, u8 value) {
 	ASSERT((i >> 2) < flags->capacity && value <= 3);
 	usize shift = (i & 3) << 1;
 	u8* byte = array_get(flags, i >> 2);
 	*byte = (*byte & ~(3 << shift)) | (value << shift);
 }
 
-static void _set_array_destroy(Set* set, Array* array) {
+static inline
+void _set_array_destroy(Set* set, Array* array) {
 	if (array->is_view) return;
 	if (array->destroy != NULL) {
 		FOR_EACH(i, array->capacity) {
@@ -33,6 +36,10 @@ static void _set_array_destroy(Set* set, Array* array) {
 	array->size = 0;
 	array->is_view = false;
 }
+
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
 
 void set_create(Set* set, usize key_size,
 	SetHashFunction hash, SetEqualsFunction equals) {
@@ -84,7 +91,12 @@ void set_view(Set* set, const Set* source_set) {
 	set->is_view = true;
 }
 
-static usize set_find_bucket(const Set* set, const void* key, bool* exists) {
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+static inline
+usize _set_find_bucket(const Set* set, const void* key, bool* exists) {
 	*exists = false;
 	if (set->keys.capacity == 0) return 0;
 
@@ -114,18 +126,14 @@ static usize set_find_bucket(const Set* set, const void* key, bool* exists) {
 	}
 }
 
-static Error set_rehash(Set* set) {
-	usize old_capacity = set->keys.capacity;
-	usize new_capacity = SET_MIN_CAPACITY;
-	if (old_capacity != 0) {
-		TRY_MULTIPLY(old_capacity, 2);
-		new_capacity = old_capacity * 2;
-	}
-
+static inline
+Error _set_reallocate(Set* set, usize new_capacity) {
 	Set new_set;
 	set_create_managed(&new_set, set->key_size,
 		set->hash, set->equals,
 		set->keys.destroy, set->keys.copy);
+
+	usize old_capacity = set->keys.capacity;
 	TRY(array_resize(&new_set.keys, new_capacity));
 
 	TRY_ADD(new_capacity, 3);
@@ -142,7 +150,7 @@ static Error set_rehash(Set* set) {
 				void* old_key = array_get(&set->keys, i);
 
 				bool exists;
-				usize new_bucket = set_find_bucket(&new_set,
+				usize new_bucket = _set_find_bucket(&new_set,
 					old_key, &exists);
 
 				array_set(&new_set.keys, new_bucket, old_key);
@@ -156,8 +164,24 @@ static Error set_rehash(Set* set) {
 	array_destroy(&set->flags);
 	set->keys = new_set.keys;
 	set->flags = new_set.flags;
+	set->size = new_set.size;
 	set->tombstones = 0;
 	return OK;
+}
+
+Error set_reserve(Set* set, usize capacity) {
+	ASSERT(NOT(set->is_view));
+	if (capacity == 0) return OK;
+
+	TRY_MULTIPLY(capacity, 3);
+	usize required_capacity = (capacity * 3) / 2;
+	if (set->keys.capacity >= required_capacity) return OK;
+
+	usize new_capacity =
+		usize_align_base2(required_capacity, SET_MIN_CAPACITY);
+	if (new_capacity == 0) return ERROR_INTEGER_OVERFLOW;
+
+	return _set_reallocate(set, new_capacity);
 }
 
 Error set_add(Set* set, const void* key, bool* exists) {
@@ -166,16 +190,16 @@ Error set_add(Set* set, const void* key, bool* exists) {
 
 	TRY_ADD(set->size, set->tombstones);
 	TRY_ADD(set->size + set->tombstones, 1);
-	TRY_MULTIPLY(set->size + set->tombstones + 1, 10);
-	TRY_MULTIPLY(set->keys.capacity, 7);
-
-	if ((set->size + set->tombstones + 1) * 10 >=
-		set->keys.capacity * 7) {
-			TRY(set_rehash(set));
+	TRY_MULTIPLY(set->size + set->tombstones + 1, 3);
+	TRY_MULTIPLY(set->keys.capacity, 2);
+	if ((set->size + set->tombstones + 1) * 3 >= set->keys.capacity * 2) {
+		TRY(_set_reallocate(set, (set->keys.capacity != 0)
+			? set->keys.capacity * 2
+			: SET_MIN_CAPACITY));
 	}
 
 	bool key_exists;
-	usize bucket = set_find_bucket(set, key, &key_exists);
+	usize bucket = _set_find_bucket(set, key, &key_exists);
 	if (exists != NULL) *exists = key_exists;
 	if (key_exists) return OK;
 
@@ -192,7 +216,7 @@ Error set_add(Set* set, const void* key, bool* exists) {
 bool set_remove(Set* set, const void* key) {
 	ASSERT(NOT(set->is_view));
 	bool exists;
-	usize bucket = set_find_bucket(set, key, &exists);
+	usize bucket = _set_find_bucket(set, key, &exists);
 	if (exists) {
 		if (set->keys.destroy != NULL) {
 			set->keys.destroy(array_get(&set->keys, bucket));
@@ -206,7 +230,7 @@ bool set_remove(Set* set, const void* key) {
 
 bool set_has(const Set* set, const void* key) {
 	bool exists;
-	set_find_bucket(set, key, &exists);
+	_set_find_bucket(set, key, &exists);
 	return exists;
 }
 
@@ -217,9 +241,10 @@ Error set_copy(Set* set, const Set* source_set) {
 	ASSERT(set->keys.copy == source_set->keys.copy);
 	ASSERT(NOT(set->is_view));
 
-	u8 key[set->key_size];
-
 	set_recreate(set);
+	TRY(set_reserve(set, source_set->size));
+
+	u8 key[set->key_size];
 	SetIterator iterator = set_iterator(source_set);
 	while (set_iterator_next(&iterator)) {
 		if (set->keys.copy != NULL) {
@@ -235,6 +260,10 @@ Error set_copy(Set* set, const Set* source_set) {
 
 	return OK;
 }
+
+/* ========================================================================= */
+/* Iterators & Traversal                                                     */
+/* ========================================================================= */
 
 SetIterator set_iterator(const Set* set) {
 	SetIterator iterator;

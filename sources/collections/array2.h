@@ -20,6 +20,10 @@ typedef struct Array2Iterator {
 	usize size;
 } Array2Iterator;
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 void array2_create(Array2* array2, usize element_size);
 void array2_create_managed(Array2* array2, usize element_size,
 	ArrayDestroyFunction destroy, ArrayCopyFunction copy);
@@ -36,16 +40,27 @@ void array2_create_managed(Array2* array2, usize element_size,
 
 #define Array2_destroy array2_destroy
 void array2_destroy(Array2* array2);
+
 void array2_recreate(Array2* array2);
 
 void array2_view(Array2* array2, const Array2* source);
 
-usize array2_get_offset(const Array2* array2, usize index);
-usize array2_get_size(const Array2* array2, usize index);
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+usize array2_start_offset_at(const Array2* array2, usize index);
+usize array2_end_offset_at(const Array2* array2, usize index);
+usize array2_size_at(const Array2* array2, usize index);
 
 #define Array2_copy array2_copy
 Error array2_copy(Array2* array2, const Array2* source);
+
 Error array2_append(Array2* array2, const Array* array);
+
+/* ========================================================================= */
+/* Iterators & Traversal                                                     */
+/* ========================================================================= */
 
 Array2Iterator array2_iterator(const Array2* array2);
 bool array2_iterator_next(Array2Iterator* iterator);

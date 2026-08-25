@@ -59,18 +59,45 @@ typedef struct FoldFrame {
 	};
 } FoldFrame;
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 void fold_frame_create(FoldFrame* frame);
+
+#define FoldFrame_destroy fold_frame_destroy
 void fold_frame_destroy(FoldFrame* frame);
+
 void fold_frame_recreate(FoldFrame* frame);
+
+/* ========================================================================= */
+/* Serialization & Deserialization                                           */
+/* ========================================================================= */
 
 Error fold_frame_from_json(FoldFrame* frame, void* JSON, void* Object);
 Error fold_frame_to_json(const FoldFrame* frame, void* JSON, void* Object);
 
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+#define FoldFrame_copy fold_frame_copy
 Error fold_frame_copy(FoldFrame* frame, const FoldFrame* source_frame);
+
 void fold_frame_inherit(FoldFrame* frame, const FoldFrame* source_frame);
 bool fold_frame_is_inherited(const FoldFrame* frame);
 
-Error fold_frame_validate(const FoldFrame* frame, bool* is_valid, String* errors);
-Error fold_frame_validate_inherited(FoldFrame* frame, bool* is_valid, String* errors);
+/* ========================================================================= */
+/* Validation                                                                */
+/* ========================================================================= */
+
+Error fold_frame_validate(const FoldFrame* frame, bool* is, String* errors);
+Error fold_frame_validate_inherited(FoldFrame* frame, bool* is, String* errors);
+
+/* ========================================================================= */
+/* Attributes                                                                */
+/* ========================================================================= */
+
+Error fold_frame_attributes_compute(FoldFrame* frame);
 
 #endif /* FOLD_FRAME_H */

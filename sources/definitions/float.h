@@ -2,7 +2,7 @@
 #define DEFINITIONS_FLOAT_H
 
 #include <float.h>
-#include "assert.h"
+#include <assert.h>
 
 typedef float f32;
 #define F32_MIN FLT_MIN

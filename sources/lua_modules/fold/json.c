@@ -6,6 +6,10 @@
 
 #include <stdlib.h>
 
+/* ========================================================================= */
+/* Serialization & Deserialization                                           */
+/* ========================================================================= */
+
 #define JSON_READ_FLAGS \
 	YYJSON_READ_ALLOW_COMMENTS | \
 	YYJSON_READ_ALLOW_EXT_NUMBER | \

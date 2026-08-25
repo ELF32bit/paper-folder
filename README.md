@@ -9,7 +9,8 @@ Export precomputed folding animation as an easy to parse series of meshes.<br>
 ## Building the project
 Run the command inside a terminal.<br>
 ```Bash
-make && ./paper-folder \
+make && \
+./paper-folder --validate \
 "assets/rabbit-ear/kissing-squares.fold"
 ```
 ```Go

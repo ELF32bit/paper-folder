@@ -9,27 +9,44 @@ typedef struct String {
 	bool is_view;
 } String;
 
-void string_create(String* string);
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
 
-#define String_destroy string_destroy
-void string_destroy(String* string);
-void string_recreate(String* string);
+void string_create(String* string);
 
 #define STRING_CREATE(string) \
 	String string; \
 	string_create(&string)
 
+#define String_destroy string_destroy
+void string_destroy(String* string);
+
+void string_recreate(String* string);
+
 void string_view(String* string, const String* source);
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
 
 #define String_copy string_copy
 Error string_copy(String* string, const String* source);
 Error string_copy_raw(String* string, const char* source);
 
+#define STRING_CREATE_RAW(string, source) \
+	STRING_CREATE(string); \
+	TRY(string_copy_raw(&string, source))
+
+#define STRING_CREATE_RAW_OR_ELSE(string, source, execute) \
+	STRING_CREATE(string); \
+	TRY_OR_ELSE(string_copy_raw(&string, source), execute)
+
 Error string_append(String* string, const String* another);
 Error string_append_raw(String* string, const char* another);
 
 /* ========================================================================= */
-/* Hash Section                                                              */
+/* Hashing                                                                   */
 /* ========================================================================= */
 
 usize hash_string(const String* string);
@@ -45,7 +62,7 @@ bool string_equals(const String* string, const String* another);
 bool string_equals_raw(const String* string, const char* another);
 
 /* ========================================================================= */
-/* Sort Section                                                              */
+/* Sorting                                                                   */
 /* ========================================================================= */
 
 int string_compare(const String* string, const String* another);

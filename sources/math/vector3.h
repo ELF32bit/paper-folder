@@ -81,12 +81,12 @@ static inline Vector3 vector3_lerp(Vector3 a, Vector3 b, real t) {
 	};
 }
 
-static inline real vector3_length_squared(Vector3 v) {
+static inline real vector3_length2(Vector3 v) {
 	return vector3_dot(v, v);
 }
 
 static inline real vector3_length(Vector3 v) {
-	return SQRT(vector3_length_squared(v));
+	return SQRT(vector3_length2(v));
 }
 
 static inline Vector3 vector3_normalize(Vector3 v) {
@@ -108,8 +108,8 @@ static inline Vector3 vector3_direction(Vector3 a, Vector3 b, bool normalize) {
 		: vector3_subtract(b, a);
 }
 
-static inline real vector3_distance_squared(Vector3 a, Vector3 b) {
-	return vector3_length_squared(vector3_subtract(b, a));
+static inline real vector3_distance2(Vector3 a, Vector3 b) {
+	return vector3_length2(vector3_subtract(b, a));
 }
 
 static inline real vector3_distance(Vector3 a, Vector3 b) {
@@ -167,12 +167,12 @@ static inline int vector3_max_axis_index(Vector3 v) {
 }
 
 static inline bool vector3_is_normalized(Vector3 v) {
-	return ABS(vector3_length_squared(v) - 1.0) < VECTOR3_EPSILON;
+	return ABS(vector3_length2(v) - 1.0) < VECTOR3_EPSILON;
 }
 
 static inline real vector3_angle_to(Vector3 a, Vector3 b) {
-	if (vector3_length_squared(a) *
-		vector3_length_squared(b) == 0.0) return 0.0;
+	if (vector3_length2(a) *
+		vector3_length2(b) == 0.0) return 0.0;
 	return ATAN2(vector3_length(vector3_cross(a, b)), vector3_dot(a, b));
 }
 
@@ -227,6 +227,11 @@ static inline bool vector3_is_equal(Vector3 a, Vector3 b, real epsilon) {
 		ABS(a.x - b.x) < epsilon &&
 		ABS(a.y - b.y) < epsilon &&
 		ABS(a.z - b.z) < epsilon;
+}
+
+#define Vector3_equals vector3_equals
+static inline bool vector3_equals(Vector3 a, Vector3 b) {
+	return vector3_is_equal(a, b, VECTOR3_EPSILON);
 }
 
 static inline bool vector3_is_zero(Vector3 a, real epsilon) {

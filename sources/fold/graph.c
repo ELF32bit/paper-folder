@@ -4,41 +4,16 @@
 #include "math/vector2.h"
 #include "math/vector3.h"
 
-static void fold_graph_extensions_create(FoldGraphExtensions* extensions) {
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
+static
+void fold_graph_extensions_create(FoldGraphExtensions* extensions) {
 	array_create(&extensions->VCC, sizeof(Color));
 	array_create(&extensions->VTC, sizeof(Vector2));
 	array_create(&extensions->VNC, sizeof(Vector3));
 	array_create(&extensions->FM, SIZEOF(usize, 8));
-}
-
-static void fold_graph_extensions_destroy(FoldGraphExtensions* extensions) {
-	array_destroy(&extensions->VCC);
-	array_destroy(&extensions->VTC);
-	array_destroy(&extensions->VNC);
-	array_destroy(&extensions->FM);
-}
-
-static Error fold_graph_extensions_copy(FoldGraphExtensions* extensions, const FoldGraphExtensions* source_extensions) {
-	TRY(array_copy(&extensions->VCC, &source_extensions->VCC));
-	TRY(array_copy(&extensions->VTC, &source_extensions->VTC));
-	TRY(array_copy(&extensions->VNC, &source_extensions->VNC));
-	TRY(array_copy(&extensions->FM, &source_extensions->FM));
-	return OK;
-}
-
-static void fold_graph_extensions_inherit(FoldGraphExtensions* extensions, const FoldGraphExtensions* source_extensions) {
-	if (extensions->VCC.size == 0) array_view(&extensions->VCC, &source_extensions->VCC);
-	if (extensions->VTC.size == 0) array_view(&extensions->VTC, &source_extensions->VTC);
-	if (extensions->VNC.size == 0) array_view(&extensions->VNC, &source_extensions->VNC);
-	if (extensions->FM.size == 0) array_view(&extensions->FM, &source_extensions->FM);
-}
-
-static bool fold_graph_extensions_is_inherited(const FoldGraphExtensions* extensions) {
-	if (extensions->VCC.is_view) return true;
-	if (extensions->VTC.is_view) return true;
-	if (extensions->VNC.is_view) return true;
-	if (extensions->FM.is_view) return true;
-	return false;
 }
 
 void fold_graph_create(FoldGraph* graph) {
@@ -57,6 +32,14 @@ void fold_graph_create(FoldGraph* graph) {
 	array2_create(&graph->FF, sizeof(usize));
 	array_create(&graph->FO, sizeof(FoldGraphFaceOrder));
 	fold_graph_extensions_create(&graph->extensions);
+}
+
+static
+void fold_graph_extensions_destroy(FoldGraphExtensions* extensions) {
+	array_destroy(&extensions->VCC);
+	array_destroy(&extensions->VTC);
+	array_destroy(&extensions->VNC);
+	array_destroy(&extensions->FM);
 }
 
 void fold_graph_destroy(FoldGraph* graph) {
@@ -82,41 +65,71 @@ void fold_graph_recreate(FoldGraph* graph) {
 	fold_graph_create(graph);
 }
 
-Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source_graph) {
-	TRY(array_copy(&graph->VC, &source_graph->VC));
-	TRY(array2_copy(&graph->VV, &source_graph->VV));
-	TRY(array2_copy(&graph->VE, &source_graph->VE));
-	TRY(array2_copy(&graph->VF, &source_graph->VF));
-	TRY(array_copy(&graph->EV, &source_graph->EV));
-	TRY(array2_copy(&graph->EF, &source_graph->EF));
-	TRY(array_copy(&graph->EA, &source_graph->EA));
-	TRY(array_copy(&graph->EFA, &source_graph->EFA));
-	TRY(array_copy(&graph->EL, &source_graph->EL));
-	TRY(array_copy(&graph->EO, &source_graph->EO));
-	TRY(array2_copy(&graph->FV, &source_graph->FV));
-	TRY(array2_copy(&graph->FE, &source_graph->FE));
-	TRY(array2_copy(&graph->FF, &source_graph->FF));
-	TRY(array_copy(&graph->FO, &source_graph->FO));
-	TRY(fold_graph_extensions_copy(&graph->extensions, &source_graph->extensions));
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+static
+Error fold_graph_extensions_copy(FoldGraphExtensions* extensions, const FoldGraphExtensions* source) {
+	TRY(array_copy(&extensions->VCC, &source->VCC));
+	TRY(array_copy(&extensions->VTC, &source->VTC));
+	TRY(array_copy(&extensions->VNC, &source->VNC));
+	TRY(array_copy(&extensions->FM, &source->FM));
 	return OK;
 }
 
-void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source_graph) {
-	if (graph->VC.size == 0) array_view(&graph->VC, &source_graph->VC);
-	if (graph->VV.size == 0) array2_view(&graph->VV, &source_graph->VV);
-	if (graph->VE.size == 0) array2_view(&graph->VE, &source_graph->VE);
-	if (graph->VF.size == 0) array2_view(&graph->VF, &source_graph->VF);
-	if (graph->EV.size == 0) array_view(&graph->EV, &source_graph->EV);
-	if (graph->EF.size == 0) array2_view(&graph->EF, &source_graph->EF);
-	if (graph->EA.size == 0) array_view(&graph->EA, &source_graph->EA);
-	if (graph->EFA.size == 0) array_view(&graph->EFA, &source_graph->EFA);
-	if (graph->EL.size == 0) array_view(&graph->EL, &source_graph->EL);
-	if (graph->EO.size == 0) array_view(&graph->EO, &source_graph->EO);
-	if (graph->FV.size == 0) array2_view(&graph->FV, &source_graph->FV);
-	if (graph->FE.size == 0) array2_view(&graph->FE, &source_graph->FE);
-	if (graph->FF.size == 0) array2_view(&graph->FF, &source_graph->FF);
-	if (graph->FO.size == 0) array_view(&graph->FO, &source_graph->FO);
-	fold_graph_extensions_inherit(&graph->extensions, &source_graph->extensions);
+Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source) {
+	TRY(array_copy(&graph->VC, &source->VC));
+	TRY(array2_copy(&graph->VV, &source->VV));
+	TRY(array2_copy(&graph->VE, &source->VE));
+	TRY(array2_copy(&graph->VF, &source->VF));
+	TRY(array_copy(&graph->EV, &source->EV));
+	TRY(array2_copy(&graph->EF, &source->EF));
+	TRY(array_copy(&graph->EA, &source->EA));
+	TRY(array_copy(&graph->EFA, &source->EFA));
+	TRY(array_copy(&graph->EL, &source->EL));
+	TRY(array_copy(&graph->EO, &source->EO));
+	TRY(array2_copy(&graph->FV, &source->FV));
+	TRY(array2_copy(&graph->FE, &source->FE));
+	TRY(array2_copy(&graph->FF, &source->FF));
+	TRY(array_copy(&graph->FO, &source->FO));
+	TRY(fold_graph_extensions_copy(&graph->extensions, &source->extensions));
+	return OK;
+}
+
+static
+void fold_graph_extensions_inherit(FoldGraphExtensions* extensions, const FoldGraphExtensions* source) {
+	if (extensions->VCC.size == 0) array_view(&extensions->VCC, &source->VCC);
+	if (extensions->VTC.size == 0) array_view(&extensions->VTC, &source->VTC);
+	if (extensions->VNC.size == 0) array_view(&extensions->VNC, &source->VNC);
+	if (extensions->FM.size == 0) array_view(&extensions->FM, &source->FM);
+}
+
+void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source) {
+	if (graph->VC.size == 0) array_view(&graph->VC, &source->VC);
+	if (graph->VV.size == 0) array2_view(&graph->VV, &source->VV);
+	if (graph->VE.size == 0) array2_view(&graph->VE, &source->VE);
+	if (graph->VF.size == 0) array2_view(&graph->VF, &source->VF);
+	if (graph->EV.size == 0) array_view(&graph->EV, &source->EV);
+	if (graph->EF.size == 0) array2_view(&graph->EF, &source->EF);
+	if (graph->EA.size == 0) array_view(&graph->EA, &source->EA);
+	if (graph->EFA.size == 0) array_view(&graph->EFA, &source->EFA);
+	if (graph->EL.size == 0) array_view(&graph->EL, &source->EL);
+	if (graph->EO.size == 0) array_view(&graph->EO, &source->EO);
+	if (graph->FV.size == 0) array2_view(&graph->FV, &source->FV);
+	if (graph->FE.size == 0) array2_view(&graph->FE, &source->FE);
+	if (graph->FF.size == 0) array2_view(&graph->FF, &source->FF);
+	if (graph->FO.size == 0) array_view(&graph->FO, &source->FO);
+	fold_graph_extensions_inherit(&graph->extensions, &source->extensions);
+}
+
+static
+bool fold_graph_extensions_is_inherited(const FoldGraphExtensions* extensions) {
+	if (extensions->VCC.is_view) return true;
+	if (extensions->VTC.is_view) return true;
+	if (extensions->VNC.is_view) return true;
+	if (extensions->FM.is_view) return true;
+	return false;
 }
 
 bool fold_graph_is_inherited(const FoldGraph* graph) {
@@ -138,6 +151,10 @@ bool fold_graph_is_inherited(const FoldGraph* graph) {
 	return false;
 }
 
+/* ========================================================================= */
+/* Attributes                                                                */
+/* ========================================================================= */
+
 bool fold_graph_is_abstract(const FoldGraph* graph) {
 	return (graph->VC.size == 0);
 }
@@ -157,9 +174,10 @@ bool fold_graph_is_manifold(const FoldGraph* graph) {
 	return true;
 }
 
-bool fold_graph_is_orientable(const FoldGraph* graph) {
+Error fold_graph_is_orientable(const FoldGraph* graph, bool* is) {
 	(void)graph; // TODO
-	return false;
+	*is = false;
+	return OK;
 }
 
 bool fold_graph_has_cuts(const FoldGraph* graph) {
@@ -176,17 +194,209 @@ bool fold_graph_has_joins(const FoldGraph* graph) {
 	return false;
 }
 
-bool fold_graph_is_self_touching(const FoldGraph* graph) {
+Error fold_graph_is_self_touching(const FoldGraph* graph, bool* is) {
+	(void)graph; // TODO
+	*is = false;
+	return OK;
+}
+
+Error fold_graph_is_self_intersecting(const FoldGraph* graph, bool* is) {
+	(void)graph; // TODO
+	*is = false;
+	return OK;
+}
+
+bool fold_graph_has_concave_faces(const FoldGraph* graph) {
 	(void)graph; // TODO
 	return false;
 }
 
-bool fold_graph_is_self_intersecting(const FoldGraph* graph) {
+/* ========================================================================= */
+/* Vertices Building                                                         */
+/* ========================================================================= */
+
+Error fold_graph_VV_from_EV(FoldGraph* graph) {
 	(void)graph; // TODO
-	return false;
+	return OK;
 }
 
-bool fold_graph_has_non_convex_faces(const FoldGraph* graph) {
+Error fold_graph_VV_from_FV(FoldGraph* graph) {
 	(void)graph; // TODO
-	return false;
+	return OK;
+}
+
+Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
+	ASSERT(NOT(graph->VE.is_view));
+	TRY(array_resize(&graph->VE.data, graph->VV.data.size));
+	TRY_OR_ELSE(array_resize(&graph->VE.offsets, graph->VV.offsets.size),
+		array2_recreate(&graph->VE));
+
+	ARRAY2_ITERATE(&graph->VV, vv) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data,
+			i, usize*, vvi, vv.start, vv.end) {
+			usize ab = hash_usize_mix2(vv.index, *vvi);
+			usize* vei = map_get(EV_map, &ab, NULL);
+			if (vei == NULL) return ERROR;
+
+			array_set(&graph->VE.data, i, vei);
+		}
+		array_set(&graph->VE.offsets, vv.index, &vv.end);
+	}
+
+	return OK;
+}
+
+Error fold_graph_VF_from_VV(FoldGraph* graph) {
+	(void)graph; // TODO
+	return OK;
+}
+
+/* ========================================================================= */
+/* Edges Building                                                            */
+/* ========================================================================= */
+
+Error fold_graph_get_EV_map(const FoldGraph* graph, Map* map) {
+	MAP_CREATE(EV_map, usize, usize);
+	EV_map.hash = usize_hash_identity;
+
+	TRY_MULTIPLY(graph->EV.size, 2);
+	TRY(map_reserve(&EV_map, graph->EV.size * 2));
+	ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
+		usize ab = hash_usize_mix2(ev->a, ev->b);
+		TRY_OR_ELSE(map_add(&EV_map, &ab, &ei, NULL),
+			map_destroy(&EV_map));
+
+		usize ba = hash_usize_mix2(ev->b, ev->a);
+		TRY_OR_ELSE(map_add(&EV_map, &ba, &ei, NULL),
+			map_destroy(&EV_map));
+	}
+
+	*map = EV_map;
+	return OK;
+}
+
+Error fold_graph_EF_from_FV(FoldGraph* graph) {
+	(void)graph; // TODO
+	return OK;
+}
+
+Error fold_graph_EA_from_EF(FoldGraph* graph) {
+	ASSERT(NOT(graph->EA.is_view));
+	if (graph->EA.size != graph->EF.size) return ERROR;
+	ARRAY2_ITERATE(&graph->EF, ef) {
+		usize ef_size = 0;
+		ARRAY_FOR_EACH_IN_RANGE(&graph->EF.data,
+			_, usize*, efi, ef.start, ef.end) {
+			if (*efi != FOLD_GRAPH_NULL) ef_size++;
+		}
+		if (ef_size == 1) {
+			ARRAY_SET(&graph->EA, ef.index,
+				FoldGraphEdgeAssignment,
+				FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY);
+		}
+	}
+	return OK;
+}
+
+Error fold_graph_EA_from_EFA(FoldGraph* graph) {
+	ASSERT(NOT(graph->EA.is_view));
+	TRY(array_resize(&graph->EA, graph->EFA.size));
+	ARRAY_FOR_EACH(&graph->EFA, ei, real*, efa) {
+		if (*efa < 0.0) {
+			ARRAY_SET(&graph->EA, ei,
+				FoldGraphEdgeAssignment,
+				FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN);
+		} else if (*efa > 0.0) {
+			ARRAY_SET(&graph->EA, ei,
+				FoldGraphEdgeAssignment,
+				FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY);
+		} else {
+			ARRAY_SET(&graph->EA, ei,
+				FoldGraphEdgeAssignment,
+				FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN);
+		}
+	}
+	return OK;
+}
+
+Error fold_graph_EFA_from_EA(FoldGraph* graph) {
+	ASSERT(NOT(graph->EFA.is_view));
+	TRY(array_resize(&graph->EFA, graph->EA.size));
+	ARRAY_FOR_EACH(&graph->EA, ei, real*, ea) {
+		if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN) {
+			ARRAY_SET(&graph->EFA, ei, real, -180.0);
+		} else if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY) {
+			ARRAY_SET(&graph->EFA, ei, real, 180.0);
+		} else {
+			ARRAY_SET(&graph->EFA, ei, real, 0.0);
+		}
+	}
+	return OK;
+}
+
+Error fold_graph_EL_from_EVC(FoldGraph* graph) {
+	ASSERT(NOT(graph->EL.is_view));
+	if (fold_graph_is_abstract(graph)) {
+		TRY(array_resize(&graph->EL, 0));
+	} else if (fold_graph_is_2D(graph)) {
+		TRY(array_resize(&graph->EL, graph->EV.size));
+		ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
+			Vector2* a = array_get(&graph->VC, ev->a);
+			Vector2* b = array_get(&graph->VC, ev->b);
+			real length = vector2_distance(*a, *b);
+			array_set(&graph->EL, ei, &length);
+		}
+	} else if (fold_graph_is_3D(graph)) {
+		TRY(array_resize(&graph->EL, graph->EV.size));
+		ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
+			Vector3* a = array_get(&graph->VC, ev->a);
+			Vector3* b = array_get(&graph->VC, ev->b);
+			real length = vector3_distance(*a, *b);
+			array_set(&graph->EL, ei, &length);
+		}
+	}
+	return OK;
+}
+
+/* ========================================================================= */
+/* Faces Building                                                            */
+/* ========================================================================= */
+
+Error fold_graph_FE_from_FV(FoldGraph* graph, const Map* EV_map) {
+	ASSERT(NOT(graph->FE.is_view));
+	TRY(array_resize(&graph->FE.data, graph->FV.data.size));
+	TRY_OR_ELSE(array_resize(&graph->FE.offsets, graph->FV.offsets.size),
+		array2_recreate(&graph->FE));
+
+	ARRAY2_ITERATE(&graph->FV, fv) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
+			i, usize*, a, fv.start, fv.end) {
+			usize* b = array_get(&graph->FV.data,
+				wrap_index_in_range(i, +1, fv.start, fv.end));
+
+			usize ab = hash_usize_mix2(*a, *b);
+			usize* fei = map_get(EV_map, &ab, NULL);
+			if (fei == NULL) return ERROR;
+
+			array_set(&graph->FE.data, i, fei);
+		}
+		array_set(&graph->FE.offsets, fv.index, &fv.end);
+	}
+
+	return OK;
+}
+
+Error fold_graph_FF_from_FV(FoldGraph* graph) {
+	(void)graph; // TODO
+	return OK;
+}
+
+Error fold_graph_FV_triangulate(FoldGraph* graph) {
+	(void)graph; // TODO
+	return OK;
+}
+
+Error fold_graph_FV_flip(FoldGraph* graph) {
+	(void)graph; // TODO
+	return OK;
 }

@@ -9,13 +9,18 @@
 
 #define MAX_FRAME_PARENTS 64;
 
-static Error _validate_frame_parents(const FoldFile* file, usize index, bool* is_valid) {
-	*is_valid = false;
+/* ========================================================================= */
+/* FOLD Frame Validation Parents                                             */
+/* ========================================================================= */
+
+static inline
+Error _validate_frame_parents(const FoldFile* file, usize index, bool* is) {
+	*is = false;
 	FoldFrame* frame = array_get(&file->frames, index);
 	if (frame->parent == FOLD_FRAME_PARENT_NONE ||
 		frame->parent == index ||
-		!frame->inherit) {
-		*is_valid = true;
+		NOT(frame->inherit)) {
+		*is = true;
 		return OK;
 	} else if (frame->parent >= file->frames.size) {
 		return OK;
@@ -26,11 +31,11 @@ static Error _validate_frame_parents(const FoldFile* file, usize index, bool* is
 	FoldFrame* parent = array_get(&file->frames, parent_index);
 	if (parent->parent == FOLD_FRAME_PARENT_NONE ||
 		parent->parent == parent_index ||
-		!parent->inherit) {
-		*is_valid = true;
+		NOT(parent->inherit)) {
+		*is = true;
 		return OK;
 	} else if (parent->parent == index) {
-		*is_valid = false;
+		*is = false;
 		return OK;
 	}
 
@@ -51,9 +56,9 @@ static Error _validate_frame_parents(const FoldFile* file, usize index, bool* is
 		parent = array_get(&file->frames, parent_index);
 		if (parent->parent == FOLD_FRAME_PARENT_NONE ||
 			parent->parent == parent_index ||
-			!parent->inherit) {
+			NOT(parent->inherit)) {
 			set_destroy(&parents);
-			*is_valid = true;
+			*is = true;
 			return OK;
 		} else if (set_has(&parents, &parent_index)) {
 			set_destroy(&parents);
@@ -69,9 +74,14 @@ static Error _validate_frame_parents(const FoldFile* file, usize index, bool* is
 	return OK;
 }
 
+/* ========================================================================= */
+/* FOLD Graph Validation Arrays Sizes                                        */
+/* ========================================================================= */
+
 #define GENERATE_VALIDATE_SIZES(A, B) \
-static void _validate_##A##_##B##_sizes(const FoldGraph* graph, bool* is_valid) { \
-	*is_valid = (graph->A.size == graph->B.size || graph->A.size == 0); \
+static inline \
+void _validate_##A##_##B##_sizes(const FoldGraph* graph, bool* is) { \
+	*is = (graph->A.size == graph->B.size || graph->A.size == 0); \
 }
 
 GENERATE_VALIDATE_SIZES(VV, VC)
@@ -84,40 +94,47 @@ GENERATE_VALIDATE_SIZES(EL, EV)
 GENERATE_VALIDATE_SIZES(FE, FV)
 GENERATE_VALIDATE_SIZES(FF, FV)
 
-GENERATE_VALIDATE_SIZES(VCC, VC)
-GENERATE_VALIDATE_SIZES(VTC, VC)
-GENERATE_VALIDATE_SIZES(VNC, VC)
-GENERATE_VALIDATE_SIZES(FM, FV)
-
-static void _validate_FV_sizes(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+void _validate_FV_sizes(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if (graph->FV.is_view) return;
 	ARRAY2_ITERATE(&graph->FV, array) {
 		if (array.size < 3) {
-			*is_valid = false;
+			*is = false;
 			return;
 		}
 	}
 }
 
+GENERATE_VALIDATE_SIZES(VCC, VC)
+GENERATE_VALIDATE_SIZES(VTC, VC)
+GENERATE_VALIDATE_SIZES(VNC, VC)
+GENERATE_VALIDATE_SIZES(FM, FV)
+
+/* ========================================================================= */
+/* FOLD Graph Validation Arrays References                                   */
+/* ========================================================================= */
+
 #define GENERATE_VALIDATE_REFERENCES(A, B) \
-static void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is_valid) { \
-	*is_valid = true; \
+static inline \
+void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
+	*is = true; \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 && graph->B.size == 0)) return; \
 	usize max_index = graph->B.size; \
 	for (usize i = 0; i < graph->A.data.size; i++) { \
 		usize* index = array_get(&(graph->A.data), i); \
 		if (*index >= max_index) { \
-			*is_valid = false; \
+			*is = false; \
 			return; \
 		} \
 	} \
 }
 
 #define GENERATE_VALIDATE_REFERENCES_WITH_NULL(A, B) \
-static void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is_valid) { \
-	*is_valid = true; \
+static inline \
+void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
+	*is = true; \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 && graph->B.size == 0)) return; \
 	usize max_index = graph->B.size; \
@@ -125,15 +142,16 @@ static void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is_va
 		usize* index = array_get(&(graph->A.data), i); \
 		if (*index == FOLD_GRAPH_NULL) continue; \
 		if (*index >= max_index) { \
-			*is_valid = false; \
+			*is = false; \
 			return; \
 		} \
 	} \
 }
 
 #define GENERATE_VALIDATE_REFERENCES_PAIRS(A, B) \
-static void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is_valid) { \
-	*is_valid = true; \
+static inline \
+void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
+	*is = true; \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 && graph->B.size == 0)) return; \
 	usize max_index = graph->B.size; \
@@ -141,7 +159,7 @@ static void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is_va
 		usize* pair = array_get(&graph->A, i); \
 		if (pair[0] >= max_index || \
 			pair[1] >= max_index) { \
-			*is_valid = false; \
+			*is = false; \
 			return; \
 		} \
 	} \
@@ -158,62 +176,31 @@ GENERATE_VALIDATE_REFERENCES(FE, EV)
 GENERATE_VALIDATE_REFERENCES_WITH_NULL(FF, FV)
 GENERATE_VALIDATE_REFERENCES_PAIRS(FO, FV)
 
-static Error __to_map1(const Array2* array2, Set* map1, bool has_null) {
+/* ========================================================================= */
+/* FOLD Graph Validation Arrays Reflexive                                    */
+/* ========================================================================= */
+
+static inline
+Error __to_map1(const Array2* array2, Set* map1, bool has_null) {
 	SET_CREATE(set, usize);
 	set.hash = usize_hash_identity;
-	ARRAY2_FOR_EACH(array2, array, index, usize*, a) {
+
+	TRY(set_reserve(&set, array2->data.size));
+	ARRAY2_FOR_EACH(array2, array, _, usize*, a) {
 		if (NOT(has_null) || *a != FOLD_GRAPH_NULL) {
 			usize Ia = hash_usize_mix2(array.index, *a);
 			TRY_OR_ELSE(set_add(&set, &Ia, NULL),
 				set_destroy(&set));
 		}
 	}
+
 	*map1 = set;
 	return OK;
 }
 
-static Error __to_map2(const Array2* array2, Set* map2) {
-	SET_CREATE(set, usize);
-	set.hash = usize_hash_identity;
-	ARRAY2_FOR_EACH(array2, array, index, usize*, a) {
-		usize* b = array_get(&array2->data,
-			wrap_index_in_range(index, +1, array.start, array.end));
-
-		usize Iab = hash_usize_mix3(array.index, *a, *b);
-		TRY_OR_ELSE(set_add(&set, &Iab, NULL),
-			set_destroy(&set));
-
-		usize Iba = hash_usize_mix3(array.index, *b, *a);
-		TRY_OR_ELSE(set_add(&set, &Iba, NULL),
-			set_destroy(&set));
-	}
-	*map2 = set;
-	return OK;
-}
-
-static Error __to_map3(const Array2* array2, Set* map3) {
-	SET_CREATE(set, usize);
-	set.hash = usize_hash_identity;
-	ARRAY2_FOR_EACH(array2, array, index, usize*, a) {
-		usize* b = array_get(&array2->data,
-			wrap_index_in_range(index, +1, array.start, array.end));
-		usize* c = array_get(&array2->data,
-			wrap_index_in_range(index, +2, array.start, array.end));
-
-		usize Iabc = hash_usize_mix4(array.index, *a, *b, *c);
-		TRY_OR_ELSE(set_add(&set, &Iabc, NULL),
-			set_destroy(&set));
-
-		usize Icba = hash_usize_mix4(array.index, *c, *b, *a);
-		TRY_OR_ELSE(set_add(&set, &Icba, NULL),
-			set_destroy(&set));
-	}
-	*map3 = set;
-	return OK;
-}
-
-static bool __validate_reflexive(const Array2* array2, const Set* map1, bool has_null) {
-	ARRAY2_FOR_EACH(array2, array, index, usize*, a) {
+static inline
+bool __validate_reflexive(const Array2* array2, const Set* map1, bool has_null) {
+	ARRAY2_FOR_EACH(array2, array, _, usize*, a) {
 		if (NOT(has_null) || *a != FOLD_GRAPH_NULL) {
 			usize aI = hash_usize_mix2(*a, array.index);
 			if NOT(set_has(map1, &aI)) {
@@ -224,16 +211,17 @@ static bool __validate_reflexive(const Array2* array2, const Set* map1, bool has
 	return true;
 }
 
-static Error _validate_VE_EV_reflexive(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+Error _validate_VE_EV_reflexive(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->VE.is_view && graph->EV.is_view) ||
 		(graph->VE.size == 0 || graph->EV.size == 0)) return OK;
-	*is_valid = false;
+	*is = false;
 
-	ARRAY2_FOR_EACH(&graph->VE, ve, index, usize*, vei) {
+	ARRAY2_FOR_EACH(&graph->VE, ve, _, usize*, vei) {
 		FoldGraphEdge* vei_ev = array_get(&graph->EV, *vei);
 		if NOT(vei_ev->a == ve.index || vei_ev->b == ve.index) {
-			*is_valid = false;
+			*is = false;
 			return OK;
 		}
 	}
@@ -245,41 +233,33 @@ static Error _validate_VE_EV_reflexive(const FoldGraph* graph, bool* is_valid) {
 		usize bI = hash_usize_mix2(ev->b, ei);
 		if NOT(set_has(&VE_map, &aI) &&
 			set_has(&VE_map, &bI)) {
-			*is_valid = false;
+			*is = false;
 			return OK;
 		}
 	}
 
 	set_destroy(&VE_map);
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
 #define GENERATE_VALIDATE_REFLEXIVE(A, B, has_null, is_same) \
-static Error _validate_##A##_##B##_reflexive(const FoldGraph* graph, bool* is_valid) { \
-	*is_valid = true; \
+static inline \
+Error _validate_##A##_##B##_reflexive(const FoldGraph* graph, bool* is) { \
+	*is = true; \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 || graph->B.size == 0)) return OK; \
-	*is_valid = false; \
-\
-	if (is_same) { \
-		Set B##_map; \
-		TRY(__to_map1(&graph->B, &B##_map, has_null)); \
-		if (__validate_reflexive(&graph->A, &B##_map, has_null)) { \
-			*is_valid = true; \
-		} \
-		set_destroy(&B##_map); \
-		return OK; \
-	} \
-\
+	*is = false; \
 	Set B##_map; \
 	TRY(__to_map1(&graph->B, &B##_map, NOT(has_null))); \
 	if (__validate_reflexive(&graph->A, &B##_map, has_null)) { \
+		if (is_same) { *is = true; \
+			set_destroy(&B##_map); return OK; } \
 		Set A##_map; \
 		TRY_OR_ELSE(__to_map1(&graph->A, &A##_map, has_null), \
 			set_destroy(&B##_map)); \
 		if (__validate_reflexive(&graph->B, &A##_map, NOT(has_null))) { \
-			*is_valid = true; \
+			*is = true; \
 		} \
 		set_destroy(&A##_map); \
 	} \
@@ -292,33 +272,40 @@ GENERATE_VALIDATE_REFLEXIVE(VF, FV, true, false)
 GENERATE_VALIDATE_REFLEXIVE(EF, FE, true, false)
 GENERATE_VALIDATE_REFLEXIVE(FF, FF, true, true)
 
-static void _validate_EA_values(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+/* ========================================================================= */
+/* FOLD Graph Validation Arrays Values                                       */
+/* ========================================================================= */
+
+static inline
+void _validate_EA_values(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if (graph->EA.is_view) return;
-	ARRAY_FOR_EACH(&graph->EA, ei, FoldGraphEdgeAssignment*, ea) {
+	ARRAY_FOR_EACH(&graph->EA, _, FoldGraphEdgeAssignment*, ea) {
 		if NOT(FOLD_GRAPH_EDGE_ASSIGNMENT_ANY(*ea)) {
-			*is_valid = false;
+			*is = false;
 			return;
 		}
 	}
 }
 
-static void _validate_EFA_values(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+void _validate_EFA_values(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if (graph->EFA.is_view) return;
-	ARRAY_FOR_EACH(&graph->EFA, ei, real*, efa) {
+	ARRAY_FOR_EACH(&graph->EFA, _, real*, efa) {
 		if (*efa < -180.0 || *efa > 180.0) {
-			*is_valid = false;
+			*is = false;
 			return;
 		}
 	}
 }
 
-static void _validate_EA_EFA_values(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+void _validate_EA_EFA_values(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->EA.is_view && graph->EFA.is_view) ||
 		(graph->EA.size == 0 || graph->EFA.size == 0)) return;
-	*is_valid = false;
+	*is = false;
 	ARRAY_FOR_EACH(&graph->EA, ei, FoldGraphEdgeAssignment*, ea) {
 		real* efa = array_get(&graph->EFA, ei);
 		if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN) {
@@ -329,27 +316,33 @@ static void _validate_EA_EFA_values(const FoldGraph* graph, bool* is_valid) {
 			if (*efa != 0.0) return;
 		}
 	}
-	*is_valid = true;
+	*is = true;
 }
 
-static void _validate_EL_values(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+void _validate_EL_values(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if (graph->EL.is_view) return;
-	ARRAY_FOR_EACH(&graph->EL, ei, real*, el) {
+	ARRAY_FOR_EACH(&graph->EL, _, real*, el) {
 		if (*el < 0.0) {
-			*is_valid = false;
+			*is = false;
 			return;
 		}
 	}
 }
 
-static Error __validate_orders_pairs(const Array* orders, bool* is_valid) {
-	*is_valid = true;
+static inline
+Error __validate_orders_pairs(const Array* orders, bool* is) {
+	*is = true;
 	if (orders->is_view) return OK;
-	*is_valid = false;
+	*is = false;
 
 	MAP_CREATE(pairs, usize, usize);
-	ARRAY_FOR_EACH(orders, index, FoldGraphOrder*, order) {
+	pairs.hash = usize_hash_identity;
+
+	TRY_MULTIPLY(orders->size, 2);
+	TRY(map_reserve(&pairs, orders->size * 2));
+	ARRAY_FOR_EACH(orders, _, FoldGraphOrder*, order) {
 		if (NOT(FOLD_GRAPH_ORDER_ANY(order->o)) ||
 			order->a == order->b) {
 			map_destroy(&pairs);
@@ -357,7 +350,7 @@ static Error __validate_orders_pairs(const Array* orders, bool* is_valid) {
 		} else {
 			usize ab = hash_usize_mix2(order->a, order->b);
 			usize ba = hash_usize_mix2(order->b, order->a);
-			usize bao = FOLD_GRAPH_ORDER_INVERSE(order->o);
+			usize bao = FOLD_GRAPH_ORDER_INVERT(order->o);
 			usize abo = order->o;
 
 			if (map_has(&pairs, &ab)) {
@@ -376,73 +369,123 @@ static Error __validate_orders_pairs(const Array* orders, bool* is_valid) {
 	}
 
 	map_destroy(&pairs);
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
 #define GENERATE_VALIDATE_ORDERS_PAIRS(O) \
-static Error _validate_##O##_pairs(const FoldGraph* graph, bool* is_valid) { \
-	return __validate_orders_pairs(&graph->O, is_valid); \
+static inline \
+Error _validate_##O##_pairs(const FoldGraph* graph, bool* is) { \
+	return __validate_orders_pairs(&graph->O, is); \
 }
 
 GENERATE_VALIDATE_ORDERS_PAIRS(EO);
 GENERATE_VALIDATE_ORDERS_PAIRS(FO);
 
-#define VALIDATE(method, error) do { \
-	bool _is_valid = true; \
-	_validate_##method(graph, &_is_valid); \
-	if NOT(_is_valid) { \
-		is_still_valid = false; \
-		TRY(string_append_raw(errors, error)); \
-	} \
-} while(0)
+/* ========================================================================= */
+/* FOLD Graph Validation Arrays Winding                                      */
+/* ========================================================================= */
 
-static void _validate_VV_VE_winding(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+Error __to_map2(const Array2* array2, Set* map2) {
+	SET_CREATE(set, usize);
+	set.hash = usize_hash_identity;
+
+	TRY_MULTIPLY(array2->data.size, 2);
+	TRY(set_reserve(&set, array2->data.size * 2));
+	ARRAY2_FOR_EACH(array2, array, index, usize*, a) {
+		usize* b = array_get(&array2->data,
+			wrap_index_in_range(index, +1, array.start, array.end));
+
+		usize Iab = hash_usize_mix3(array.index, *a, *b);
+		TRY_OR_ELSE(set_add(&set, &Iab, NULL),
+			set_destroy(&set));
+
+		usize Iba = hash_usize_mix3(array.index, *b, *a);
+		TRY_OR_ELSE(set_add(&set, &Iba, NULL),
+			set_destroy(&set));
+	}
+
+	*map2 = set;
+	return OK;
+}
+
+static inline
+Error __to_map3(const Array2* array2, Set* map3) {
+	SET_CREATE(set, usize);
+	set.hash = usize_hash_identity;
+
+	TRY_MULTIPLY(array2->data.size, 2);
+	TRY(set_reserve(&set, array2->data.size * 2));
+	ARRAY2_FOR_EACH(array2, array, index, usize*, a) {
+		usize* b = array_get(&array2->data,
+			wrap_index_in_range(index, +1, array.start, array.end));
+		usize* c = array_get(&array2->data,
+			wrap_index_in_range(index, +2, array.start, array.end));
+
+		usize Iabc = hash_usize_mix4(array.index, *a, *b, *c);
+		TRY_OR_ELSE(set_add(&set, &Iabc, NULL),
+			set_destroy(&set));
+
+		usize Icba = hash_usize_mix4(array.index, *c, *b, *a);
+		TRY_OR_ELSE(set_add(&set, &Icba, NULL),
+			set_destroy(&set));
+	}
+
+	*map3 = set;
+	return OK;
+}
+
+static inline
+void _validate_VV_VE_winding(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->VV.is_view && graph->VE.is_view && graph->EV.is_view) ||
 		(graph->VV.size == 0 || graph->VE.size == 0 || graph->EV.size == 0))
 		return;
 
 	ARRAY2_ITERATE(&graph->VV, vv) {
-		usize ve_size = array2_get_size(&graph->VE, vv.index);
-		if (vv.size != ve_size) { *is_valid = false; return; }
+		usize ve_size = array2_size_at(&graph->VE, vv.index);
+		if (vv.size != ve_size) {
+			*is = false;
+			return;
+		}
 
-		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data, index,
-			usize*, vvi, vv.start, vv.end) {
-			usize* vei = array_get(&graph->VE.data, index);
+		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data,
+			i, usize*, vvi, vv.start, vv.end) {
+			usize* vei = array_get(&graph->VE.data, i);
 			FoldGraphEdge* vei_ev = array_get(&graph->EV, *vei);
 			if NOT((vei_ev->a == vv.index && vei_ev->b == *vvi) ||
 				(vei_ev->a == *vvi && vei_ev->b == vv.index)) {
-				*is_valid = false;
+				*is = false;
 				return;
 			}
-
 		}
 	}
 }
 
-static Error _validate_VV_VF_winding(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+Error _validate_VV_VF_winding(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->VV.is_view && graph->VF.is_view && graph->FV.is_view) ||
 		(graph->VV.size == 0 || graph->VF.size == 0 || graph->FV.size == 0))
 		return OK;
-	*is_valid = false;
+	*is = false;
 
 	Set FV_map;
 	TRY(__to_map3(&graph->FV, &FV_map));
 	ARRAY2_ITERATE(&graph->VV, vv) {
-		usize vf_size = array2_get_size(&graph->VF, vv.index);
+		usize vf_size = array2_size_at(&graph->VF, vv.index);
 		if (vv.size != vf_size) {
 			set_destroy(&FV_map);
 			return OK;
 		}
 
-		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data, index,
-			usize*, vvi, vv.start, vv.end) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data,
+			i, usize*, vvi, vv.start, vv.end) {
 			usize* vnvi = array_get(&graph->VV.data,
-				wrap_index_in_range(index, +1, vv.start, vv.end));
+				wrap_index_in_range(i, +1, vv.start, vv.end));
 
-			usize* vfi = array_get(&graph->VF.data, index);
+			usize* vfi = array_get(&graph->VF.data, i);
 			if (*vfi == FOLD_GRAPH_NULL) continue;
 
 			usize Iabc = hash_usize_mix4(*vfi, *vvi, vv.index, *vnvi);
@@ -456,32 +499,33 @@ static Error _validate_VV_VF_winding(const FoldGraph* graph, bool* is_valid) {
 	}
 
 	set_destroy(&FV_map);
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
-static Error _validate_VE_VF_winding(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+Error _validate_VE_VF_winding(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->VE.is_view && graph->VF.is_view && graph->FE.is_view) ||
 		(graph->VE.size == 0 || graph->VF.size == 0 || graph->FE.size == 0))
 		return OK;
-	*is_valid = false;
+	*is = false;
 
 	Set FE_map;
 	TRY(__to_map2(&graph->FE, &FE_map));
 	ARRAY2_ITERATE(&graph->VE, ve) {
-		usize vf_size = array2_get_size(&graph->VF, ve.index);
+		usize vf_size = array2_size_at(&graph->VF, ve.index);
 		if (ve.size != vf_size) {
 			set_destroy(&FE_map);
 			return OK;
 		}
 
-		ARRAY_FOR_EACH_IN_RANGE(&graph->VE.data, index,
-			usize*, vei, ve.start, ve.end) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->VE.data,
+			i, usize*, vei, ve.start, ve.end) {
 			usize* vnei = array_get(&graph->VE.data,
-				wrap_index_in_range(index, +1, ve.start, ve.end));
+				wrap_index_in_range(i, +1, ve.start, ve.end));
 
-			usize* vfi = array_get(&graph->VF.data, index);
+			usize* vfi = array_get(&graph->VF.data, i);
 			if (*vfi == FOLD_GRAPH_NULL) continue;
 
 			usize Iab = hash_usize_mix3(*vfi, *vei, *vnei);
@@ -495,59 +539,64 @@ static Error _validate_VE_VF_winding(const FoldGraph* graph, bool* is_valid) {
 	}
 
 	set_destroy(&FE_map);
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
-static void _validate_FV_FE_winding(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+void _validate_FV_FE_winding(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->FV.is_view && graph->FE.is_view && graph->EV.is_view) ||
 		(graph->FV.size == 0 || graph->FE.size == 0 || graph->EV.size == 0))
 		return;
 
 	ARRAY2_ITERATE(&graph->FV, fv) {
-		usize fe_size = array2_get_size(&graph->FE, fv.index);
-		if (fv.size != fe_size) { *is_valid = false; return; }
+		usize fe_size = array2_size_at(&graph->FE, fv.index);
+		if (fv.size != fe_size) {
+			*is = false;
+			return;
+		}
 
-		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data, index,
-			usize*, fvi, fv.start, fv.end) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
+			i, usize*, fvi, fv.start, fv.end) {
 			usize* fnvi = array_get(&graph->FV.data,
-				wrap_index_in_range(index, +1, fv.start, fv.end));
+				wrap_index_in_range(i, +1, fv.start, fv.end));
 
-			usize* fei = array_get(&graph->FE.data, index);
+			usize* fei = array_get(&graph->FE.data, i);
 			FoldGraphEdge* fei_ev = array_get(&graph->EV, *fei);
 			if NOT((fei_ev->a == *fvi && fei_ev->b == *fnvi) ||
 				(fei_ev->a == *fnvi && fei_ev->b == *fvi)) {
-				*is_valid = false;
+				*is = false;
 				return;
 			}
 		}
 	}
 }
 
-static Error _validate_FV_FF_winding(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+Error _validate_FV_FF_winding(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->FV.is_view && graph->FF.is_view) ||
 		(graph->FV.size == 0 || graph->FF.size == 0)) return OK;
-	*is_valid = false;
+	*is = false;
 	usize ff_offset = 0;
 
 	Set FV_map;
 	TRY(__to_map2(&graph->FV, &FV_map));
 	ARRAY2_ITERATE(&graph->FV, fv) {
-		usize ff_size = array2_get_size(&graph->FF, fv.index);
+		usize ff_size = array2_size_at(&graph->FF, fv.index);
 		if (ff_size == 0) { ff_offset += fv.size; continue; }
 		else if (fv.size != ff_size) {
 			set_destroy(&FV_map);
 			return OK;
 		}
 
-		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data, index,
-			usize*, fvi, fv.start, fv.end) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
+			i, usize*, fvi, fv.start, fv.end) {
 			usize* fnvi = array_get(&graph->FV.data,
-				wrap_index_in_range(index, +1, fv.start, fv.end));
+				wrap_index_in_range(i, +1, fv.start, fv.end));
 
-			usize* ffi = array_get(&graph->FF.data, index - ff_offset);
+			usize* ffi = array_get(&graph->FF.data, i - ff_offset);
 			if (*ffi == FOLD_GRAPH_NULL) continue;
 
 			usize Iab = hash_usize_mix3(*ffi, *fvi, *fnvi);
@@ -561,41 +610,42 @@ static Error _validate_FV_FF_winding(const FoldGraph* graph, bool* is_valid) {
 	}
 
 	set_destroy(&FV_map);
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
-static void _validate_FE_FF_winding(const FoldGraph* graph, bool* is_valid) {
-	*is_valid = true;
+static inline
+void _validate_FE_FF_winding(const FoldGraph* graph, bool* is) {
+	*is = true;
 	if ((graph->FE.is_view && graph->FF.is_view && graph->EF.is_view) ||
 		(graph->FE.size == 0 || graph->FF.size == 0 || graph->EF.size == 0))
 		return;
 
 	ARRAY2_ITERATE(&graph->FE, fe) {
-		usize ff_start = array2_get_offset(&graph->FF, fe.index);
-		usize ff_end = array2_get_offset(&graph->FF, fe.index + 1);
+		usize ff_start = array2_start_offset_at(&graph->FF, fe.index);
+		usize ff_end = array2_end_offset_at(&graph->FF, fe.index);
 
 		bool match_found = BOOL(ff_start == ff_end);
-		FOR_EACH_IN_RANGE(index, ff_start, ff_end) {
+		FOR_EACH_IN_RANGE(i, ff_start, ff_end) {
 			bool is_matching = true;
 			usize match_size = 0;
 
-			ARRAY_FOR_EACH_IN_RANGE(&graph->FE.data, __,
-				usize*, fei, fe.start, fe.end) {
-				usize ef_start = array2_get_offset(&graph->EF, *fei);
-				usize ef_end = array2_get_offset(&graph->EF, *fei + 1);
+			ARRAY_FOR_EACH_IN_RANGE(&graph->FE.data,
+				_, usize*, fei, fe.start, fe.end) {
+				usize ef_start = array2_start_offset_at(&graph->EF, *fei);
+				usize ef_end = array2_end_offset_at(&graph->EF, *fei);
 
 				usize current_match_size = 0;
 				bool current_face_found = false;
-				ARRAY_FOR_EACH_IN_RANGE(&graph->EF.data, ___,
-					usize*, efi, ef_start, ef_end) {
+				ARRAY_FOR_EACH_IN_RANGE(&graph->EF.data,
+					__, usize*, efi, ef_start, ef_end) {
 					if (*efi == fe.index && NOT(current_face_found)) {
 						current_face_found = true;
 						continue;
 					}
 					if (*efi != *(usize*)array_get(&graph->FF.data,
-						wrap_index_in_range(index, match_size,
-						ff_start, ff_end))) {
+						wrap_index_in_range(i, match_size, ff_start, ff_end)))
+					{
 						is_matching = false;
 						break;
 					}
@@ -606,8 +656,8 @@ static void _validate_FE_FF_winding(const FoldGraph* graph, bool* is_valid) {
 				if NOT(is_matching) break;
 				if (current_face_found && current_match_size == 0) {
 					if (FOLD_GRAPH_NULL != *(usize*)array_get(&graph->FF.data,
-						wrap_index_in_range(index, match_size,
-						ff_start, ff_end))) {
+						wrap_index_in_range(i, match_size, ff_start, ff_end)))
+					{
 						is_matching = false;
 						break;
 					}
@@ -621,27 +671,41 @@ static void _validate_FE_FF_winding(const FoldGraph* graph, bool* is_valid) {
 		}
 
 		if NOT(match_found) {
-			*is_valid = false;
+			*is = false;
 			return;
 		}
 	}
 }
 
-static Error fold_graph_extensions_validate(const FoldGraph* graph, bool* is_valid, String* errors) {
-	*is_valid = false;
-	bool is_still_valid = true;
+/* ========================================================================= */
+/* FOLD Graph Validation                                                     */
+/* ========================================================================= */
+
+#define VALIDATE(method, error) do { \
+	bool _is = true; \
+	_validate_##method(graph, &_is); \
+	if NOT(_is) { \
+		is_still = false; \
+		TRY(string_append_raw(errors, error)); \
+	} \
+} while(0)
+
+static
+Error fold_graph_extensions_validate(const FoldGraph* graph, bool* is, String* errors) {
+	*is = false;
+	bool is_still = true;
 	VALIDATE(VCC_VC_sizes, "ERROR: vertices_color_code and vertices_coords sizes are different\n");
 	VALIDATE(VTC_VC_sizes, "ERROR: vertices_texture_coords and vertices_coords sizes are different\n");
 	VALIDATE(VNC_VC_sizes, "ERROR: vertices_normal_coords and vertices_coords sizes are different\n");
 	VALIDATE(FM_FV_sizes, "ERROR: faces_material and faces_vertices sizes are different\n");
-	*is_valid = is_still_valid;
+	*is = is_still;
 	return OK;
 }
 
-Error fold_graph_validate(const FoldGraph* graph, bool* is_valid, String* errors) {
-	*is_valid = false;
-	bool is_still_valid = true;
-	bool extensions_are_valid = true;
+Error fold_graph_validate(const FoldGraph* graph, bool* is, String* errors) {
+	*is = false;
+	bool is_still = true;
+	bool are_extensions = true;
 
 	VALIDATE(VV_VC_sizes, "ERROR: vertices_vertices and vertices_coords sizes are different\n");
 	VALIDATE(VE_VC_sizes, "ERROR: vertices_edges and vertices_coords sizes are different\n");
@@ -653,7 +717,7 @@ Error fold_graph_validate(const FoldGraph* graph, bool* is_valid, String* errors
 	VALIDATE(FE_FV_sizes, "ERROR: faces_edges and faces_vertices sizes are different\n");
 	VALIDATE(FF_FV_sizes, "ERROR: faces_faces and faces_vertices sizes are different\n");
 	VALIDATE(FV_sizes, "ERROR: unexpected sizes found in faces_vertices\n");
-	if NOT(is_still_valid) return OK;
+	if NOT(is_still) return OK;
 
 	if (graph->VC.size > 0) {
 	VALIDATE(VV_VC_references, "ERROR: vertices_vertices references missing in vertices_coords\n"); }
@@ -668,14 +732,14 @@ Error fold_graph_validate(const FoldGraph* graph, bool* is_valid, String* errors
 	VALIDATE(FE_EV_references, "ERROR: faces_edges references missing in edges_vertices\n");
 	VALIDATE(FF_FV_references, "ERROR: faces_faces references missing in faces_vertices\n");
 	VALIDATE(FO_FV_references, "ERROR: faceOrders references missing in faces_vertices\n");
-	if NOT(is_still_valid) return OK;
+	if NOT(is_still) return OK;
 
 	VALIDATE(VV_VV_reflexive, "ERROR: vertices_vertices and vertices_vertices mismatching\n");
 	VALIDATE(VE_EV_reflexive, "ERROR: vertices_edges and edges_vertices mismatching\n");
 	VALIDATE(VF_FV_reflexive, "ERROR: vertices_faces and faces_vertices mismatching\n");
 	VALIDATE(EF_FE_reflexive, "ERROR: edges_faces and faces_edges mismatching\n");
 	VALIDATE(FF_FF_reflexive, "ERROR: faces_faces and faces_faces mismatching\n");
-	if NOT(is_still_valid) return OK;
+	if NOT(is_still) return OK;
 
 	VALIDATE(EA_values, "WARNING: unexpected values found in edges_assignment\n");
 	VALIDATE(EFA_values, "WARNING: unexpected values found in edges_foldAngle\n");
@@ -692,12 +756,12 @@ Error fold_graph_validate(const FoldGraph* graph, bool* is_valid, String* errors
 	VALIDATE(FV_FF_winding, "WARNING: faces_vertices and faces_faces mismatching winding\n");
 	VALIDATE(FE_FF_winding, "WARNING: faces_edges and faces_faces mismatching winding\n");
 
-	TRY(fold_graph_extensions_validate(graph, &extensions_are_valid, errors));
-	*is_valid = (is_still_valid && extensions_are_valid);
+	TRY(fold_graph_extensions_validate(graph, &are_extensions, errors));
+	*is = (is_still && are_extensions);
 	return OK;
 }
 
-Error fold_graph_validate_inherited(FoldGraph* graph, bool* is_valid, String* errors) {
+Error fold_graph_validate_inherited(FoldGraph* graph, bool* is, String* errors) {
 	bool is_VC_view = graph->VC.is_view;
 	bool is_VV_view = graph->VV.is_view;
 	bool is_VE_view = graph->VE.is_view;
@@ -736,7 +800,7 @@ Error fold_graph_validate_inherited(FoldGraph* graph, bool* is_valid, String* er
 	graph->extensions.VNC.is_view = false;
 	graph->extensions.FM.is_view = false;
 
-	Error result = fold_graph_validate(graph, is_valid, errors);
+	Error result = fold_graph_validate(graph, is, errors);
 
 	graph->VC.is_view = is_VC_view;
 	graph->VV.is_view = is_VV_view;
@@ -760,72 +824,82 @@ Error fold_graph_validate_inherited(FoldGraph* graph, bool* is_valid, String* er
 	return result;
 }
 
-static Error fold_frame_metadata_validate(const FoldFrame* frame, bool* is_valid, String* errors) {
+/* ========================================================================= */
+/* FOLD Frame Validation                                                     */
+/* ========================================================================= */
+
+static
+Error fold_frame_metadata_validate(const FoldFrame* frame, bool* is, String* errors) {
 	(void)frame; (void)errors;
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
-static Error fold_frame_metadata_validate_inherited(FoldFrame* frame, bool* is_valid, String* errors) {
+static
+Error fold_frame_metadata_validate_inherited(FoldFrame* frame, bool* is, String* errors) {
 	(void)frame; (void)errors;
-	*is_valid = true;
+	*is = true;
 	return OK;
 }
 
-Error fold_frame_validate(const FoldFrame* frame, bool* is_valid, String* errors) {
-	*is_valid = false;
-	bool graph_is_valid = true;
-	bool metadata_is_valid = true;
-	TRY(fold_graph_validate(&frame->graph, &graph_is_valid, errors));
-	TRY(fold_frame_metadata_validate(frame, &metadata_is_valid, errors));
-	*is_valid = (graph_is_valid && metadata_is_valid);
+Error fold_frame_validate(const FoldFrame* frame, bool* is, String* errors) {
+	*is = false;
+	bool is_graph = true;
+	bool is_metadata = true;
+	TRY(fold_graph_validate(&frame->graph, &is_graph, errors));
+	TRY(fold_frame_metadata_validate(frame, &is_metadata, errors));
+	*is = (is_graph && is_metadata);
 	return OK;
 }
 
-Error fold_frame_validate_inherited(FoldFrame* frame, bool* is_valid, String* errors) {
-	*is_valid = false;
-	bool graph_is_valid = true;
-	bool metadata_is_valid = true;
-	TRY(fold_graph_validate_inherited(&frame->graph, &graph_is_valid, errors));
-	TRY(fold_frame_metadata_validate_inherited(frame, &metadata_is_valid, errors));
-	*is_valid = (graph_is_valid && metadata_is_valid);
+Error fold_frame_validate_inherited(FoldFrame* frame, bool* is, String* errors) {
+	*is = false;
+	bool is_graph = true;
+	bool is_metadata = true;
+	TRY(fold_graph_validate_inherited(&frame->graph, &is_graph, errors));
+	TRY(fold_frame_metadata_validate_inherited(frame, &is_metadata, errors));
+	*is = (is_graph && is_metadata);
 	return OK;
 }
 
-Error fold_file_validate(FoldFile* file, bool* is_valid, String* errors) {
-	*is_valid = false;
-	bool frames_are_valid = true;
-	FOR_EACH(i, file->frames.size) {
-		bool frame_parent_is_valid = true;
-		TRY(_validate_frame_parents(file, i,
-			&frame_parent_is_valid));
+/* ========================================================================= */
+/* FOLD File Validation                                                      */
+/* ========================================================================= */
 
-		if NOT(frame_parent_is_valid) {
+Error fold_file_validate(FoldFile* file, bool* is, String* errors) {
+	*is = false;
+	bool are_frames = true;
+	FOR_EACH(index, file->frames.size) {
+		bool frame_parent_is = true;
+		TRY(_validate_frame_parents(file, index,
+			&frame_parent_is));
+
+		if NOT(frame_parent_is) {
 			if (errors != NULL) {
 				char buffer[64];
 				snprintf(buffer, sizeof(buffer),
-					"ERROR: frame %zu has bad parents\n", i);
+					"ERROR: frame %zu has bad parents\n", index);
 				TRY(string_append_raw(errors, buffer));
 			}
-			frames_are_valid = false;
+			are_frames = false;
 		}
 	}
-	if NOT(frames_are_valid) return OK;
+	if NOT(are_frames) return OK;
 
 	fold_file_frames_inherit(file);
-	ARRAY_FOR_EACH(&file->frames, i, FoldFrame*, frame) {
+	ARRAY_FOR_EACH(&file->frames, index, FoldFrame*, frame) {
 		STRING_CREATE(frame_errors);
-		bool frame_is_valid = true;
+		bool frame_is = true;
 
 		TRY_OR_ELSE(fold_frame_validate(frame,
-			&frame_is_valid, &frame_errors),
+			&frame_is, &frame_errors),
 			string_destroy(&frame_errors));
 
-		if NOT(frame_is_valid) {
+		if NOT(frame_is) {
 			if (errors != NULL) {
 				char buffer[32];
 				snprintf(buffer, sizeof(buffer),
-					"FRAME: %zu\n", i);
+					"FRAME: %zu\n", index);
 
 				TRY_OR_ELSE(string_append_raw(errors, buffer),
 					string_destroy(&frame_errors));
@@ -833,11 +907,12 @@ Error fold_file_validate(FoldFile* file, bool* is_valid, String* errors) {
 				TRY_OR_ELSE(string_append(errors, &frame_errors),
 					string_destroy(&frame_errors));
 			}
-			frames_are_valid = false;
+			are_frames = false;
 		}
+
 		string_destroy(&frame_errors);
 	}
 
-	*is_valid = frames_are_valid;
+	*is = are_frames;
 	return OK;
 }

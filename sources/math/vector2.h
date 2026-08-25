@@ -71,12 +71,12 @@ static inline Vector2 vector2_lerp(Vector2 a, Vector2 b, real t) {
 	};
 }
 
-static inline real vector2_length_squared(Vector2 v) {
+static inline real vector2_length2(Vector2 v) {
 	return vector2_dot(v, v);
 }
 
 static inline real vector2_length(Vector2 v) {
-	return SQRT(vector2_length_squared(v));
+	return SQRT(vector2_length2(v));
 }
 
 static inline Vector2 vector2_normalize(Vector2 v) {
@@ -97,8 +97,8 @@ static inline Vector2 vector2_direction(Vector2 a, Vector2 b, bool normalize) {
 		: vector2_subtract(b, a);
 }
 
-static inline real vector2_distance_squared(Vector2 a, Vector2 b) {
-	return vector2_length_squared(vector2_subtract(b, a));
+static inline real vector2_distance2(Vector2 a, Vector2 b) {
+	return vector2_length2(vector2_subtract(b, a));
 }
 
 static inline real vector2_distance(Vector2 a, Vector2 b) {
@@ -143,7 +143,7 @@ static inline int vector2_max_axis_index(Vector2 v) {
 }
 
 static inline bool vector2_is_normalized(Vector2 v) {
-	return ABS(vector2_length_squared(v) - 1.0) < VECTOR2_EPSILON;
+	return ABS(vector2_length2(v) - 1.0) < VECTOR2_EPSILON;
 }
 
 static inline Vector2 vector2_orthogonal(Vector2 v) {
@@ -217,6 +217,11 @@ static inline bool vector2_is_equal(Vector2 a, Vector2 b, real epsilon) {
 	return
 		ABS(a.x - b.x) < epsilon &&
 		ABS(a.y - b.y) < epsilon;
+}
+
+#define Vector2_equals vector2_equals
+static inline bool vector2_equals(Vector2 a, Vector2 b) {
+	return vector2_is_equal(a, b, VECTOR2_EPSILON);
 }
 
 static inline bool vector2_is_zero(Vector2 a, real epsilon) {

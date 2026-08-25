@@ -5,12 +5,14 @@ EXE = $(if $(COMSPEC),.exe,)
 
 CC = gcc
 CFLAGS = -std=c11 \
-	-O2 -DNDEBUG \
 	-I. -I$(SOURCES_DIRECTORY) \
 	-I$(THIRDPARTY_DIRECTORY)/lua \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
-	-Wall -Wextra
+	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
+	-Wall -Wextra \
+#CFLAGS += -DNDEBUG
+CFLAGS += -O2
 
 LDFLAGS =
 LDLIBS = -lm
@@ -75,7 +77,7 @@ lua_compile:
 		'$(LUA_SCRIPTS_CODE)' \
 		'$(LUA_SCRIPTS)'
 
-$(TARGET)$(EXE): $(C_OBJECTS)
+$(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 	@$(CC) $(CFLAGS) $(LDFLAGS) $(C_OBJECTS) \
 		$(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE) \
 		-o $@ $(LDLIBS)

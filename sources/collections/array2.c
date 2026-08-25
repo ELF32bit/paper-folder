@@ -3,12 +3,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline void _array_destroy(Array* array, usize start, usize end) {
+static inline
+void _array_destroy(Array* array, usize start, usize end) {
 	if (array->destroy == NULL) return;
 	FOR_EACH_IN_RANGE(i, start, end) {
 		array->destroy(array_get(array, i));
 	}
 }
+
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
 
 void array2_create(Array2* array2, usize element_size) {
 	array_create(&array2->data, element_size);
@@ -43,15 +48,22 @@ void array2_view(Array2* array2, const Array2* source) {
 	array2->is_view = true;
 }
 
-usize array2_get_offset(const Array2* array2, usize index) {
-	if (index == 0) return 0;
-	usize* offset = array_get(&array2->offsets, index - 1);
-	return *offset;
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+usize array2_start_offset_at(const Array2* array2, usize index) {
+	return (index == 0) ? 0
+		: *(usize*)array_get(&array2->offsets, index - 1);
 }
 
-usize array2_get_size(const Array2* array2, usize index) {
-	usize* next_offset = array_get(&array2->offsets, index);
-	return *next_offset - array2_get_offset(array2, index);
+usize array2_end_offset_at(const Array2* array2, usize index) {
+	return *(usize*)array_get(&array2->offsets, index);
+}
+
+usize array2_size_at(const Array2* array2, usize index) {
+	return array2_end_offset_at(array2, index) -
+		array2_start_offset_at(array2, index);
 }
 
 Error array2_copy(Array2* array2, const Array2* source) {
@@ -104,9 +116,8 @@ Error array2_copy(Array2* array2, const Array2* source) {
 	} else {
 		result = array_copy(&array2->offsets, &source->offsets);
 		if IS_ERROR(result) {
-			usize new_data_size = array2_get_offset(array2,
-				array2->offsets.size);
-
+			usize new_data_size =
+				array2_start_offset_at(array2, array2->offsets.size);
 			_array_destroy(&array2->data, new_data_size, array2->data.size);
 			array2->data.size = new_data_size;
 			return result;
@@ -132,6 +143,10 @@ Error array2_append(Array2* array2, const Array* array) {
 	return OK;
 }
 
+/* ========================================================================= */
+/* Iterators & Traversal                                                     */
+/* ========================================================================= */
+
 Array2Iterator array2_iterator(const Array2* array2) {
 	Array2Iterator iterator;
 	iterator.array2 = array2;
@@ -149,9 +164,9 @@ bool array2_iterator_next(Array2Iterator* iterator) {
 
 	if (i < iterator->array2->offsets.size) {
 		iterator->index = i;
-		iterator->start = array2_get_offset(iterator->array2, i);
-		iterator->size = array2_get_size(iterator->array2, i);
-		iterator->end = iterator->start + iterator->size;
+		iterator->start = array2_start_offset_at(iterator->array2, i);
+		iterator->end = array2_end_offset_at(iterator->array2, i);
+		iterator->size = iterator->end - iterator->start;
 		return true;
 	}
 

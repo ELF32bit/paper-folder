@@ -1,27 +1,27 @@
 #include "file.h"
 
+/* ========================================================================= */
+/* Creation & Destruction                                                    */
+/* ========================================================================= */
+
 Error fold_file_create(FoldFile* file) {
 	file->version = FOLD_VERSION;
 	string_create(&file->creator);
 	string_create(&file->author);
 	string_create(&file->title);
 	string_create(&file->description);
-
 	array_create_managed(&file->classes, sizeof(String),
 		(ArrayDestroyFunction)string_destroy,
 		(ArrayCopyFunction)string_copy);
-
 	array_create_managed(&file->frames, sizeof(FoldFrame),
 		(ArrayDestroyFunction)fold_frame_destroy,
 		(ArrayCopyFunction)fold_frame_copy);
-
 	TRY(array_resize(&file->frames, 1));
 	fold_frame_create(array_get(&file->frames, 0));
 	return OK;
 }
 
 void fold_file_destroy(FoldFile* file) {
-	file->version = FOLD_VERSION;
 	string_destroy(&file->creator);
 	string_destroy(&file->author);
 	string_destroy(&file->title);
@@ -36,14 +36,18 @@ Error fold_file_recreate(FoldFile* file) {
 	return OK;
 }
 
-Error fold_file_copy(FoldFile* file, const FoldFile* source_file) {
-	file->version = source_file->version;
-	TRY(string_copy(&file->creator, &source_file->creator));
-	TRY(string_copy(&file->author, &source_file->author));
-	TRY(string_copy(&file->title, &source_file->title));
-	TRY(string_copy(&file->description, &source_file->description));
-	TRY(array_copy(&file->classes, &source_file->classes));
-	TRY(array_copy(&file->frames, &source_file->frames));
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+Error fold_file_copy(FoldFile* file, const FoldFile* source) {
+	file->version = source->version;
+	TRY(string_copy(&file->creator, &source->creator));
+	TRY(string_copy(&file->author, &source->author));
+	TRY(string_copy(&file->title, &source->title));
+	TRY(string_copy(&file->description, &source->description));
+	TRY(array_copy(&file->classes, &source->classes));
+	TRY(array_copy(&file->frames, &source->frames));
 	return OK;
 }
 

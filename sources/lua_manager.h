@@ -10,4 +10,4 @@ void luaM_register_scripts(lua_State* L);
 void luaM_register_arg(lua_State* L, int argc, char* argv[]);
 int luaM_close(lua_State* L, int status);
 
-#endif
+#endif /* LUA_MANAGER_H */
