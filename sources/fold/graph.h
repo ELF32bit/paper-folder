@@ -6,6 +6,8 @@
 #include "collections/string.h"
 
 #include "collections/map.h"
+#include "math/aabb2.h"
+#include "math/aabb3.h"
 
 #define FOLD_GRAPH_NULL USIZE_MAX
 
@@ -58,9 +60,15 @@
 #define FOLD_GRAPH_FACE_ORDER_UNKNOWN FOLD_GRAPH_ORDER_UNKNOWN
 
 typedef struct FoldGraphExtensions {
-	Array VCC; /* vertices_color_code */
-	Array VTC; /* vertices_texture_coords */
-	Array VNC; /* vertices_normal_coords */
+	Array PC; /* paints_color */
+	Array TC; /* uvs_coords */
+	Array T2C; /* uv2s_coords */
+	Array NC; /* normals_coords */
+	Array MN; /* materials_name */
+	Array VP; /* vertices_paint */
+	Array2 FT; /* faces_uvs */
+	Array2 FT2; /* faces_uv2s */
+	Array2 FN; /* faces_normals */
 	Array FM; /* faces_material */
 } FoldGraphExtensions;
 
@@ -82,9 +90,15 @@ typedef struct FoldGraph {
 	union {
 		FoldGraphExtensions extensions;
 		struct {
-			Array VCC; /* vertices_color_code */
-			Array VTC; /* vertices_texture_coords */
-			Array VNC; /* vertices_normal_coords */
+			Array PC; /* paints_color */
+			Array TC; /* uvs_coords */
+			Array T2C; /* uv2s_coords */
+			Array NC; /* normals_coords */
+			Array MN; /* materials_name */
+			Array VP; /* vertices_paint */
+			Array2 FT; /* faces_uvs */
+			Array2 FT2; /* faces_uv2s */
+			Array2 FN; /* faces_normals */
 			Array FM; /* faces_material */
 		};
 	};
@@ -175,6 +189,9 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph);
 /* ========================================================================= */
 /* Vertices Building                                                         */
 /* ========================================================================= */
+
+AABB2 fold_graph_get_aabb2(const FoldGraph* graph);
+AABB3 fold_graph_get_aabb3(const FoldGraph* graph);
 
 Error fold_graph_VV_from_EV(FoldGraph* graph);
 Error fold_graph_VV_from_FV(FoldGraph* graph);

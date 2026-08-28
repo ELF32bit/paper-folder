@@ -109,30 +109,35 @@ bool fold_frame_is_inherited(const FoldFrame* frame) {
 /* Attributes                                                                */
 /* ========================================================================= */
 
-Error fold_frame_attributes_compute(FoldFrame* frame) {
+Error fold_frame_attributes_assign(FoldFrame* frame) {
 	if (frame->attributes.is_view) return OK;
 	array_recreate(&frame->attributes);
 	bool is;
 
 	if NOT(frame->graph.VC.is_view) {
 		if (fold_graph_is_abstract(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_ABSTRACT);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_ABSTRACT);
 			TRY(array_append(&frame->attributes, &string));
 		} else if (fold_graph_is_2D(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_TWO_DIMENSIONAL);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_TWO_DIMENSIONAL);
 			TRY(array_append(&frame->attributes, &string));
 		} else if (fold_graph_is_3D(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_THREE_DIMENSIONAL);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_THREE_DIMENSIONAL);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}
 
 	if NOT(frame->graph.EF.is_view) {
 		if (fold_graph_is_manifold(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_MANIFOLD);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_MANIFOLD);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NON_MANIFOLD);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_NON_MANIFOLD);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}
@@ -140,10 +145,12 @@ Error fold_frame_attributes_compute(FoldFrame* frame) {
 	if NOT(frame->graph.FV.is_view) {
 		TRY(fold_graph_is_orientable(&frame->graph, &is));
 		if (is) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_ORIENTABLE);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_ORIENTABLE);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NON_ORIENTABLE);
+			STRING_CREATE_FROM_RAW(string,
+				 FOLD_FRAME_ATTRIBUTE_NON_ORIENTABLE);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}
@@ -151,10 +158,12 @@ Error fold_frame_attributes_compute(FoldFrame* frame) {
 	if NOT(frame->graph.FV.is_view) {
 		TRY(fold_graph_is_self_touching(&frame->graph, &is));
 		if (is) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_SELF_TOUCHING);
+			STRING_CREATE_FROM_RAW(string,
+				 FOLD_FRAME_ATTRIBUTE_SELF_TOUCHING);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NON_SELF_TOUCHING);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_NON_SELF_TOUCHING);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}
@@ -162,37 +171,45 @@ Error fold_frame_attributes_compute(FoldFrame* frame) {
 	if NOT(frame->graph.FV.is_view) {
 		TRY(fold_graph_is_self_intersecting(&frame->graph, &is));
 		if (is) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_SELF_INTERSECTING);
+			STRING_CREATE_FROM_RAW(string,
+				 FOLD_FRAME_ATTRIBUTE_SELF_INTERSECTING);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NON_SELF_INTERSECTING);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_NON_SELF_INTERSECTING);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}
 
 	if NOT(frame->graph.EA.is_view) {
 		if (fold_graph_has_cuts(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_CUTS);
+			STRING_CREATE_FROM_RAW(string,
+				 FOLD_FRAME_ATTRIBUTE_CUTS);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NO_CUTS);
+			STRING_CREATE_FROM_RAW(string,
+				 FOLD_FRAME_ATTRIBUTE_NO_CUTS);
 			TRY(array_append(&frame->attributes, &string));
 		}
 		if (fold_graph_has_joins(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_JOINS);
+			STRING_CREATE_FROM_RAW(string,
+				 FOLD_FRAME_ATTRIBUTE_JOINS);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NO_JOINS);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_NO_JOINS);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}
 
 	if NOT(frame->graph.FV.is_view) {
 		if (fold_graph_has_concave_faces(&frame->graph)) {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_NON_CONVEX_FACES);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_NON_CONVEX_FACES);
 			TRY(array_append(&frame->attributes, &string));
 		} else {
-			STRING_CREATE_RAW(string, FOLD_FRAME_ATTRIBUTE_CONVEX_FACES);
+			STRING_CREATE_FROM_RAW(string,
+				FOLD_FRAME_ATTRIBUTE_CONVEX_FACES);
 			TRY(array_append(&frame->attributes, &string));
 		}
 	}

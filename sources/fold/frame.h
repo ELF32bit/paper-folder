@@ -98,6 +98,6 @@ Error fold_frame_validate_inherited(FoldFrame* frame, bool* is, String* errors);
 /* Attributes                                                                */
 /* ========================================================================= */
 
-Error fold_frame_attributes_compute(FoldFrame* frame);
+Error fold_frame_attributes_assign(FoldFrame* frame);
 
 #endif /* FOLD_FRAME_H */

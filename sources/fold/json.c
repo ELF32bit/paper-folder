@@ -11,6 +11,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define NS_ FOLD_EXTENSIONS_NAMESPACE
+
 /* ========================================================================= */
 /* FOLD Graph Deserialization                                                */
 /* ========================================================================= */
@@ -74,7 +76,7 @@ Error _parse_json_array2_indices(yyjson_val* object, Array2* array2, const char*
 		yyjson_arr_foreach(inner_array, i, _, element) {
 			if (has_null && yyjson_is_null(element)) continue;
 			if NOT(yyjson_is_uint(element)) return ERROR;
-			if (yyjson_get_uint(element) > USIZE_MAX) {
+			if (yyjson_get_uint(element) > USIZE_MAX - has_null) {
 				return ERROR_OUT_OF_MEMORY;
 			}
 		}
@@ -92,18 +94,18 @@ Error _parse_json_array2_indices(yyjson_val* object, Array2* array2, const char*
 		usize inner_array_size = yyjson_arr_size(inner_array);
 		yyjson_arr_foreach(inner_array, i, _, element) {
 			if (has_null && yyjson_is_null(element)) {
-				usize number = FOLD_GRAPH_NULL;
-				array_set(&array2->data, data_index, &number);
+				ARRAY_SET(&array2->data, data_index,
+					usize, FOLD_GRAPH_NULL);
 			} else {
-				usize number = (usize)yyjson_get_uint(element);
-				array_set(&array2->data, data_index, &number);
+				ARRAY_SET(&array2->data, data_index,
+					usize, yyjson_get_uint(element));
 			}
 			data_index++;
 		}
 
-		usize next_offset =
-			array2_start_offset_at(array2, ii) + inner_array_size;
-		array_set(&array2->offsets, ii, &next_offset);
+		ARRAY_SET(&array2->offsets, ii,
+			usize, array2_start_offset_at(array2, ii) +
+				inner_array_size);
 	}
 
 	return OK;
@@ -133,7 +135,6 @@ Error _parse_json_array_edges(yyjson_val* object, Array* array, const char* name
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		FoldGraphEdge edge;
 		yyjson_arr_foreach(inner_array, i, _, element) {
@@ -161,7 +162,6 @@ Error _parse_json_array_chars(yyjson_val* object, Array* array, const char* name
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, i, _, element) {
 		if (array->element_size == sizeof(char)) {
 			char s0 = FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
@@ -205,10 +205,8 @@ Error _parse_json_array_floats(yyjson_val* object, Array* array, const char* nam
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, i, _, element) {
-		real number = (real)yyjson_get_num(element);
-		array_set(array, i, &number);
+		ARRAY_SET(array, i, real, yyjson_get_num(element));
 	}
 
 	return OK;
@@ -246,7 +244,6 @@ Error _parse_json_array_orders(yyjson_val* object, Array* array, const char* nam
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		FoldGraphOrder order;
 		yyjson_arr_foreach(inner_array, i, _, element) {
@@ -288,7 +285,6 @@ Error _parse_json_array_colors(yyjson_val* object, Array* array, const char* nam
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, i, _, element) {
 		u32 number = (u32)yyjson_get_uint(element);
 		Color color = color_unpack(number);
@@ -319,7 +315,6 @@ Error _parse_json_array_coords2(yyjson_val* object, Array* array, const char* na
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		Vector2 vector;
 		yyjson_arr_foreach(inner_array, i, _, element) {
@@ -352,7 +347,6 @@ Error _parse_json_array_coords3(yyjson_val* object, Array* array, const char* na
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		Vector3 vector;
 		yyjson_arr_foreach(inner_array, i, _, element) {
@@ -364,13 +358,50 @@ Error _parse_json_array_coords3(yyjson_val* object, Array* array, const char* na
 	return OK;
 }
 
+static inline
+Error _parse_json_array_indices(yyjson_val* object, Array* array, const char* name, bool has_null) {
+	yyjson_val* json_array = yyjson_obj_get(object, name);
+	if (json_array == NULL) return OK;
+	if NOT(yyjson_is_arr(json_array)) return ERROR;
+	usize size = yyjson_arr_size(json_array);
+	if (size == 0) return OK;
+
+	usize i, _;
+	yyjson_val *element;
+	yyjson_arr_foreach(json_array, i, _, element) {
+		if (has_null && yyjson_is_null(element)) continue;
+		if NOT(yyjson_is_uint(element)) return ERROR;
+		if (yyjson_get_uint(element) > USIZE_MAX - has_null) {
+			return ERROR_OUT_OF_MEMORY;
+		}
+	}
+
+	array_recreate(array);
+	TRY(array_resize(array, size));
+	yyjson_arr_foreach(json_array, i, _, element) {
+		if (has_null && yyjson_is_null(element)) {
+			ARRAY_SET(array, i, usize, FOLD_GRAPH_NULL);
+		} else {
+			ARRAY_SET(array, i, usize, yyjson_get_uint(element));
+		}
+	}
+
+	return OK;
+}
+
 static
 Error fold_graph_extensions_from_json(FoldGraphExtensions* extensions, void* JSON, void* Object) {
 	(void)JSON; yyjson_val* object = Object;
-	TRY(_parse_json_array_colors(object, &extensions->VCC, "vertices_" FOLD_EXTENSIONS_NAMESPACE "color_code"));
-	TRY(_parse_json_array_coords2(object, &extensions->VTC, "vertices_" FOLD_EXTENSIONS_NAMESPACE "texture_coords"));
-	TRY(_parse_json_array_coords3(object, &extensions->VNC, "vertices_" FOLD_EXTENSIONS_NAMESPACE "normal_coords"));
-	TRY(_parse_json_array_chars(object, &extensions->FM, "faces_" FOLD_EXTENSIONS_NAMESPACE "material"));
+	TRY(_parse_json_array_colors(object, &extensions->PC, NS_"paints_color"));
+	TRY(_parse_json_array_coords2(object, &extensions->TC, NS_"uvs_coords"));
+	TRY(_parse_json_array_coords2(object, &extensions->T2C, NS_"uv2s_coords"));
+	TRY(_parse_json_array_coords3(object, &extensions->NC, NS_"normals_coords"));
+	TRY(_parse_json_array_chars(object, &extensions->MN, NS_"materials_name"));
+	TRY(_parse_json_array_indices(object, &extensions->VP, "vertices_"NS_"paint", false));
+	TRY(_parse_json_array2_indices(object, &extensions->FT, "faces_"NS_"uvs", true));
+	TRY(_parse_json_array2_indices(object, &extensions->FT2, "faces_"NS_"uv2s", true));
+	TRY(_parse_json_array2_indices(object, &extensions->FN, "faces_"NS_"normals", true));
+	TRY(_parse_json_array_indices(object, &extensions->FM, "faces_"NS_"material", true));
 	return OK;
 }
 
@@ -456,9 +487,8 @@ Error _encode_json_array2_indices(yyjson_mut_doc* json, yyjson_mut_val* object, 
 			ARRAY_CREATE(numbers, u64);
 			TRY(array_resize(&numbers, array.size));
 			ARRAY_FOR_EACH_IN_RANGE(&array2->data,
-				i, usize*, element, array.start, array.end) {
-				u64 number = (u64)*element;
-				array_set(&numbers, i - array.start, &number);
+				i, usize*, number, array.start, array.end) {
+				ARRAY_SET(&numbers, i - array.start, u64, *number);
 			}
 
 			inner_array =
@@ -522,9 +552,8 @@ Error _encode_json_array_floats(yyjson_mut_doc* json, yyjson_mut_val* object, co
 
 	ARRAY_CREATE(numbers, double);
 	TRY(array_resize(&numbers, array->size));
-	ARRAY_FOR_EACH(array, i, real*, element) {
-		double number = (double)*element;
-		array_set(&numbers, i, &number);
+	ARRAY_FOR_EACH(array, i, real*, number) {
+		ARRAY_SET(&numbers, i, double, *number);
 	}
 
 	yyjson_mut_val* json_array =
@@ -624,13 +653,54 @@ Error _encode_json_array_coords3(yyjson_mut_doc* json, yyjson_mut_val* object, c
 	return OK;
 }
 
+static inline
+Error _encode_json_array_indices(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name, bool has_null) {
+	if (array->size == 0 || array->is_view) return OK;
+	if (has_null) {
+		yyjson_mut_val* json_array;
+		json_array = yyjson_mut_arr(json);
+		TRY_NEW_MEMORY(json_array);
+
+		ARRAY_FOR_EACH(array, i, usize*, number) {
+			if (*number == FOLD_GRAPH_NULL) {
+				TRY(!yyjson_mut_arr_add_null(json, json_array));
+			} else {
+				TRY(!yyjson_mut_arr_add_uint(json, json_array,
+					(u64)*number));
+			}
+		}
+
+		TRY(!yyjson_mut_obj_add_val(json, object, name, json_array));
+	} else {
+		ARRAY_CREATE(numbers, u64);
+		TRY(array_resize(&numbers, array->size));
+		ARRAY_FOR_EACH(array, i, usize*, number) {
+			ARRAY_SET(&numbers, i, u64, *number);
+		}
+
+		yyjson_mut_val* json_array =
+			yyjson_mut_arr_with_uint64(json, numbers.data, array->size);
+		array_destroy(&numbers);
+		TRY_NEW_MEMORY(json_array);
+
+		TRY(!yyjson_mut_obj_add_val(json, object, name, json_array));
+	}
+	return OK;
+}
+
 static
 Error fold_graph_extensions_to_json(const FoldGraphExtensions* extensions, void* JSON, void* Object) {
 	yyjson_mut_doc* json = JSON; yyjson_mut_val* object = Object;
-	TRY(_encode_json_array_colors(json, object, &extensions->VCC, "vertices_" FOLD_EXTENSIONS_NAMESPACE "color_code"));
-	TRY(_encode_json_array_coords2(json, object, &extensions->VTC, "vertices_" FOLD_EXTENSIONS_NAMESPACE "texture_coords"));
-	TRY(_encode_json_array_coords3(json, object, &extensions->VNC, "vertices_" FOLD_EXTENSIONS_NAMESPACE "normal_coords"));
-	TRY(_encode_json_array_chars(json, object, &extensions->FM, "faces_" FOLD_EXTENSIONS_NAMESPACE "material"));
+	TRY(_encode_json_array_colors(json, object, &extensions->PC, NS_"paints_color"));
+	TRY(_encode_json_array_coords2(json, object, &extensions->TC, NS_"uvs_coords"));
+	TRY(_encode_json_array_coords2(json, object, &extensions->T2C, NS_"uv2s_coords"));
+	TRY(_encode_json_array_coords3(json, object, &extensions->NC, NS_"normals_coords"));
+	TRY(_encode_json_array_chars(json, object, &extensions->MN, NS_"materials_name"));
+	TRY(_encode_json_array_indices(json, object, &extensions->VP, "vertices_"NS_"paint", false));
+	TRY(_encode_json_array2_indices(json, object, &extensions->FT, "faces_"NS_"uvs", true));
+	TRY(_encode_json_array2_indices(json, object, &extensions->FT2, "faces_"NS_"uv2s", true));
+	TRY(_encode_json_array2_indices(json, object, &extensions->FN, "faces_"NS_"normals", true));
+	TRY(_encode_json_array_indices(json, object, &extensions->FM, "faces_"NS_"material", true));
 	return OK;
 }
 
@@ -684,7 +754,6 @@ Error _parse_json_array_strings(yyjson_val* object, Array* array, const char* na
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
-
 	yyjson_arr_foreach(json_array, i, _, element) {
 		String* string = array_get(array, i);
 		string_create(string);
@@ -717,7 +786,7 @@ Error _parse_json_bool(yyjson_val* object, bool* value, const char* name) {
 static
 Error fold_frame_metadata_from_json(FoldFrameMetadata* metadata, void* JSON, void* Object) {
 	(void)JSON; yyjson_val* object = Object;
-	TRY(_parse_json_bool(object, &metadata->is_simulated, "frame_" FOLD_EXTENSIONS_NAMESPACE "simulated"));
+	TRY(_parse_json_bool(object, &metadata->is_simulated, "frame_"NS_"simulated"));
 	return OK;
 }
 
@@ -779,7 +848,7 @@ Error _encode_json_bool(yyjson_mut_doc* json, yyjson_mut_val* object, const bool
 static
 Error fold_frame_metadata_to_json(const FoldFrameMetadata* metadata, void* JSON, void* Object) {
 	yyjson_mut_doc* json = JSON; yyjson_mut_val* object = Object;
-	TRY(_encode_json_bool(json, object, &metadata->is_simulated, "frame" FOLD_EXTENSIONS_NAMESPACE "simulated"));
+	TRY(_encode_json_bool(json, object, &metadata->is_simulated, "frame"NS_"simulated"));
 	return OK;
 }
 
@@ -818,7 +887,6 @@ Error _parse_json_frames(yyjson_val* object, Array* array, const char* name) {
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
 	usize size = yyjson_arr_size(json_array);
 	if (size == 0) return OK;
-	TRY_ADD(size, 1);
 
 	usize i, _;
 	yyjson_val *inner_object;
@@ -826,12 +894,12 @@ Error _parse_json_frames(yyjson_val* object, Array* array, const char* name) {
 		if NOT(yyjson_is_obj(inner_object)) return ERROR;
 	}
 
+	TRY_ADD(size, 1);
 	TRY(array_resize(array, size + 1));
-
 	yyjson_arr_foreach(json_array, i, _, inner_object) {
 		FoldFrame* frame = array_get(array, i + 1);
 		fold_frame_create(frame);
-		TRY_OR_ELSE(fold_frame_from_json(frame, NULL, object),
+		TRY_OR_ELSE(fold_frame_from_json(frame, NULL, inner_object),
 			array->size = i + 1);
 	}
 

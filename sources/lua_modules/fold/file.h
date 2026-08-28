@@ -25,6 +25,9 @@ int l_fold_file_from_json_string_meta(lua_State* L);
 int l_fold_file_to_json_file_meta(lua_State* L);
 int l_fold_file_to_json_string_meta(lua_State* L);
 
+int l_fold_file_from_svg_file_meta(lua_State* L);
+int l_fold_file_to_svg_file_meta(lua_State* L);
+
 int l_fold_file_from_obj_file_meta(lua_State* L);
 int l_fold_file_to_obj_file_meta(lua_State* L);
 

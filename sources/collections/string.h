@@ -34,13 +34,17 @@ void string_view(String* string, const String* source);
 Error string_copy(String* string, const String* source);
 Error string_copy_raw(String* string, const char* source);
 
-#define STRING_CREATE_RAW(string, source) \
+#define STRING_CREATE_FROM_RAW(string, source) \
 	STRING_CREATE(string); \
-	TRY(string_copy_raw(&string, source))
+	TRY(string_copy_raw(&string, (source)))
 
-#define STRING_CREATE_RAW_OR_ELSE(string, source, execute) \
+#define STRING_CREATE_FROM_RAW_OR_ELSE(string, source, execute) \
 	STRING_CREATE(string); \
-	TRY_OR_ELSE(string_copy_raw(&string, source), execute)
+	TRY_OR_ELSE(string_copy_raw(&string, (source)), execute)
+
+#define STRING_CREATE_FROM_RAW_OR_ERROR(string, source, execute) \
+	STRING_CREATE(string); \
+	TRY_OR_ERROR(string_copy_raw(&string, (source)), execute)
 
 Error string_append(String* string, const String* another);
 Error string_append_raw(String* string, const char* another);

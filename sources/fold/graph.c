@@ -10,10 +10,16 @@
 
 static
 void fold_graph_extensions_create(FoldGraphExtensions* extensions) {
-	array_create(&extensions->VCC, sizeof(Color));
-	array_create(&extensions->VTC, sizeof(Vector2));
-	array_create(&extensions->VNC, sizeof(Vector3));
-	array_create(&extensions->FM, SIZEOF(usize, 8));
+	array_create(&extensions->PC, sizeof(Color));
+	array_create(&extensions->TC, sizeof(Vector2));
+	array_create(&extensions->T2C, sizeof(Vector2));
+	array_create(&extensions->NC, sizeof(Vector3));
+	array_create(&extensions->MN, SIZEOF(char, 64));
+	array_create(&extensions->VP, sizeof(usize));
+	array2_create(&extensions->FT, sizeof(usize));
+	array2_create(&extensions->FT2, sizeof(usize));
+	array2_create(&extensions->FN, sizeof(usize));
+	array_create(&extensions->FM, sizeof(usize));
 }
 
 void fold_graph_create(FoldGraph* graph) {
@@ -36,9 +42,15 @@ void fold_graph_create(FoldGraph* graph) {
 
 static
 void fold_graph_extensions_destroy(FoldGraphExtensions* extensions) {
-	array_destroy(&extensions->VCC);
-	array_destroy(&extensions->VTC);
-	array_destroy(&extensions->VNC);
+	array_destroy(&extensions->PC);
+	array_destroy(&extensions->TC);
+	array_destroy(&extensions->T2C);
+	array_destroy(&extensions->NC);
+	array_destroy(&extensions->MN);
+	array_destroy(&extensions->VP);
+	array2_destroy(&extensions->FT);
+	array2_destroy(&extensions->FT2);
+	array2_destroy(&extensions->FN);
 	array_destroy(&extensions->FM);
 }
 
@@ -71,9 +83,15 @@ void fold_graph_recreate(FoldGraph* graph) {
 
 static
 Error fold_graph_extensions_copy(FoldGraphExtensions* extensions, const FoldGraphExtensions* source) {
-	TRY(array_copy(&extensions->VCC, &source->VCC));
-	TRY(array_copy(&extensions->VTC, &source->VTC));
-	TRY(array_copy(&extensions->VNC, &source->VNC));
+	TRY(array_copy(&extensions->PC, &source->PC));
+	TRY(array_copy(&extensions->TC, &source->TC));
+	TRY(array_copy(&extensions->T2C, &source->T2C));
+	TRY(array_copy(&extensions->NC, &source->NC));
+	TRY(array_copy(&extensions->MN, &source->MN));
+	TRY(array_copy(&extensions->VP, &source->VP));
+	TRY(array2_copy(&extensions->FT, &source->FT));
+	TRY(array2_copy(&extensions->FT2, &source->FT2));
+	TRY(array2_copy(&extensions->FN, &source->FN));
 	TRY(array_copy(&extensions->FM, &source->FM));
 	return OK;
 }
@@ -99,9 +117,15 @@ Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source) {
 
 static
 void fold_graph_extensions_inherit(FoldGraphExtensions* extensions, const FoldGraphExtensions* source) {
-	if (extensions->VCC.size == 0) array_view(&extensions->VCC, &source->VCC);
-	if (extensions->VTC.size == 0) array_view(&extensions->VTC, &source->VTC);
-	if (extensions->VNC.size == 0) array_view(&extensions->VNC, &source->VNC);
+	if (extensions->PC.size == 0) array_view(&extensions->PC, &source->PC);
+	if (extensions->TC.size == 0) array_view(&extensions->TC, &source->TC);
+	if (extensions->T2C.size == 0) array_view(&extensions->T2C, &source->T2C);
+	if (extensions->NC.size == 0) array_view(&extensions->NC, &source->NC);
+	if (extensions->MN.size == 0) array_view(&extensions->MN, &source->MN);
+	if (extensions->VP.size == 0) array_view(&extensions->VP, &source->VP);
+	if (extensions->FT.size == 0) array2_view(&extensions->FT, &source->FT);
+	if (extensions->FT2.size == 0) array2_view(&extensions->FT2, &source->FT2);
+	if (extensions->FN.size == 0) array2_view(&extensions->FN, &source->FN);
 	if (extensions->FM.size == 0) array_view(&extensions->FM, &source->FM);
 }
 
@@ -125,9 +149,15 @@ void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source) {
 
 static
 bool fold_graph_extensions_is_inherited(const FoldGraphExtensions* extensions) {
-	if (extensions->VCC.is_view) return true;
-	if (extensions->VTC.is_view) return true;
-	if (extensions->VNC.is_view) return true;
+	if (extensions->PC.is_view) return true;
+	if (extensions->TC.is_view) return true;
+	if (extensions->T2C.is_view) return true;
+	if (extensions->NC.is_view) return true;
+	if (extensions->MN.is_view) return true;
+	if (extensions->VP.is_view) return true;
+	if (extensions->FT.is_view) return true;
+	if (extensions->FT2.is_view) return true;
+	if (extensions->FN.is_view) return true;
 	if (extensions->FM.is_view) return true;
 	return false;
 }
@@ -215,6 +245,40 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph) {
 /* Vertices Building                                                         */
 /* ========================================================================= */
 
+AABB2 fold_graph_get_aabb2(const FoldGraph* graph) {
+	AABB2 aabb2 = aabb2_empty();
+	if (fold_graph_is_2D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
+			aabb2 = aabb2_expand(aabb2, *vc);
+		}
+	} else if (fold_graph_is_3D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
+			aabb2 = aabb2_expand(aabb2, (Vector2)
+				{ .x = vc->x, .y = vc->y });
+		}
+	}
+	return aabb2_is_degenerate(aabb2)
+		? aabb2_from_point(vector2_zero())
+		: aabb2;
+}
+
+AABB3 fold_graph_get_aabb3(const FoldGraph* graph) {
+	AABB3 aabb3 = aabb3_empty();
+	if (fold_graph_is_2D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
+			aabb3 = aabb3_expand(aabb3, (Vector3)
+				{ .x = vc->x, .y = vc->y, .z = 0.0 });
+		}
+	} else if (fold_graph_is_3D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
+			aabb3 = aabb3_expand(aabb3, *vc);
+		}
+	}
+	return aabb3_is_degenerate(aabb3)
+		? aabb3_from_point(vector3_zero())
+		: aabb3;
+}
+
 Error fold_graph_VV_from_EV(FoldGraph* graph) {
 	(void)graph; // TODO
 	return OK;
@@ -227,8 +291,17 @@ Error fold_graph_VV_from_FV(FoldGraph* graph) {
 
 Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
 	ASSERT(NOT(graph->VE.is_view));
-	TRY(array_resize(&graph->VE.data, graph->VV.data.size));
+	Map _EV_map;
+	if (EV_map == NULL) {
+		TRY(fold_graph_get_EV_map(graph, &_EV_map));
+		EV_map = &_EV_map;
+	}
+
+	TRY_OR_ELSE(array_resize(&graph->VE.data, graph->VV.data.size),
+		if (EV_map == &_EV_map) map_destroy(&_EV_map));
+
 	TRY_OR_ELSE(array_resize(&graph->VE.offsets, graph->VV.offsets.size),
+		if (EV_map == &_EV_map) map_destroy(&_EV_map);
 		array2_recreate(&graph->VE));
 
 	ARRAY2_ITERATE(&graph->VV, vv) {
@@ -236,13 +309,18 @@ Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
 			i, usize*, vvi, vv.start, vv.end) {
 			usize ab = hash_usize_mix2(vv.index, *vvi);
 			usize* vei = map_get(EV_map, &ab, NULL);
-			if (vei == NULL) return ERROR;
+			if (vei == NULL) { if (EV_map == &_EV_map) {
+				map_destroy(&_EV_map); }
+				return ERROR;
+			}
 
 			array_set(&graph->VE.data, i, vei);
 		}
 		array_set(&graph->VE.offsets, vv.index, &vv.end);
 	}
 
+	if (EV_map == &_EV_map) {
+	map_destroy(&_EV_map); }
 	return OK;
 }
 
@@ -364,8 +442,17 @@ Error fold_graph_EL_from_EVC(FoldGraph* graph) {
 
 Error fold_graph_FE_from_FV(FoldGraph* graph, const Map* EV_map) {
 	ASSERT(NOT(graph->FE.is_view));
-	TRY(array_resize(&graph->FE.data, graph->FV.data.size));
+	Map _EV_map;
+	if (EV_map == NULL) {
+		TRY(fold_graph_get_EV_map(graph, &_EV_map));
+		EV_map = &_EV_map;
+	}
+
+	TRY_OR_ELSE(array_resize(&graph->FE.data, graph->FV.data.size),
+		if (EV_map == &_EV_map) map_destroy(&_EV_map));
+
 	TRY_OR_ELSE(array_resize(&graph->FE.offsets, graph->FV.offsets.size),
+		if (EV_map == &_EV_map) map_destroy(&_EV_map);
 		array2_recreate(&graph->FE));
 
 	ARRAY2_ITERATE(&graph->FV, fv) {
@@ -376,13 +463,18 @@ Error fold_graph_FE_from_FV(FoldGraph* graph, const Map* EV_map) {
 
 			usize ab = hash_usize_mix2(*a, *b);
 			usize* fei = map_get(EV_map, &ab, NULL);
-			if (fei == NULL) return ERROR;
+			if (fei == NULL) { if (EV_map == &_EV_map) {
+				map_destroy(&_EV_map); }
+				return ERROR;
+			}
 
 			array_set(&graph->FE.data, i, fei);
 		}
 		array_set(&graph->FE.offsets, fv.index, &fv.end);
 	}
 
+	if (EV_map == &_EV_map) {
+	map_destroy(&_EV_map); }
 	return OK;
 }
 

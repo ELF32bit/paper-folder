@@ -10,7 +10,7 @@ CFLAGS = -std=c11 \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
 	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
-	-Wall -Wextra \
+	-Wall -Wextra
 #CFLAGS += -DNDEBUG
 CFLAGS += -O2
 

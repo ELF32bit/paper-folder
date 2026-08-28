@@ -6,6 +6,6 @@
 #include "fold/graph.h"
 
 Error fold_file_from_obj(FoldFile* file, void* OBJ);
-Error fold_file_to_obj(const FoldFile* file, void* OBJ);
+Error fold_file_to_obj(FoldFile* file, void* OBJ);
 
 #endif /* CODECS_OBJ_H */

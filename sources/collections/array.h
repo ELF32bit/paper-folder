@@ -62,17 +62,17 @@ void array_set_start(Array* array, const void* element);
 void array_set_end(Array* array, const void* element);
 
 #define ARRAY_SET(array, index, type, element) do { \
-	type _element = (element); \
+	type _element = (type)(element); \
 	array_set((array), (index), &_element); \
 } while (0)
 
 #define ARRAY_SET_START(array, index, type, element) do { \
-	type _element = (element); \
+	type _element = (type)(element); \
 	array_set_start((array), (index), &_element); \
 } while (0)
 
 #define ARRAY_SET_END(array, index, type, element) do { \
-	type _element = (element); \
+	type _element = (type)(element); \
 	array_set_end((array), (index), &_element); \
 } while (0)
 

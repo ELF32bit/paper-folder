@@ -25,6 +25,9 @@ int l_fold_frame_from_json_string_meta(lua_State* L);
 int l_fold_frame_to_json_file_meta(lua_State* L);
 int l_fold_frame_to_json_string_meta(lua_State* L);
 
+int l_fold_frame_from_svg_file_meta(lua_State* L);
+int l_fold_frame_to_svg_file_meta(lua_State* L);
+
 /* ========================================================================= */
 /* Validation                                                                */
 /* ========================================================================= */
@@ -36,6 +39,6 @@ int l_fold_frame_validate_inherited_meta(lua_State* L);
 /* Attributes                                                                */
 /* ========================================================================= */
 
-int l_fold_frame_attributes_compute_meta(lua_State* L);
+int l_fold_frame_attributes_assign_meta(lua_State* L);
 
 #endif /* LUA_MODULE_FOLD_FRAME_H */

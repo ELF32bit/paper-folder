@@ -106,24 +106,25 @@ void _validate_FV_sizes(const FoldGraph* graph, bool* is) {
 	}
 }
 
-GENERATE_VALIDATE_SIZES(VCC, VC)
-GENERATE_VALIDATE_SIZES(VTC, VC)
-GENERATE_VALIDATE_SIZES(VNC, VC)
+GENERATE_VALIDATE_SIZES(VP, VC)
+GENERATE_VALIDATE_SIZES(FT, FV)
+GENERATE_VALIDATE_SIZES(FT2, FV)
+GENERATE_VALIDATE_SIZES(FN, FV)
 GENERATE_VALIDATE_SIZES(FM, FV)
 
 /* ========================================================================= */
 /* FOLD Graph Validation Arrays References                                   */
 /* ========================================================================= */
 
-#define GENERATE_VALIDATE_REFERENCES(A, B) \
+#define GENERATE_VALIDATE_REFERENCES(A, AA, B) \
 static inline \
 void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
 	*is = true; \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 && graph->B.size == 0)) return; \
 	usize max_index = graph->B.size; \
-	for (usize i = 0; i < graph->A.data.size; i++) { \
-		usize* index = array_get(&(graph->A.data), i); \
+	for (usize i = 0; i < graph->A AA.size; i++) { \
+		usize* index = array_get(&(graph->A AA), i); \
 		if (*index >= max_index) { \
 			*is = false; \
 			return; \
@@ -131,15 +132,15 @@ void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
 	} \
 }
 
-#define GENERATE_VALIDATE_REFERENCES_WITH_NULL(A, B) \
+#define GENERATE_VALIDATE_REFERENCES_WITH_NULL(A, AA, B) \
 static inline \
 void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
 	*is = true; \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 && graph->B.size == 0)) return; \
 	usize max_index = graph->B.size; \
-	for (usize i = 0; i < graph->A.data.size; i++) { \
-		usize* index = array_get(&(graph->A.data), i); \
+	for (usize i = 0; i < graph->A AA.size; i++) { \
+		usize* index = array_get(&(graph->A AA), i); \
 		if (*index == FOLD_GRAPH_NULL) continue; \
 		if (*index >= max_index) { \
 			*is = false; \
@@ -165,16 +166,22 @@ void _validate_##A##_##B##_references(const FoldGraph* graph, bool* is) { \
 	} \
 }
 
-GENERATE_VALIDATE_REFERENCES(VV, VC)
-GENERATE_VALIDATE_REFERENCES(VE, EV)
-GENERATE_VALIDATE_REFERENCES_WITH_NULL(VF, FV)
+GENERATE_VALIDATE_REFERENCES(VV,.data, VC)
+GENERATE_VALIDATE_REFERENCES(VE,.data, EV)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(VF,.data, FV)
 GENERATE_VALIDATE_REFERENCES_PAIRS(EV, VC)
-GENERATE_VALIDATE_REFERENCES_WITH_NULL(EF, FV)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(EF,.data, FV)
 GENERATE_VALIDATE_REFERENCES_PAIRS(EO, EV)
-GENERATE_VALIDATE_REFERENCES(FV, VC)
-GENERATE_VALIDATE_REFERENCES(FE, EV)
-GENERATE_VALIDATE_REFERENCES_WITH_NULL(FF, FV)
+GENERATE_VALIDATE_REFERENCES(FV,.data, VC)
+GENERATE_VALIDATE_REFERENCES(FE,.data, EV)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(FF,.data, FV)
 GENERATE_VALIDATE_REFERENCES_PAIRS(FO, FV)
+
+GENERATE_VALIDATE_REFERENCES(VP,, PC)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(FT,.data, TC)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(FT2,.data, T2C)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(FN,.data, NC)
+GENERATE_VALIDATE_REFERENCES_WITH_NULL(FM,, MN)
 
 /* ========================================================================= */
 /* FOLD Graph Validation Arrays Reflexive                                    */
@@ -694,10 +701,21 @@ static
 Error fold_graph_extensions_validate(const FoldGraph* graph, bool* is, String* errors) {
 	*is = false;
 	bool is_still = true;
-	VALIDATE(VCC_VC_sizes, "ERROR: vertices_color_code and vertices_coords sizes are different\n");
-	VALIDATE(VTC_VC_sizes, "ERROR: vertices_texture_coords and vertices_coords sizes are different\n");
-	VALIDATE(VNC_VC_sizes, "ERROR: vertices_normal_coords and vertices_coords sizes are different\n");
+
+	VALIDATE(VP_VC_sizes, "ERROR: vertices_paint and vertices_coords sizes are different\n");
+	VALIDATE(FT_FV_sizes, "ERROR: faces_uvs and faces_vertices sizes are different\n");
+	VALIDATE(FT2_FV_sizes, "ERROR: faces_uv2s and faces_vertices sizes are different\n");
+	VALIDATE(FN_FV_sizes, "ERROR: faces_normals and faces_vertices sizes are different\n");
 	VALIDATE(FM_FV_sizes, "ERROR: faces_material and faces_vertices sizes are different\n");
+	if NOT(is_still) return OK;
+
+	VALIDATE(VP_PC_references, "ERROR: vertices_paint references missing in paints_color\n");
+	VALIDATE(FT_TC_references, "ERROR: faces_uvs references missing in uvs_coords\n");
+	VALIDATE(FT2_T2C_references, "ERROR: faces_uv2s references missing in uv2s_coords\n");
+	VALIDATE(FN_NC_references, "ERROR: faces_normals references missing in normals_coords\n");
+	VALIDATE(FM_MN_references, "ERROR: faces_material references missing in materials_name\n");
+	if NOT(is_still) return OK;
+
 	*is = is_still;
 	return OK;
 }
@@ -776,9 +794,15 @@ Error fold_graph_validate_inherited(FoldGraph* graph, bool* is, String* errors) 
 	bool is_FE_view = graph->FE.is_view;
 	bool is_FF_view = graph->FF.is_view;
 	bool is_FO_view = graph->FO.is_view;
-	bool is_VCC_view = graph->extensions.VCC.is_view;
-	bool is_VTC_view = graph->extensions.VTC.is_view;
-	bool is_VNC_view = graph->extensions.VNC.is_view;
+	bool is_PC_view = graph->extensions.PC.is_view;
+	bool is_TC_view = graph->extensions.TC.is_view;
+	bool is_T2C_view = graph->extensions.T2C.is_view;
+	bool is_NC_view = graph->extensions.NC.is_view;
+	bool is_MN_view = graph->extensions.MN.is_view;
+	bool is_VP_view = graph->extensions.VP.is_view;
+	bool is_FT_view = graph->extensions.FT.is_view;
+	bool is_FT2_view = graph->extensions.FT2.is_view;
+	bool is_FN_view = graph->extensions.FN.is_view;
 	bool is_FM_view = graph->extensions.FM.is_view;
 
 	graph->VC.is_view = false;
@@ -795,9 +819,15 @@ Error fold_graph_validate_inherited(FoldGraph* graph, bool* is, String* errors) 
 	graph->FE.is_view = false;
 	graph->FF.is_view = false;
 	graph->FO.is_view = false;
-	graph->extensions.VCC.is_view = false;
-	graph->extensions.VTC.is_view = false;
-	graph->extensions.VNC.is_view = false;
+	graph->extensions.PC.is_view = false;
+	graph->extensions.TC.is_view = false;
+	graph->extensions.T2C.is_view = false;
+	graph->extensions.NC.is_view = false;
+	graph->extensions.MN.is_view = false;
+	graph->extensions.VP.is_view = false;
+	graph->extensions.FT.is_view = false;
+	graph->extensions.FT2.is_view = false;
+	graph->extensions.FN.is_view = false;
 	graph->extensions.FM.is_view = false;
 
 	Error result = fold_graph_validate(graph, is, errors);
@@ -816,9 +846,15 @@ Error fold_graph_validate_inherited(FoldGraph* graph, bool* is, String* errors) 
 	graph->FE.is_view = is_FE_view;
 	graph->FF.is_view = is_FF_view;
 	graph->FO.is_view = is_FO_view;
-	graph->extensions.VCC.is_view = is_VCC_view;
-	graph->extensions.VTC.is_view = is_VTC_view;
-	graph->extensions.VNC.is_view = is_VNC_view;
+	graph->extensions.PC.is_view = is_PC_view;
+	graph->extensions.TC.is_view = is_TC_view;
+	graph->extensions.T2C.is_view = is_T2C_view;
+	graph->extensions.NC.is_view = is_NC_view;
+	graph->extensions.MN.is_view = is_MN_view;
+	graph->extensions.VP.is_view = is_VP_view;
+	graph->extensions.FT.is_view = is_FT_view;
+	graph->extensions.FT2.is_view = is_FT2_view;
+	graph->extensions.FN.is_view = is_FN_view;
 	graph->extensions.FM.is_view = is_FM_view;
 
 	return result;

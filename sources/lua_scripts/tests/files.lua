@@ -192,4 +192,11 @@ function TEST_FILES.print_fold_file(file, pretty)
 	io.write((fold:to_json_string(pretty)))
 end
 
+function TEST_FILES.dump_fold_file(file)
+	local fold, fold_error = FOLD.new(), nil
+	fold, fold_error = fold:from_json_file(file)
+	if (fold == nil) then error(fold_error) end
+	fold:to_obj_file(nil);
+end
+
 return TEST_FILES
