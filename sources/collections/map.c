@@ -42,7 +42,8 @@ void _map_array_destroy(Map* map, Array* array) {
 /* ========================================================================= */
 
 void map_create(Map* map, usize key_size, usize value_size,
-	MapHashFunction hash, MapEqualsFunction equals) {
+	MapHashFunction hash, MapEqualsFunction equals)
+{
 	array_create(&map->keys, key_size);
 	array_create(&map->values, value_size);
 	array_create(&map->flags, sizeof(u8));
@@ -58,7 +59,8 @@ void map_create(Map* map, usize key_size, usize value_size,
 void map_create_managed(Map* map, usize key_size, usize value_size,
 	MapHashFunction hash, MapEqualsFunction equals,
 	ArrayDestroyFunction key_destroy, ArrayCopyFunction key_copy,
-	ArrayDestroyFunction value_destroy, ArrayCopyFunction value_copy) {
+	ArrayDestroyFunction value_destroy, ArrayCopyFunction value_copy)
+{
 	array_create_managed(&map->keys, key_size, key_destroy, key_copy);
 	array_create_managed(&map->values, value_size, value_destroy, value_copy);
 	array_create(&map->flags, sizeof(u8));
@@ -136,6 +138,7 @@ usize _map_find_bucket(const Map* map, const void* key, bool* exists) {
 
 static inline
 Error _map_reallocate(Map* map, usize new_capacity) {
+	TRY_ADD(new_capacity, 3);
 	Map new_map;
 	map_create_managed(&new_map, map->key_size, map->value_size,
 		map->hash, map->equals,
@@ -147,7 +150,6 @@ Error _map_reallocate(Map* map, usize new_capacity) {
 	TRY_OR_ELSE(array_resize(&new_map.values, new_capacity),
 		map_destroy(&new_map));
 
-	TRY_ADD(new_capacity, 3);
 	usize new_flags_size = (new_capacity + 3) >> 2;
 	TRY_OR_ELSE(array_resize(&new_map.flags, new_flags_size),
 		map_destroy(&new_map));
@@ -262,25 +264,6 @@ void* map_get(const Map* map, const void* key, const void* default_value) {
 	usize bucket = _map_find_bucket(map, key, &exists);
 	if (exists) return array_get(&map->values, bucket);
 	return (void*)default_value;
-}
-
-Error map_get_or_add(Map* map, const void* key, const void* default_value, void** value) {
-	ASSERT(NOT(map->is_view));
-	bool exists;
-	usize bucket = _map_find_bucket(map, key, &exists);
-	if (exists) {
-		if (value != NULL) *value =
-			array_get(&map->values, bucket);
-		return OK;
-	}
-
-	TRY(map_add(map, key, default_value, NULL));
-	bucket = _map_find_bucket(map, key, &exists);
-	ASSERT(exists);
-
-	if (value != NULL) *value =
-		array_get(&map->values, bucket);
-	return OK;
 }
 
 Error map_copy(Map* map, const Map* source_map) {

@@ -5,12 +5,13 @@ Export precomputed folding animation as an easy to parse series of meshes.<br>
 
 ## Current features
 * FOLD specification (version 1.2) validation.
+* Convert from and to FOLD, SVG, OBJ files.
 
 ## Building the project
 Run the command inside a terminal.<br>
 ```Bash
 make && \
-./paper-folder --validate \
+./paper-folder validate \
 "assets/rabbit-ear/kissing-squares.fold"
 ```
 ```Go

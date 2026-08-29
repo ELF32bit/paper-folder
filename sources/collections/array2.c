@@ -22,7 +22,8 @@ void array2_create(Array2* array2, usize element_size) {
 }
 
 void array2_create_managed(Array2* array2, usize element_size,
-	ArrayDestroyFunction destroy, ArrayCopyFunction copy) {
+	ArrayDestroyFunction destroy, ArrayCopyFunction copy)
+{
 	array_create_managed(&array2->data, element_size, destroy, copy);
 	array_create(&array2->offsets, sizeof(usize));
 	array2->is_view = false;

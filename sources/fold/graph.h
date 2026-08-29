@@ -19,6 +19,7 @@
 #define FOLD_GRAPH_EDGE_ASSIGNMENT_CUT 'C'
 #define FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN 'J'
 
+#define FOLD_GRAPH_EDGE_ASSIGNMENTS_COUNT 7
 #define FOLD_GRAPH_EDGE_ASSIGNMENT_ANY(assignment) ( \
 	(assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY || \
 	(assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN || \
@@ -30,9 +31,9 @@
 
 #define FOLD_GRAPH_EDGE_ASSIGNMENT_INVERT(assignment) ( \
 	((assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN) \
-	? FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY \
+		? FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY \
 	: ((assignment) == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY) \
-	? FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN \
+		? FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN \
 	: (assignment))
 
 #define FOLD_GRAPH_ORDER_POSITIVE 1
@@ -46,9 +47,9 @@
 
 #define FOLD_GRAPH_ORDER_INVERT(order) ( \
 	((order) == FOLD_GRAPH_ORDER_POSITIVE) \
-	? FOLD_GRAPH_ORDER_NEGATIVE \
+		? FOLD_GRAPH_ORDER_NEGATIVE \
 	: ((order) == FOLD_GRAPH_ORDER_NEGATIVE) \
-	? FOLD_GRAPH_ORDER_POSITIVE \
+		? FOLD_GRAPH_ORDER_POSITIVE \
 	: FOLD_GRAPH_ORDER_UNKNOWN)
 
 #define FOLD_GRAPH_EDGE_ORDER_LEFT FOLD_GRAPH_ORDER_POSITIVE
@@ -140,6 +141,10 @@ typedef struct FoldGraphFaceOrder {
 
 void fold_graph_create(FoldGraph* graph);
 
+#define FOLD_GRAPH_CREATE(graph) \
+	FoldGraph graph; \
+	fold_graph_create(&graph)
+
 #define FoldGraph_destroy fold_graph_destroy
 void fold_graph_destroy(FoldGraph* graph);
 
@@ -157,9 +162,9 @@ Error fold_graph_to_json(const FoldGraph* graph, void* JSON, void* Object);
 /* ========================================================================= */
 
 #define FoldGraph_copy fold_graph_copy
-Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source_graph);
+Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source);
 
-void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source_graph);
+void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source);
 bool fold_graph_is_inherited(const FoldGraph* graph);
 
 /* ========================================================================= */

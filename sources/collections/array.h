@@ -96,14 +96,15 @@ Error array_append_array(Array* array, const Array* another);
 void array_remove(Array* array, usize index);
 void array_remove_range(Array* array, usize start, usize end);
 
+void array_reverse_range(Array* array, usize start, usize end);
 void array_reverse(Array* array);
 
 /* ========================================================================= */
 /* Sorting                                                                   */
 /* ========================================================================= */
 
-void array_sort(Array* array,
-	ArraySortFunction compare);
+void array_sort(Array* array, ArraySortFunction compare);
+
 void array_sort_range(Array* array, usize start, usize end,
 	ArraySortFunction compare);
 

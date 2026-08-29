@@ -23,7 +23,8 @@ void array_create(Array* array, usize element_size) {
 }
 
 void array_create_managed(Array* array, usize element_size,
-	ArrayDestroyFunction destroy, ArrayCopyFunction copy) {
+	ArrayDestroyFunction destroy, ArrayCopyFunction copy)
+{
 	array_create(array, element_size);
 	array->destroy = destroy;
 	array->copy = copy;
@@ -349,13 +350,15 @@ void array_remove_range(Array* array, usize start, usize end) {
 	array->size -= (end - start);
 }
 
-void array_reverse(Array* array) {
+void array_reverse_range(Array* array, usize start, usize end) {
 	ASSERT(NOT(array->is_view));
-	if (array->size <= 1) return;
+	ASSERT(end <= array->size);
+	ASSERT(start <= end);
 
+	if (end - start <= 1) return;
 	u8 buffer[array->element_size];
-	u8* left_element = array_get_start(array);
-	u8* right_element = array_get_end(array);
+	u8* left_element = array_get(array, start);
+	u8* right_element = array_get(array, end - 1);
 
 	while (left_element < right_element) {
 		memcpy(buffer, left_element, array->element_size);
@@ -366,12 +369,15 @@ void array_reverse(Array* array) {
 	}
 }
 
+void array_reverse(Array* array) {
+	return array_reverse_range(array, 0, array->size);
+}
+
 /* ========================================================================= */
 /* Sorting                                                                   */
 /* ========================================================================= */
 
-void array_sort(Array* array,
-	ArraySortFunction compare) {
+void array_sort(Array* array, ArraySortFunction compare) {
 	ASSERT(NOT(array->is_view));
 	if (array->size <= 1) return;
 	qsort(array->data, array->size,
@@ -379,7 +385,8 @@ void array_sort(Array* array,
 }
 
 void array_sort_range(Array* array, usize start, usize end,
-	ArraySortFunction compare) {
+	ArraySortFunction compare)
+{
 	ASSERT(NOT(array->is_view));
 	ASSERT(end <= array->size);
 	ASSERT(start <= end);

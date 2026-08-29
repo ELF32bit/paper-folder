@@ -65,6 +65,10 @@ typedef struct FoldFrame {
 
 void fold_frame_create(FoldFrame* frame);
 
+#define FOLD_FRAME_CREATE(frame) \
+	FoldFrame frame; \
+	fold_frame_create(&frame)
+
 #define FoldFrame_destroy fold_frame_destroy
 void fold_frame_destroy(FoldFrame* frame);
 
@@ -82,9 +86,9 @@ Error fold_frame_to_json(const FoldFrame* frame, void* JSON, void* Object);
 /* ========================================================================= */
 
 #define FoldFrame_copy fold_frame_copy
-Error fold_frame_copy(FoldFrame* frame, const FoldFrame* source_frame);
+Error fold_frame_copy(FoldFrame* frame, const FoldFrame* source);
 
-void fold_frame_inherit(FoldFrame* frame, const FoldFrame* source_frame);
+void fold_frame_inherit(FoldFrame* frame, const FoldFrame* source);
 bool fold_frame_is_inherited(const FoldFrame* frame);
 
 /* ========================================================================= */

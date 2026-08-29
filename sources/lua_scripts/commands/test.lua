@@ -1,6 +1,13 @@
-local TEST_FILES = {}
+local command = {}
+local validate = require("commands.validate")
 
-TEST_FILES.FOLD_FILES = {
+command.name = "test"
+command.aliases = {}
+command.description = "run tests"
+command.help_message = [[
+usage: paper-folder test]]
+
+command.FOLD_FILES = {
 	"assets/fold-examples/box.fold",
 	"assets/fold-examples/diagonal-cp.fold",
 	"assets/fold-examples/diagonal-folded.fold",
@@ -104,7 +111,7 @@ TEST_FILES.FOLD_FILES = {
 	"assets/rabbit-ear/windmill.fold",
 }
 
-TEST_FILES.SVG_FILES = {
+command.SVG_FILES = {
 	"assets/origami-simulator/Bases/birdBase.svg",
 	"assets/origami-simulator/Bases/boatBase.svg",
 	"assets/origami-simulator/Bases/frogBase.svg",
@@ -185,18 +192,10 @@ TEST_FILES.SVG_FILES = {
 	"assets/origami-simulator/needsCollisions/rose.svg",
 }
 
-function TEST_FILES.print_fold_file(file, pretty)
-	local fold, fold_error = FOLD.new(), nil
-	fold, fold_error = fold:from_json_file(file)
-	if (fold == nil) then error(fold_error) end
-	io.write((fold:to_json_string(pretty)))
+function command.execute(arg)
+	for _, fold_file in ipairs(command.FOLD_FILES) do
+		validate.validate_fold_file(fold_file)
+	end
 end
 
-function TEST_FILES.dump_fold_file(file)
-	local fold, fold_error = FOLD.new(), nil
-	fold, fold_error = fold:from_json_file(file)
-	if (fold == nil) then error(fold_error) end
-	fold:to_obj_file(nil);
-end
-
-return TEST_FILES
+return command

@@ -11,6 +11,22 @@ typedef int Error;
 #define ERROR_OVERLAPPING_MEMORY_REGIONS -3
 #define ERROR_INTEGER_OVERFLOW -4
 
+#define ERROR_STRING_OR(result, error) ( \
+	(result) == ERROR \
+		? (error) \
+	: (result) == ERROR_OUT_OF_MEMORY \
+		? "out of memory" \
+	: (result) == ERROR_OVERLAPPING_MEMORY_REGIONS \
+		? "overlapping memory regions" \
+	: (result) == ERROR_INTEGER_OVERFLOW \
+		? "integer overflow" \
+	: (result) != OK \
+		? "unknown error" \
+	: "ok")
+
+#define ERROR_STRING(result) \
+	ERROR_STRING_OR("generic error")
+
 #define IS_OK(result) ((result) == OK)
 #define IS_ERROR(result) ((result) != OK)
 
@@ -123,7 +139,5 @@ typedef int Error;
 
 #define TRY_SIZEOF_OR_ERROR(type, count, execute) \
 	TRY_MULTIPLY_OR_ERROR(sizeof(type), (usize)(count), execute)
-
-#define SIZEOF(type, count) (sizeof(type) * (usize)(count))
 
 #endif /* DEFINITIONS_ERROR_H */

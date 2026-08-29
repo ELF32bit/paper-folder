@@ -10,9 +10,7 @@ Error fold_file_create(FoldFile* file) {
 	string_create(&file->author);
 	string_create(&file->title);
 	string_create(&file->description);
-	array_create_managed(&file->classes, sizeof(String),
-		(ArrayDestroyFunction)string_destroy,
-		(ArrayCopyFunction)string_copy);
+	array_create(&file->classes, SIZEOF(char, 32));
 	array_create_managed(&file->frames, sizeof(FoldFrame),
 		(ArrayDestroyFunction)fold_frame_destroy,
 		(ArrayCopyFunction)fold_frame_copy);

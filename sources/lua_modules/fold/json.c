@@ -25,10 +25,10 @@
 #define GENERATE_FUNCTIONS(Fold, fold, METATABLE) \
 int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
 	Fold* fold = luaL_checkudata(L, 1, METATABLE); \
-	const char* path = luaL_checkstring(L, 2); \
+	const char* input_file_path = luaL_checkstring(L, 2); \
 \
 	yyjson_read_err json_errors; \
-	yyjson_doc* json = yyjson_read_file(path, \
+	yyjson_doc* json = yyjson_read_file(input_file_path, \
 		JSON_READ_FLAGS, NULL, &json_errors); \
 \
 	if (json == NULL) { \
@@ -43,7 +43,8 @@ int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
 \
 	if IS_ERROR(result) { \
 		lua_pushnil(L); \
-		lua_pushstring(L, FOLD_READ_ERROR); \
+		lua_pushstring(L, ERROR_STRING_OR( \
+			result, FOLD_READ_ERROR)); \
 		return 2; \
 	} \
 \
@@ -73,7 +74,8 @@ int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 \
 	if IS_ERROR(result) { \
 		lua_pushnil(L); \
-		lua_pushstring(L, FOLD_READ_ERROR); \
+		lua_pushstring(L, ERROR_STRING_OR( \
+			result, FOLD_READ_ERROR)); \
 		return 2; \
 	} \
 \
@@ -84,7 +86,7 @@ int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 \
 int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
 	Fold* fold = luaL_checkudata(L, 1, METATABLE); \
-	const char* path = luaL_checkstring(L, 2); \
+	const char* output_file_path = luaL_checkstring(L, 2); \
 	yyjson_write_flag flags = lua_toboolean(L, 3) \
 		? JSON_WRITE_FLAGS | YYJSON_WRITE_PRETTY \
 		: YYJSON_WRITE_NOFLAG; \
@@ -110,12 +112,13 @@ int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
 	if IS_ERROR(result) { \
 		yyjson_mut_doc_free(json); \
 		lua_pushboolean(L, false); \
-		lua_pushstring(L, FOLD_WRITE_ERROR); \
+		lua_pushstring(L, ERROR_STRING_OR( \
+			result, FOLD_WRITE_ERROR)); \
 		return 2; \
 	} \
 \
 	yyjson_write_err json_error; \
-	bool success = yyjson_mut_write_file(path, json, \
+	bool success = yyjson_mut_write_file(output_file_path, json, \
 		flags, NULL, &json_error); \
 	yyjson_mut_doc_free(json); \
 \
@@ -157,7 +160,8 @@ int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
 	if IS_ERROR(result) { \
 		yyjson_mut_doc_free(json); \
 		lua_pushnil(L); \
-		lua_pushstring(L, FOLD_WRITE_ERROR); \
+		lua_pushstring(L, ERROR_STRING_OR( \
+			result, FOLD_WRITE_ERROR)); \
 		return 2; \
 	} \
 \

@@ -102,6 +102,48 @@ Error string_copy_raw(String* string, const char* source) {
 	return OK;
 }
 
+char* string_buffer(const String* string, char* buffer, usize size) {
+	ASSERT(size > 0);
+	if (string->length == 0 ||
+		string->data == NULL) {
+		memset(buffer, 0, size);
+		return buffer;
+	}
+
+	usize length = (string->length < (size - 1))
+		? string->length : (size - 1);
+
+	memcpy(buffer, string->data, length);
+	memset(buffer + length, 0,
+		size - length);
+
+	return buffer;
+}
+
+char* string_buffer_raw(const char* string, char* buffer, usize size) {
+	ASSERT(size > 0);
+	if (string == NULL) {
+		memset(buffer, 0, size);
+		return buffer;
+	}
+
+	usize string_length = strlen(string);
+	usize length = (string_length < (size - 1))
+		? string_length : (size - 1);
+
+	memcpy(buffer, string, length);
+	memset(buffer + length, 0,
+		size - length);
+
+	return buffer;
+}
+
+usize string_buffer_length(const char* buffer, usize size) {
+	ASSERT(size > 0);
+	const char* end = memchr(buffer, '\0', size);
+	return end ? (usize)(end - buffer) : size;
+}
+
 Error string_append(String* string, const String* another) {
 	ASSERT(NOT(string->is_view));
 	if (another->length == 0 ||

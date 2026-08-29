@@ -6,6 +6,7 @@ EXE = $(if $(COMSPEC),.exe,)
 CC = gcc
 CFLAGS = -std=c11 \
 	-I. -I$(SOURCES_DIRECTORY) \
+	-I$(THIRDPARTY_DIRECTORY)/xoshiro \
 	-I$(THIRDPARTY_DIRECTORY)/lua \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
@@ -50,6 +51,8 @@ C_SOURCES_ALL += $(wildcard \
 	$(THIRDPARTY_DIRECTORY)/*/*/*/*.c)
 
 C_SOURCES = $(filter-out \
+	$(THIRDPARTY_DIRECTORY)/xoshiro/xoshiro256starstar.c \
+	$(THIRDPARTY_DIRECTORY)/xoshiro/f2x.c \
 	$(THIRDPARTY_DIRECTORY)/lua/lua.c \
 	$(THIRDPARTY_DIRECTORY)/lua/luac.c \
 	$(LUA_MODULES_CODE) \

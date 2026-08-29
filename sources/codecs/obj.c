@@ -29,7 +29,8 @@ struct TinyObjObject {
 
 static inline
 void _tiny_obj_file_reader(void* ctx, const char* filename, int is_mtl,
-	const char* obj_filename, char** buf, usize* len) {
+	const char* obj_filename, char** buf, usize* len)
+{
 	(void)ctx; (void)obj_filename; (void)is_mtl;
 	FILE* file = fopen(filename, "rb");
 	TRY_NEW_MEMORY_OR_ERROR(file,
@@ -217,7 +218,7 @@ Error fold_frame_from_obj(FoldFrame* frame, void* OBJ, void* Object) {
 /* ========================================================================= */
 
 Error fold_file_from_obj(FoldFile* file, void* OBJ) {
-	const char* file_name = OBJ;
+	const char* input_file_path = OBJ;
 
 	tinyobj_attrib_t attributes;
 	tinyobj_shape_t* shapes = NULL;
@@ -227,7 +228,7 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ) {
 
 	int result = tinyobj_parse_obj(&attributes,
 		&shapes, &num_shapes, &materials, &num_materials,
-		file_name, _tiny_obj_file_reader, NULL, flags);
+		input_file_path, _tiny_obj_file_reader, NULL, flags);
 	if (result != TINYOBJ_SUCCESS) {
 		return ERROR;
 	}
@@ -235,7 +236,7 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ) {
 	TRY_ADD(num_shapes, 1);
 	TRY(fold_file_recreate(file));
 	TRY(array_resize(&file->frames, num_shapes + 1));
-	FoldFrame* key_frame = array_get(&file->frames, 0);
+	FoldFrame* key_frame = array_get_start(&file->frames);
 
 	TRY(array_resize(&key_frame->graph.VC, attributes.num_vertices));
 	FOR_EACH(index, attributes.num_vertices) {
@@ -263,22 +264,13 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ) {
 		array_set(&key_frame->graph.NC, index, &vn);
 	}
 
-	usize word_size = key_frame->graph.MN.element_size;
 	TRY(array_resize(&key_frame->graph.MN, num_materials));
 	FOR_EACH(index, num_materials) {
 		const char* string = (materials[index].name != NULL)
 			? materials[index].name : "";
-		usize length = strlen(string);
-
-		char word[word_size];
-		usize word_length = (length < (word_size - 1))
-			? length : (word_size - 1);
-
-		memcpy(word, string, word_length);
-		memset(word + word_length, 0,
-			word_size - word_length);
-
-		array_set(&key_frame->graph.MN, index, word);
+		STRING_BUFFER_RAW(string, buffer,
+			key_frame->graph.MN.element_size);
+		array_set(&key_frame->graph.MN, index, buffer);
 	}
 
 	struct TinyObjObject object;
@@ -288,8 +280,9 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ) {
 	object.num_materials = num_materials;
 	object.shape_offset = 0;
 
-	ARRAY_FOR_EACH_IN_RANGE(&file->frames, shape,
-		FoldFrame*, frame, 1, num_shapes + 1) {
+	ARRAY_FOR_EACH_IN_RANGE(&file->frames,
+		shape, FoldFrame*, frame, 1, num_shapes + 1)
+	{
 		object.shape = &shapes[shape - 1];
 
 		fold_frame_create(frame);
@@ -314,8 +307,8 @@ static inline
 Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 	FILE* output_file = OBJ;
 	struct FoldFrameObject* object = Object;
-	usize abstract_VC_size = 0;
 
+	usize abstract_VC_size = 0;
 	if (fold_graph_is_abstract(graph)) {
 		ARRAY_FOR_EACH(&graph->EV, _, FoldGraphEdge*, ev) {
 			abstract_VC_size = MAX(abstract_VC_size, TRY_SAFE(ev->a + 1));
@@ -351,10 +344,10 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 				usize* vpi = array_get(&graph->VP, vi);
 				Color* vpc = array_get(&graph->PC, *vpi);
 				fprintf(output_file, "v "_F" "_F" "_F" "_F" "_F" "_F"\n",
-				(_FF)vc->x, (_FF)vc->y, (_FF)vc->z,
-				(_FF)(vpc->r * vpc->a),
-				(_FF)(vpc->g * vpc->a),
-				(_FF)(vpc->b * vpc->a));
+					(_FF)vc->x, (_FF)vc->y, (_FF)vc->z,
+					(_FF)(vpc->r * vpc->a),
+					(_FF)(vpc->g * vpc->a),
+					(_FF)(vpc->b * vpc->a));
 			}
 		}
 	}
@@ -384,8 +377,9 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 		}
 
 		fprintf(output_file, "f");
-		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data, i,
-			usize*, fvi, fv.start, fv.end) {
+		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
+			i, usize*, fvi, fv.start, fv.end)
+		{
 			fprintf(output_file, " %zu",
 				TRY_SAFE(object->vertex_offset + *fvi));
 
@@ -466,7 +460,7 @@ Error fold_file_to_obj(FoldFile* file, void* OBJ) {
 	object.frame_index = 0;
 
 	fold_file_frames_inherit(file);
-	ARRAY_FOR_EACH(&file->frames, index, FoldFrame*, frame) {
+	ARRAY_FOR_EACH(&file->frames, _, FoldFrame*, frame) {
 		TRY_OR_ELSE(fold_frame_to_obj(frame, output_file, &object),
 			fclose(output_file));
 	}

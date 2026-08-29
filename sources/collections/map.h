@@ -65,7 +65,7 @@ void map_create_managed(Map* map, usize key_size, usize value_size,
 	Map map; \
 	map_create_managed(&map, sizeof(key_type), sizeof(value_type), \
 		(MapHashFunction)key_type##_hash, \
-		(MapEqualsFunction)key_type##_equals, NULL, NULL,\
+		(MapEqualsFunction)key_type##_equals, NULL, NULL, \
 		(ArrayDestroyFunction)value_type##_destroy, \
 		(ArrayCopyFunction)value_type##_copy)
 
@@ -87,8 +87,6 @@ bool map_remove(Map* map, const void* key);
 
 bool map_has(const Map* map, const void* key);
 void* map_get(const Map* map, const void* key, const void* default_value);
-Error map_get_or_add(Map* map, const void* key, const void* default_value,
-	void** value);
 
 #define Map_copy map_copy
 Error map_copy(Map* map, const Map* source_map);

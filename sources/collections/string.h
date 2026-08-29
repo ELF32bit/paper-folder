@@ -46,6 +46,18 @@ Error string_copy_raw(String* string, const char* source);
 	STRING_CREATE(string); \
 	TRY_OR_ERROR(string_copy_raw(&string, (source)), execute)
 
+char* string_buffer(const String* string, char* buffer, usize size);
+char* string_buffer_raw(const char* string, char* buffer, usize size);
+usize string_buffer_length(const char* buffer, usize size);
+
+#define STRING_BUFFER(string, buffer, size) \
+	char buffer[(size)]; \
+	string_buffer((string), buffer, (size))
+
+#define STRING_BUFFER_RAW(string, buffer, size) \
+	char buffer[(size)]; \
+	string_buffer_raw((string), buffer, (size))
+
 Error string_append(String* string, const String* another);
 Error string_append_raw(String* string, const char* another);
 

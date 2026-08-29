@@ -12,6 +12,9 @@
 
 #define CLAMP(value, min, max) (MIN(MAX((value), (min)), (max)))
 
+#define SIZEOF(type, count) (sizeof(type) * (usize)(count))
+#define BUFFER_SIZE(buffer) ((sizeof((buffer))) / (sizeof((buffer)[0])))
+
 #define FOR_EACH(index, count) \
 	for (usize index = 0; (index) < (usize)(count); (index)++)
 

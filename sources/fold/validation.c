@@ -458,7 +458,8 @@ void _validate_VV_VE_winding(const FoldGraph* graph, bool* is) {
 		}
 
 		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data,
-			i, usize*, vvi, vv.start, vv.end) {
+			i, usize*, vvi, vv.start, vv.end)
+		{
 			usize* vei = array_get(&graph->VE.data, i);
 			FoldGraphEdge* vei_ev = array_get(&graph->EV, *vei);
 			if NOT((vei_ev->a == vv.index && vei_ev->b == *vvi) ||
@@ -488,7 +489,8 @@ Error _validate_VV_VF_winding(const FoldGraph* graph, bool* is) {
 		}
 
 		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data,
-			i, usize*, vvi, vv.start, vv.end) {
+			i, usize*, vvi, vv.start, vv.end)
+		{
 			usize* vnvi = array_get(&graph->VV.data,
 				wrap_index_in_range(i, +1, vv.start, vv.end));
 
@@ -528,7 +530,8 @@ Error _validate_VE_VF_winding(const FoldGraph* graph, bool* is) {
 		}
 
 		ARRAY_FOR_EACH_IN_RANGE(&graph->VE.data,
-			i, usize*, vei, ve.start, ve.end) {
+			i, usize*, vei, ve.start, ve.end)
+		{
 			usize* vnei = array_get(&graph->VE.data,
 				wrap_index_in_range(i, +1, ve.start, ve.end));
 
@@ -565,7 +568,8 @@ void _validate_FV_FE_winding(const FoldGraph* graph, bool* is) {
 		}
 
 		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
-			i, usize*, fvi, fv.start, fv.end) {
+			i, usize*, fvi, fv.start, fv.end)
+		{
 			usize* fnvi = array_get(&graph->FV.data,
 				wrap_index_in_range(i, +1, fv.start, fv.end));
 
@@ -599,7 +603,8 @@ Error _validate_FV_FF_winding(const FoldGraph* graph, bool* is) {
 		}
 
 		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
-			i, usize*, fvi, fv.start, fv.end) {
+			i, usize*, fvi, fv.start, fv.end)
+		{
 			usize* fnvi = array_get(&graph->FV.data,
 				wrap_index_in_range(i, +1, fv.start, fv.end));
 
@@ -638,14 +643,16 @@ void _validate_FE_FF_winding(const FoldGraph* graph, bool* is) {
 			usize match_size = 0;
 
 			ARRAY_FOR_EACH_IN_RANGE(&graph->FE.data,
-				_, usize*, fei, fe.start, fe.end) {
+				_, usize*, fei, fe.start, fe.end)
+			{
 				usize ef_start = array2_start_offset_at(&graph->EF, *fei);
 				usize ef_end = array2_end_offset_at(&graph->EF, *fei);
 
 				usize current_match_size = 0;
 				bool current_face_found = false;
 				ARRAY_FOR_EACH_IN_RANGE(&graph->EF.data,
-					__, usize*, efi, ef_start, ef_end) {
+					__, usize*, efi, ef_start, ef_end)
+				{
 					if (*efi == fe.index && NOT(current_face_found)) {
 						current_face_found = true;
 						continue;

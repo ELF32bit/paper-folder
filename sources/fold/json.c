@@ -11,14 +11,17 @@
 #include <string.h>
 #include <ctype.h>
 
-#define NS_ FOLD_EXTENSIONS_NAMESPACE
+#define GE_ ""
+#define ME_ FOLD_EXTENSIONS_NAMESPACE
 
 /* ========================================================================= */
 /* FOLD Graph Deserialization                                                */
 /* ========================================================================= */
 
 static inline
-Error _parse_json_array_coords(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_coords(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -60,7 +63,9 @@ Error _parse_json_array_coords(yyjson_val* object, Array* array, const char* nam
 }
 
 static inline
-Error _parse_json_array2_indices(yyjson_val* object, Array2* array2, const char* name, bool has_null) {
+Error _parse_json_array2_indices(yyjson_val* object,
+	Array2* array2, const char* name, bool has_null)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -77,7 +82,7 @@ Error _parse_json_array2_indices(yyjson_val* object, Array2* array2, const char*
 			if (has_null && yyjson_is_null(element)) continue;
 			if NOT(yyjson_is_uint(element)) return ERROR;
 			if (yyjson_get_uint(element) > USIZE_MAX - has_null) {
-				return ERROR_OUT_OF_MEMORY;
+				return ERROR_INTEGER_OVERFLOW;
 			}
 		}
 		TRY_ADD(data_size, inner_array_size);
@@ -112,7 +117,9 @@ Error _parse_json_array2_indices(yyjson_val* object, Array2* array2, const char*
 }
 
 static inline
-Error _parse_json_array_edges(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_edges(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -128,7 +135,7 @@ Error _parse_json_array_edges(yyjson_val* object, Array* array, const char* name
 		yyjson_arr_foreach(inner_array, i, _, element) {
 			if NOT(yyjson_is_uint(element)) return ERROR;
 			if (yyjson_get_uint(element) > USIZE_MAX) {
-				return ERROR_OUT_OF_MEMORY;
+				return ERROR_INTEGER_OVERFLOW;
 			}
 		}
 	}
@@ -147,7 +154,9 @@ Error _parse_json_array_edges(yyjson_val* object, Array* array, const char* name
 }
 
 static inline
-Error _parse_json_array_chars(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_strings(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -172,17 +181,8 @@ Error _parse_json_array_chars(yyjson_val* object, Array* array, const char* name
 			array_set(array, i, &s0);
 		} else {
 			const char* string = yyjson_get_str(element);
-			usize length = strlen(string);
-
-			char word[array->element_size];
-			usize word_length = (length < (array->element_size - 1))
-				? length : (array->element_size - 1);
-
-			memcpy(word, string, word_length);
-			memset(word + word_length, 0,
-				array->element_size - word_length);
-
-			array_set(array, i, word);
+			STRING_BUFFER_RAW(string, buffer, array->element_size);
+			array_set(array, i, buffer);
 		}
 	}
 
@@ -190,7 +190,9 @@ Error _parse_json_array_chars(yyjson_val* object, Array* array, const char* name
 }
 
 static inline
-Error _parse_json_array_floats(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_floats(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -213,7 +215,9 @@ Error _parse_json_array_floats(yyjson_val* object, Array* array, const char* nam
 }
 
 static inline
-Error _parse_json_array_orders(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_orders(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -230,7 +234,7 @@ Error _parse_json_array_orders(yyjson_val* object, Array* array, const char* nam
 			if (i != 2) {
 				if NOT(yyjson_is_uint(element)) return ERROR;
 				if (yyjson_get_uint(element) > USIZE_MAX) {
-					return ERROR_OUT_OF_MEMORY;
+					return ERROR_INTEGER_OVERFLOW;
 				}
 			} else if (i == 2) {
 				if NOT(yyjson_is_int(element)) return ERROR;
@@ -267,7 +271,9 @@ Error _parse_json_array_orders(yyjson_val* object, Array* array, const char* nam
 }
 
 static inline
-Error _parse_json_array_colors(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_colors(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -279,7 +285,7 @@ Error _parse_json_array_colors(yyjson_val* object, Array* array, const char* nam
 	yyjson_arr_foreach(json_array, i, _, element) {
 		if NOT(yyjson_is_uint(element)) return ERROR;
 		if (yyjson_get_uint(element) > USIZE_MAX) {
-			return ERROR_OUT_OF_MEMORY;
+			return ERROR_INTEGER_OVERFLOW;
 		}
 	}
 
@@ -295,7 +301,9 @@ Error _parse_json_array_colors(yyjson_val* object, Array* array, const char* nam
 }
 
 static inline
-Error _parse_json_array_coords2(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_coords2(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -327,7 +335,9 @@ Error _parse_json_array_coords2(yyjson_val* object, Array* array, const char* na
 }
 
 static inline
-Error _parse_json_array_coords3(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_array_coords3(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -359,7 +369,9 @@ Error _parse_json_array_coords3(yyjson_val* object, Array* array, const char* na
 }
 
 static inline
-Error _parse_json_array_indices(yyjson_val* object, Array* array, const char* name, bool has_null) {
+Error _parse_json_array_indices(yyjson_val* object,
+	Array* array, const char* name, bool has_null)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
@@ -372,7 +384,7 @@ Error _parse_json_array_indices(yyjson_val* object, Array* array, const char* na
 		if (has_null && yyjson_is_null(element)) continue;
 		if NOT(yyjson_is_uint(element)) return ERROR;
 		if (yyjson_get_uint(element) > USIZE_MAX - has_null) {
-			return ERROR_OUT_OF_MEMORY;
+			return ERROR_INTEGER_OVERFLOW;
 		}
 	}
 
@@ -392,16 +404,16 @@ Error _parse_json_array_indices(yyjson_val* object, Array* array, const char* na
 static
 Error fold_graph_extensions_from_json(FoldGraphExtensions* extensions, void* JSON, void* Object) {
 	(void)JSON; yyjson_val* object = Object;
-	TRY(_parse_json_array_colors(object, &extensions->PC, NS_"paints_color"));
-	TRY(_parse_json_array_coords2(object, &extensions->TC, NS_"uvs_coords"));
-	TRY(_parse_json_array_coords2(object, &extensions->T2C, NS_"uv2s_coords"));
-	TRY(_parse_json_array_coords3(object, &extensions->NC, NS_"normals_coords"));
-	TRY(_parse_json_array_chars(object, &extensions->MN, NS_"materials_name"));
-	TRY(_parse_json_array_indices(object, &extensions->VP, "vertices_"NS_"paint", false));
-	TRY(_parse_json_array2_indices(object, &extensions->FT, "faces_"NS_"uvs", true));
-	TRY(_parse_json_array2_indices(object, &extensions->FT2, "faces_"NS_"uv2s", true));
-	TRY(_parse_json_array2_indices(object, &extensions->FN, "faces_"NS_"normals", true));
-	TRY(_parse_json_array_indices(object, &extensions->FM, "faces_"NS_"material", true));
+	TRY(_parse_json_array_colors(object, &extensions->PC, GE_"paints_color"));
+	TRY(_parse_json_array_coords2(object, &extensions->TC, GE_"uvs_coords"));
+	TRY(_parse_json_array_coords2(object, &extensions->T2C, GE_"uv2s_coords"));
+	TRY(_parse_json_array_coords3(object, &extensions->NC, GE_"normals_coords"));
+	TRY(_parse_json_array_strings(object, &extensions->MN, GE_"materials_name"));
+	TRY(_parse_json_array_indices(object, &extensions->VP, "vertices_"GE_"paint", false));
+	TRY(_parse_json_array2_indices(object, &extensions->FT, "faces_"GE_"uvs", true));
+	TRY(_parse_json_array2_indices(object, &extensions->FT2, "faces_"GE_"uv2s", true));
+	TRY(_parse_json_array2_indices(object, &extensions->FN, "faces_"GE_"normals", true));
+	TRY(_parse_json_array_indices(object, &extensions->FM, "faces_"GE_"material", true));
 	return OK;
 }
 
@@ -414,7 +426,7 @@ Error fold_graph_from_json(FoldGraph* graph, void* JSON, void* Object) {
 	TRY(_parse_json_array2_indices(object, &graph->VF, "vertices_faces", true));
 	TRY(_parse_json_array_edges(object, &graph->EV, "edges_vertices"));
 	TRY(_parse_json_array2_indices(object, &graph->EF, "edges_faces", true));
-	TRY(_parse_json_array_chars(object, &graph->EA, "edges_assignment"));
+	TRY(_parse_json_array_strings(object, &graph->EA, "edges_assignment"));
 	TRY(_parse_json_array_floats(object, &graph->EFA, "edges_foldAngle"));
 	TRY(_parse_json_array_floats(object, &graph->EL, "edges_length"));
 	TRY(_parse_json_array_orders(object, &graph->EO, "edgeOrders"));
@@ -437,7 +449,9 @@ if (FOLD_COMPATIBILITY_EFA_EL && graph->EL.size == 0) {
 /* ========================================================================= */
 
 static inline
-Error _encode_json_array_coords(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_coords(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -464,7 +478,9 @@ Error _encode_json_array_coords(yyjson_mut_doc* json, yyjson_mut_val* object, co
 }
 
 static inline
-Error _encode_json_array2_indices(yyjson_mut_doc* json, yyjson_mut_val* object, const Array2* array2, const char* name, bool has_null) {
+Error _encode_json_array2_indices(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array2* array2, const char* name, bool has_null)
+{
 	if (array2->size == 0 || array2->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -475,7 +491,8 @@ Error _encode_json_array2_indices(yyjson_mut_doc* json, yyjson_mut_val* object, 
 			inner_array = yyjson_mut_arr(json);
 			TRY_NEW_MEMORY(inner_array);
 			ARRAY_FOR_EACH_IN_RANGE(&array2->data,
-				_, usize*, number, array.start, array.end) {
+				_, usize*, number, array.start, array.end)
+			{
 				if (*number == FOLD_GRAPH_NULL) {
 					TRY(!yyjson_mut_arr_add_null(json, inner_array));
 				} else {
@@ -505,7 +522,9 @@ Error _encode_json_array2_indices(yyjson_mut_doc* json, yyjson_mut_val* object, 
 }
 
 static inline
-Error _encode_json_array_edges(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_edges(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -527,18 +546,20 @@ Error _encode_json_array_edges(yyjson_mut_doc* json, yyjson_mut_val* object, con
 }
 
 static inline
-Error _encode_json_array_chars(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_strings(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
 
-	ARRAY_FOR_EACH(array, _, char*, string) {
+	ARRAY_FOR_EACH(array, _, char*, buffer) {
 		if (array->element_size == sizeof(char)) {
-			TRY(!yyjson_mut_arr_add_strn(json, json_array, string, sizeof(char)));
+			TRY(!yyjson_mut_arr_add_strn(json, json_array, buffer,
+				sizeof(char)));
 		} else {
-			char* end = memchr(string, '\0', array->element_size);
-			usize length = end ? (usize)(end - string) : array->element_size;
-			TRY(!yyjson_mut_arr_add_strn(json, json_array, string, length));
+			TRY(!yyjson_mut_arr_add_strn(json, json_array, buffer,
+				string_buffer_length(buffer, array->element_size)));
 		}
 	}
 
@@ -547,7 +568,9 @@ Error _encode_json_array_chars(yyjson_mut_doc* json, yyjson_mut_val* object, con
 }
 
 static inline
-Error _encode_json_array_floats(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_floats(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 
 	ARRAY_CREATE(numbers, double);
@@ -566,7 +589,9 @@ Error _encode_json_array_floats(yyjson_mut_doc* json, yyjson_mut_val* object, co
 }
 
 static inline
-Error _encode_json_array_orders(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_orders(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -594,7 +619,9 @@ Error _encode_json_array_orders(yyjson_mut_doc* json, yyjson_mut_val* object, co
 }
 
 static inline
-Error _encode_json_array_colors(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_colors(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -609,7 +636,9 @@ Error _encode_json_array_colors(yyjson_mut_doc* json, yyjson_mut_val* object, co
 }
 
 static inline
-Error _encode_json_array_coords2(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_coords2(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -631,7 +660,9 @@ Error _encode_json_array_coords2(yyjson_mut_doc* json, yyjson_mut_val* object, c
 }
 
 static inline
-Error _encode_json_array_coords3(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_array_coords3(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
@@ -654,7 +685,9 @@ Error _encode_json_array_coords3(yyjson_mut_doc* json, yyjson_mut_val* object, c
 }
 
 static inline
-Error _encode_json_array_indices(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name, bool has_null) {
+Error _encode_json_array_indices(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name, bool has_null)
+{
 	if (array->size == 0 || array->is_view) return OK;
 	if (has_null) {
 		yyjson_mut_val* json_array;
@@ -691,16 +724,16 @@ Error _encode_json_array_indices(yyjson_mut_doc* json, yyjson_mut_val* object, c
 static
 Error fold_graph_extensions_to_json(const FoldGraphExtensions* extensions, void* JSON, void* Object) {
 	yyjson_mut_doc* json = JSON; yyjson_mut_val* object = Object;
-	TRY(_encode_json_array_colors(json, object, &extensions->PC, NS_"paints_color"));
-	TRY(_encode_json_array_coords2(json, object, &extensions->TC, NS_"uvs_coords"));
-	TRY(_encode_json_array_coords2(json, object, &extensions->T2C, NS_"uv2s_coords"));
-	TRY(_encode_json_array_coords3(json, object, &extensions->NC, NS_"normals_coords"));
-	TRY(_encode_json_array_chars(json, object, &extensions->MN, NS_"materials_name"));
-	TRY(_encode_json_array_indices(json, object, &extensions->VP, "vertices_"NS_"paint", false));
-	TRY(_encode_json_array2_indices(json, object, &extensions->FT, "faces_"NS_"uvs", true));
-	TRY(_encode_json_array2_indices(json, object, &extensions->FT2, "faces_"NS_"uv2s", true));
-	TRY(_encode_json_array2_indices(json, object, &extensions->FN, "faces_"NS_"normals", true));
-	TRY(_encode_json_array_indices(json, object, &extensions->FM, "faces_"NS_"material", true));
+	TRY(_encode_json_array_colors(json, object, &extensions->PC, GE_"paints_color"));
+	TRY(_encode_json_array_coords2(json, object, &extensions->TC, GE_"uvs_coords"));
+	TRY(_encode_json_array_coords2(json, object, &extensions->T2C, GE_"uv2s_coords"));
+	TRY(_encode_json_array_coords3(json, object, &extensions->NC, GE_"normals_coords"));
+	TRY(_encode_json_array_strings(json, object, &extensions->MN, GE_"materials_name"));
+	TRY(_encode_json_array_indices(json, object, &extensions->VP, "vertices_"GE_"paint", false));
+	TRY(_encode_json_array2_indices(json, object, &extensions->FT, "faces_"GE_"uvs", true));
+	TRY(_encode_json_array2_indices(json, object, &extensions->FT2, "faces_"GE_"uv2s", true));
+	TRY(_encode_json_array2_indices(json, object, &extensions->FN, "faces_"GE_"normals", true));
+	TRY(_encode_json_array_indices(json, object, &extensions->FM, "faces_"GE_"material", true));
 	return OK;
 }
 
@@ -712,7 +745,7 @@ Error fold_graph_to_json(const FoldGraph* graph, void* JSON, void* Object) {
 	TRY(_encode_json_array2_indices(json, object, &graph->VF, "vertices_faces", true));
 	TRY(_encode_json_array_edges(json, object, &graph->EV, "edges_vertices"));
 	TRY(_encode_json_array2_indices(json, object, &graph->EF, "edges_faces", true));
-	TRY(_encode_json_array_chars(json, object, &graph->EA, "edges_assignment"));
+	TRY(_encode_json_array_strings(json, object, &graph->EA, "edges_assignment"));
 	TRY(_encode_json_array_floats(json, object, &graph->EFA, "edges_foldAngle"));
 	TRY(_encode_json_array_floats(json, object, &graph->EL, "edges_length"));
 	TRY(_encode_json_array_orders(json, object, &graph->EO, "edgeOrders"));
@@ -729,7 +762,9 @@ Error fold_graph_to_json(const FoldGraph* graph, void* JSON, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error _parse_json_string(yyjson_val* object, String* string, const char* name) {
+Error _parse_json_string(yyjson_val* object,
+	String* string, const char* name)
+{
 	yyjson_val* json_string = yyjson_obj_get(object, name);
 	if (json_string == NULL) return OK;
 	if NOT(yyjson_is_str(json_string)) return ERROR;
@@ -739,43 +774,23 @@ Error _parse_json_string(yyjson_val* object, String* string, const char* name) {
 }
 
 static inline
-Error _parse_json_array_strings(yyjson_val* object, Array* array, const char* name) {
-	yyjson_val* json_array = yyjson_obj_get(object, name);
-	if (json_array == NULL) return OK;
-	if NOT(yyjson_is_arr(json_array)) return ERROR;
-	usize size = yyjson_arr_size(json_array);
-	if (size == 0) return OK;
-
-	usize i, _;
-	yyjson_val *element;
-	yyjson_arr_foreach(json_array, i, _, element) {
-		if NOT(yyjson_is_str(element)) return ERROR;
-	}
-
-	array_recreate(array);
-	TRY(array_resize(array, size));
-	yyjson_arr_foreach(json_array, i, _, element) {
-		String* string = array_get(array, i);
-		string_create(string);
-		TRY_OR_ELSE(string_copy_raw(string, yyjson_get_str(element)),
-			array->size = i);
-	}
-
-	return OK;
-}
-
-static inline
-Error _parse_json_index(yyjson_val* object, usize* value, const char* name) {
+Error _parse_json_index(yyjson_val* object,
+	usize* value, const char* name)
+{
 	yyjson_val* json_int = yyjson_obj_get(object, name);
 	if (json_int == NULL) return OK;
 	if NOT(yyjson_is_uint(json_int)) return ERROR;
-	if (yyjson_get_uint(json_int) > USIZE_MAX) return ERROR_OUT_OF_MEMORY;
+	if (yyjson_get_uint(json_int) > USIZE_MAX - 1) {
+		return ERROR_INTEGER_OVERFLOW;
+	}
 	*value = (usize)yyjson_get_uint(json_int);
 	return OK;
 }
 
 static inline
-Error _parse_json_bool(yyjson_val* object, bool* value, const char* name) {
+Error _parse_json_bool(yyjson_val* object,
+	bool* value, const char* name)
+{
 	yyjson_val* json_bool = yyjson_obj_get(object, name);
 	if (json_bool == NULL) return OK;
 	if NOT(yyjson_is_bool(json_bool)) return ERROR;
@@ -786,7 +801,7 @@ Error _parse_json_bool(yyjson_val* object, bool* value, const char* name) {
 static
 Error fold_frame_metadata_from_json(FoldFrameMetadata* metadata, void* JSON, void* Object) {
 	(void)JSON; yyjson_val* object = Object;
-	TRY(_parse_json_bool(object, &metadata->is_simulated, "frame_"NS_"simulated"));
+	TRY(_parse_json_bool(object, &metadata->is_simulated, "frame_"ME_"simulated"));
 	return OK;
 }
 
@@ -811,35 +826,27 @@ Error fold_frame_from_json(FoldFrame* frame, void* JSON, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error _encode_json_string(yyjson_mut_doc* json, yyjson_mut_val* object, const String* string, const char* name) {
+Error _encode_json_string(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const String* string, const char* name)
+{
 	if (string->length == 0 || string->is_view) return OK;
 	TRY(!yyjson_mut_obj_add_str(json, object, name, string->data));
 	return OK;
 }
 
 static inline
-Error _encode_json_array_strings(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
-	if (array->size == 0 || array->is_view) return OK;
-	yyjson_mut_val* json_array = yyjson_mut_arr(json);
-	TRY_NEW_MEMORY(json_array);
-
-	ARRAY_FOR_EACH(array, _, String*, string) {
-		TRY(!yyjson_mut_arr_add_str(json, json_array, string->data));
-	}
-
-	TRY(!yyjson_mut_obj_add_val(json, object, name, json_array));
-	return OK;
-}
-
-static inline
-Error _encode_json_index(yyjson_mut_doc* json, yyjson_mut_val* object, const usize* value, const char* name) {
+Error _encode_json_index(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const usize* value, const char* name)
+{
 	if (*value == FOLD_FRAME_PARENT_NONE) return OK;
 	TRY(!yyjson_mut_obj_add_uint(json, object, name, (u64)*value));
 	return OK;
 }
 
 static inline
-Error _encode_json_bool(yyjson_mut_doc* json, yyjson_mut_val* object, const bool* value, const char* name) {
+Error _encode_json_bool(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const bool* value, const char* name)
+{
 	if (*value == false) return OK;
 	TRY(!yyjson_mut_obj_add_bool(json, object, name, *value));
 	return OK;
@@ -848,7 +855,7 @@ Error _encode_json_bool(yyjson_mut_doc* json, yyjson_mut_val* object, const bool
 static
 Error fold_frame_metadata_to_json(const FoldFrameMetadata* metadata, void* JSON, void* Object) {
 	yyjson_mut_doc* json = JSON; yyjson_mut_val* object = Object;
-	TRY(_encode_json_bool(json, object, &metadata->is_simulated, "frame"NS_"simulated"));
+	TRY(_encode_json_bool(json, object, &metadata->is_simulated, "frame"ME_"simulated"));
 	return OK;
 }
 
@@ -872,7 +879,9 @@ Error fold_frame_to_json(const FoldFrame* frame, void* JSON, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error _parse_json_float(yyjson_val* object, double* value, const char* name) {
+Error _parse_json_float(yyjson_val* object,
+	double* value, const char* name)
+{
 	yyjson_val* json_number = yyjson_obj_get(object, name);
 	if (json_number == NULL) return OK;
 	if NOT(yyjson_is_num(json_number)) return ERROR;
@@ -881,12 +890,15 @@ Error _parse_json_float(yyjson_val* object, double* value, const char* name) {
 }
 
 static inline
-Error _parse_json_frames(yyjson_val* object, Array* array, const char* name) {
+Error _parse_json_frames(yyjson_val* object,
+	Array* array, const char* name)
+{
 	yyjson_val* json_array = yyjson_obj_get(object, name);
 	if (json_array == NULL) return OK;
 	if NOT(yyjson_is_arr(json_array)) return ERROR;
 	usize size = yyjson_arr_size(json_array);
 	if (size == 0) return OK;
+	TRY_ADD(size, 1);
 
 	usize i, _;
 	yyjson_val *inner_object;
@@ -894,7 +906,6 @@ Error _parse_json_frames(yyjson_val* object, Array* array, const char* name) {
 		if NOT(yyjson_is_obj(inner_object)) return ERROR;
 	}
 
-	TRY_ADD(size, 1);
 	TRY(array_resize(array, size + 1));
 	yyjson_arr_foreach(json_array, i, _, inner_object) {
 		FoldFrame* frame = array_get(array, i + 1);
@@ -925,19 +936,24 @@ Error fold_file_from_json(FoldFile* file, void* JSON, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error _encode_json_float(yyjson_mut_doc* json, yyjson_mut_val* object, const double* value, const char* name) {
+Error _encode_json_float(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const double* value, const char* name)
+{
 	TRY(!yyjson_mut_obj_add_real(json, object, name, (double)*value));
 	return OK;
 }
 
 static inline
-Error _encode_json_frames(yyjson_mut_doc* json, yyjson_mut_val* object, const Array* array, const char* name) {
+Error _encode_json_frames(yyjson_mut_doc* json, yyjson_mut_val* object,
+	const Array* array, const char* name)
+{
 	if (array->size <= 1) return OK;
 	yyjson_mut_val* json_array = yyjson_mut_arr(json);
 	TRY_NEW_MEMORY(json_array);
 
 	ARRAY_FOR_EACH_IN_RANGE(array,
-		_, FoldFrame*, frame, 1, array->size) {
+		_, FoldFrame*, frame, 1, array->size)
+	{
 		yyjson_mut_val* inner_object = yyjson_mut_obj(json);
 		TRY_NEW_MEMORY(inner_object);
 

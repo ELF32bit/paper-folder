@@ -42,7 +42,8 @@ void _set_array_destroy(Set* set, Array* array) {
 /* ========================================================================= */
 
 void set_create(Set* set, usize key_size,
-	SetHashFunction hash, SetEqualsFunction equals) {
+	SetHashFunction hash, SetEqualsFunction equals)
+{
 	array_create(&set->keys, key_size);
 	array_create(&set->flags, sizeof(u8));
 	set->size = 0;
@@ -55,7 +56,8 @@ void set_create(Set* set, usize key_size,
 
 void set_create_managed(Set* set, usize key_size,
 	SetHashFunction hash, SetEqualsFunction equals,
-	ArrayDestroyFunction destroy, ArrayCopyFunction copy) {
+	ArrayDestroyFunction destroy, ArrayCopyFunction copy)
+{
 	array_create_managed(&set->keys, key_size, destroy, copy);
 	array_create(&set->flags, sizeof(u8));
 	set->size = 0;
@@ -128,6 +130,7 @@ usize _set_find_bucket(const Set* set, const void* key, bool* exists) {
 
 static inline
 Error _set_reallocate(Set* set, usize new_capacity) {
+	TRY_ADD(new_capacity, 3);
 	Set new_set;
 	set_create_managed(&new_set, set->key_size,
 		set->hash, set->equals,
@@ -136,7 +139,6 @@ Error _set_reallocate(Set* set, usize new_capacity) {
 	usize old_capacity = set->keys.capacity;
 	TRY(array_resize(&new_set.keys, new_capacity));
 
-	TRY_ADD(new_capacity, 3);
 	usize new_flags_size = (new_capacity + 3) >> 2;
 	TRY_OR_ELSE(array_resize(&new_set.flags, new_flags_size),
 		set_destroy(&new_set));

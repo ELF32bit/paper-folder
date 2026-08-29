@@ -1,7 +1,7 @@
 #ifndef MATH_COLORS_H
 #define MATH_COLORS_H
 
-#include "colors.h"
+#include "color.h"
 
 #define COLOR_ALICE_BLUE 0xF0F8FFFF
 #define COLOR_ANTIQUE_WHITE 0xFAEBD7FF

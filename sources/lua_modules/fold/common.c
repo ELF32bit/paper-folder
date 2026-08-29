@@ -52,7 +52,8 @@ int l_fold_##fold##_validate##inherited##_meta(lua_State* L) { \
 	if IS_ERROR(result) { \
 		string_destroy(&errors); \
 		lua_pushboolean(L, false); \
-		lua_pushstring(L, FOLD_VALIDATE_ERROR); \
+		lua_pushstring(L, ERROR_STRING_OR( \
+			result, FOLD_VALIDATE_ERROR)); \
 		return 2; \
 	} \
 \
