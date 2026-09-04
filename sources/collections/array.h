@@ -1,5 +1,5 @@
-#ifndef COLLECTIONS_ARRAY_H
-#define COLLECTIONS_ARRAY_H
+#ifndef COLLECTION_ARRAY_H
+#define COLLECTION_ARRAY_H
 
 #include "definitions/types.h"
 #include "definitions/sort.h"
@@ -61,18 +61,18 @@ void array_set(Array* array, usize index, const void* element);
 void array_set_start(Array* array, const void* element);
 void array_set_end(Array* array, const void* element);
 
-#define ARRAY_SET(array, index, type, element) do { \
-	type _element = (type)(element); \
+#define ARRAY_SET(array, index, type, ...) do { \
+	type _element = (type){__VA_ARGS__}; \
 	array_set((array), (index), &_element); \
 } while (0)
 
-#define ARRAY_SET_START(array, index, type, element) do { \
-	type _element = (type)(element); \
+#define ARRAY_SET_START(array, index, type, ...) do { \
+	type _element = (type){__VA_ARGS__}; \
 	array_set_start((array), (index), &_element); \
 } while (0)
 
-#define ARRAY_SET_END(array, index, type, element) do { \
-	type _element = (type)(element); \
+#define ARRAY_SET_END(array, index, type, ...) do { \
+	type _element = (type){__VA_ARGS__}; \
 	array_set_end((array), (index), &_element); \
 } while (0)
 
@@ -92,6 +92,11 @@ Error array_insert(Array* array, usize index, const void* element);
 
 Error array_append(Array* array, const void* element);
 Error array_append_array(Array* array, const Array* another);
+
+#define ARRAY_APPEND(array, type, ...) do { \
+	type _element = (type){__VA_ARGS__}; \
+	array_append((array), &_element); \
+} while (0)
 
 void array_remove(Array* array, usize index);
 void array_remove_range(Array* array, usize start, usize end);
@@ -149,4 +154,4 @@ bool array_iterator_next(ArrayIterator* iterator);
 			_state_##index == 0; \
 			_state_##index = 1)
 
-#endif /* COLLECTIONS_ARRAY_H */
+#endif /* COLLECTION_ARRAY_H */

@@ -9,12 +9,13 @@ CFLAGS = -std=c11 \
 	-I$(THIRDPARTY_DIRECTORY)/lua \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
-	-I$(THIRDPARTY_DIRECTORY)/triangle \
+	-I$(THIRDPARTY_DIRECTORY)/triangle -DREAL=double \
 	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
 	-I$(THIRDPARTY_DIRECTORY)/xoshiro \
 	-Wall -Wextra
-#CFLAGS += -DNDEBUG
+
 CFLAGS += -O2
+#CFLAGS += -DNDEBUG
 
 LDFLAGS =
 LDLIBS = -lm
@@ -82,8 +83,7 @@ lua_compile:
 		'$(LUA_SCRIPTS)'
 
 $(THIRDPARTY_DIRECTORY)/triangle/triangle.o: \
-	CFLAGS += -DTRILIBRARY -DANSI_DECLARATORS -DNO_TIMER -w \
-		-DREAL=double
+	CFLAGS += -DTRILIBRARY -DANSI_DECLARATORS -DNO_TIMER -w
 
 $(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 	@$(CC) $(CFLAGS) $(LDFLAGS) $(C_OBJECTS) \
@@ -95,14 +95,8 @@ $(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 
 clean:
 	@$(MAKE) -C $(THIRDPARTY_DIRECTORY)/lua clean -s --no-print-directory
-	@$(if $(COMSPEC), \
-		del /Q /F $(subst /,\\,$(C_OBJECTS)) $(TARGET)$(EXE) \
-			$(subst /,\\,$(LUA_MODULES_HEADER)) \
-			$(subst /,\\,$(LUA_MODULES_CODE)) \
-			$(subst /,\\,$(LUA_SCRIPTS_HEADER)) \
-			$(subst /,\\,$(LUA_SCRIPTS_CODE)) 2>nul, \
-		rm -f $(C_OBJECTS) $(TARGET)$(EXE) \
-			$(LUA_MODULES_HEADER) \
-			$(LUA_MODULES_CODE) \
-			$(LUA_SCRIPTS_HEADER) \
-			$(LUA_SCRIPTS_CODE))
+	@rm -f $(C_OBJECTS) $(TARGET)$(EXE) \
+		$(LUA_MODULES_HEADER) \
+		$(LUA_MODULES_CODE) \
+		$(LUA_SCRIPTS_HEADER) \
+		$(LUA_SCRIPTS_CODE)

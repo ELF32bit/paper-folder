@@ -11,8 +11,8 @@
 
 typedef struct Color {
 	union {
-		struct { real r, g, b, a; };
-		real components[4];
+		struct { f32 r, g, b, a; };
+		f32 components[4];
 	};
 } Color;
 
@@ -41,7 +41,7 @@ static inline u8 color_get_a8(Color c) {
 	return (u8)(CLAMP(c.a, 0.0, 1.0) * 255.0 + 0.5);
 }
 
-static inline real color_min(Color c) {
+static inline f32 color_min(Color c) {
 	return MIN(MIN(c.r, c.g), c.b);
 }
 
@@ -52,7 +52,7 @@ static inline u8 color_min8(Color c) {
 		color_get_b8(c));
 }
 
-static inline real color_max(Color c) {
+static inline f32 color_max(Color c) {
 	return MAX(MAX(c.r, c.g), c.b);
 }
 
@@ -76,33 +76,33 @@ static inline u32 color_pack(Color c) {
 	return
 		((u32)color_get_r8(c) << 24) |
 		((u32)color_get_g8(c) << 16) |
-		((u32)color_get_b8(c) <<  8) |
+		((u32)color_get_b8(c) << 8) |
 		(u32)color_get_a8(c);
 }
 
-static inline real color_get_luminance(Color c) {
+static inline f32 color_get_luminance(Color c) {
 	return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
 }
 
-static inline real color_get_v(Color c) {
+static inline f32 color_get_v(Color c) {
 	return color_max(c);
 }
 
-static inline real color_get_s(Color c) {
-	real max_c = color_max(c);
-	real min_c = color_min(c);
-	real delta = max_c - min_c;
+static inline f32 color_get_s(Color c) {
+	f32 max_c = color_max(c);
+	f32 min_c = color_min(c);
+	f32 delta = max_c - min_c;
 	if (max_c == 0.0) return 0.0;
 	return delta / max_c;
 }
 
-static inline real color_get_h(Color c) {
-	real max_c = color_max(c);
-	real min_c = color_min(c);
-	real delta = max_c - min_c;
+static inline f32 color_get_h(Color c) {
+	f32 max_c = color_max(c);
+	f32 min_c = color_min(c);
+	f32 delta = max_c - min_c;
 	if (delta == 0.0) return 0.0;
 
-	real h = 0.0;
+	f32 h = 0.0;
 	if (max_c == c.r) {
 		h = (c.g - c.b) / delta + (c.g < c.b ? 6.0 : 0.0);
 	} else if (max_c == c.g) {
@@ -114,21 +114,21 @@ static inline real color_get_h(Color c) {
 	return h / 6.0;
 }
 
-static inline Color color_from_hsv(real h, real s, real v, real a) {
+static inline Color color_from_hsv(f32 h, f32 s, f32 v, f32 a) {
 	h = h - FLOOR(h);
 	s = CLAMP(s, 0.0, 1.0);
 	v = CLAMP(v, 0.0, 1.0);
 
 	if (s == 0.0) return (Color){ .components = { v, v, v, a } };
 
-	real hh = h * 6.0;
+	f32 hh = h * 6.0;
 	if (hh >= 6.0) hh = 0.0;
 	int i = (int)hh;
-	real ff = hh - i;
+	f32 ff = hh - i;
 
-	real p = v * (1.0 - s);
-	real q = v * (1.0 - (s * ff));
-	real t = v * (1.0 - (s * (1.0 - ff)));
+	f32 p = v * (1.0 - s);
+	f32 q = v * (1.0 - (s * ff));
+	f32 t = v * (1.0 - (s * (1.0 - ff)));
 
 	switch (i) {
 		case 0: return (Color){ .components = { v, t, p, a } };
@@ -140,33 +140,33 @@ static inline Color color_from_hsv(real h, real s, real v, real a) {
 	}
 }
 
-static inline Color color_hsv_lerp(Color c1, Color c2, real t) {
-	real h1 = color_get_h(c1);
-	real s1 = color_get_s(c1);
-	real v1 = color_get_v(c1);
+static inline Color color_hsv_lerp(Color c1, Color c2, f32 t) {
+	f32 h1 = color_get_h(c1);
+	f32 s1 = color_get_s(c1);
+	f32 v1 = color_get_v(c1);
 
-	real h2 = color_get_h(c2);
-	real s2 = color_get_s(c2);
-	real v2 = color_get_v(c2);
+	f32 h2 = color_get_h(c2);
+	f32 s2 = color_get_s(c2);
+	f32 v2 = color_get_v(c2);
 
-	real dh = h2 - h1;
+	f32 dh = h2 - h1;
 	if (dh > 0.5) {
 		dh -= 1.0;
 	} else if (dh < -0.5) {
 		dh += 1.0;
 	}
 
-	real h = h1 + dh * t;
+	f32 h = h1 + dh * t;
 	h = h - FLOOR(h);
 
-	real s = s1 * (1.0 - t) + s2 * t;
-	real v = v1 * (1.0 - t) + v2 * t;
-	real a = c1.a * (1.0 - t) + c2.a * t;
+	f32 s = s1 * (1.0 - t) + s2 * t;
+	f32 v = v1 * (1.0 - t) + v2 * t;
+	f32 a = c1.a * (1.0 - t) + c2.a * t;
 
 	return color_from_hsv(h, s, v, a);
 }
 
-static inline Color color_lerp(Color c1, Color c2, real t) {
+static inline Color color_lerp(Color c1, Color c2, f32 t) {
 	return (Color){
 		.r = c1.r * (1.0 - t) + c2.r * t,
 		.g = c1.g * (1.0 - t) + c2.g * t,
@@ -221,7 +221,7 @@ static inline Color color_invert(Color c) {
 	};
 }
 
-static inline Color color_lighten(Color c, real amount) {
+static inline Color color_lighten(Color c, f32 amount) {
 	return (Color){
 		.r = CLAMP(c.r + (1.0 - c.r) * amount, 0.0, 1.0),
 		.g = CLAMP(c.g + (1.0 - c.g) * amount, 0.0, 1.0),
@@ -230,7 +230,7 @@ static inline Color color_lighten(Color c, real amount) {
 	};
 }
 
-static inline Color color_darken(Color c, real amount) {
+static inline Color color_darken(Color c, f32 amount) {
 	return (Color){
 		.r = CLAMP(c.r * (1.0 - amount), 0.0, 1.0),
 		.g = CLAMP(c.g * (1.0 - amount), 0.0, 1.0),
@@ -243,7 +243,7 @@ static inline Color color_blend(Color base, Color over) {
 	if (over.a >= 1.0) return over;
 	if (over.a <= 0.0) return base;
 
-	real a = over.a + base.a * (1.0 - over.a);
+	f32 a = over.a + base.a * (1.0 - over.a);
 	if (a == 0.0) return color_from_rgba8(0, 0, 0, 0);
 
 	return (Color){
@@ -254,14 +254,22 @@ static inline Color color_blend(Color base, Color over) {
 	};
 }
 
-static inline Color color_desaturate(Color c, real factor) {
-	real l = color_get_luminance(c);
+static inline Color color_desaturate(Color c, f32 factor) {
+	f32 l = color_get_luminance(c);
 	return (Color){
 		.r = c.r + (l - c.r) * factor,
 		.g = c.g + (l - c.g) * factor,
 		.b = c.b + (l - c.b) * factor,
 		.a = c.a
 	};
+}
+
+static inline bool color_is_equal(Color c1, Color c2, f32 epsilon) {
+	return
+		ABS(c1.r - c2.r) < epsilon &&
+		ABS(c1.g - c2.g) < epsilon &&
+		ABS(c1.b - c2.b) < epsilon &&
+		ABS(c1.a - c2.a) < epsilon;
 }
 
 #define Color_equals color_equals

@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_COLORS_H
-#define DEFINITIONS_COLORS_H
+#ifndef DEFINITION_COLORS_H
+#define DEFINITION_COLORS_H
 
 #define ANSI_COLOR_RESET "\x1b[0m"
 #define ANSI_COLOR_BOLD "\x1b[1m"
@@ -23,4 +23,4 @@
 #define ANSI_COLOR_AQUA "\x1b[96m"
 #define ANSI_COLOR_WHITE "\x1b[97m"
 
-#endif /* DEFINITIONS_COLORS_H */
+#endif /* DEFINITION_COLORS_H */

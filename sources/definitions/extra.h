@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_EXTRA_H
-#define DEFINITIONS_EXTRA_H
+#ifndef DEFINITION_EXTRA_H
+#define DEFINITION_EXTRA_H
 
 #include "assert.h"
 #include "integer.h"
@@ -64,4 +64,4 @@ static inline usize usize_align_base2(usize value, usize min) {
 	return value + 1;
 }
 
-#endif /* DEFINITIONS_EXTRA_H */
+#endif /* DEFINITION_EXTRA_H */

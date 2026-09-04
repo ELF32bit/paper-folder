@@ -1,5 +1,5 @@
-#ifndef COLLECTIONS_MAP_H
-#define COLLECTIONS_MAP_H
+#ifndef COLLECTION_MAP_H
+#define COLLECTION_MAP_H
 
 #include "set.h"
 
@@ -21,6 +21,10 @@ typedef struct Map {
 
 typedef struct MapIterator {
 	const Map* map;
+	union {
+		usize key_index;
+		usize value_index;
+	};
 	usize index;
 	void* key;
 	void* value;
@@ -102,4 +106,4 @@ bool map_iterator_next(MapIterator* iterator);
 	MapIterator iterator = map_iterator((map)); \
 	while (map_iterator_next(&iterator))
 
-#endif /* COLLECTIONS_MAP_H */
+#endif /* COLLECTION_MAP_H */

@@ -319,6 +319,7 @@ Error map_copy(Map* map, const Map* source_map) {
 MapIterator map_iterator(const Map* map) {
 	MapIterator iterator;
 	iterator.map = map;
+	iterator.key_index = USIZE_MAX;
 	iterator.index = USIZE_MAX;
 	iterator.key = NULL;
 	iterator.value = NULL;
@@ -327,19 +328,26 @@ MapIterator map_iterator(const Map* map) {
 
 bool map_iterator_next(MapIterator* iterator) {
 	if (iterator->map->size == 0) return false;
-	usize i = (iterator->index != USIZE_MAX)
-		? iterator->index + 1 : 0;
+	TRY_SAFE(iterator->key_index++);
 
-	for (; i < iterator->map->keys.capacity; i++) {
-		if (_get_flag(&iterator->map->flags, i) == MAP_FLAG_OCCUPIED) {
-			iterator->index = i;
-			iterator->key = array_get(&iterator->map->keys, i);
-			iterator->value = array_get(&iterator->map->values, i);
+	for (; iterator->key_index < iterator->map->keys.capacity;
+		iterator->key_index++)
+	{
+		if (_get_flag(&iterator->map->flags, iterator->key_index)
+			== MAP_FLAG_OCCUPIED) {
+			iterator->key = array_get(
+				&iterator->map->keys, iterator->key_index);
+
+			iterator->value = array_get(
+				&iterator->map->values, iterator->key_index);
+
+			iterator->index++;
 			return true;
 		}
 	}
 
-	iterator->index = iterator->map->keys.capacity;
+	iterator->key_index = iterator->map->keys.capacity;
+	iterator->index = iterator->map->size;
 	iterator->key = NULL;
 	iterator->value = NULL;
 	return false;

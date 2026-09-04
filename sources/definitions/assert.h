@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_ASSERT_H
-#define DEFINITIONS_ASSERT_H
+#ifndef DEFINITION_ASSERT_H
+#define DEFINITION_ASSERT_H
 
 #include <assert.h>
 #include <stdlib.h>
@@ -42,4 +42,4 @@
 	#define ASSERT_ERROR(condition, error) ((void)0)
 #endif
 
-#endif /* DEFINITIONS_ASSERT_H */
+#endif /* DEFINITION_ASSERT_H */

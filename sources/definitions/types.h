@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_TYPES_H
-#define DEFINITIONS_TYPES_H
+#ifndef DEFINITION_TYPES_H
+#define DEFINITION_TYPES_H
 
 #include "bool.h"
 #include "error.h"
@@ -9,4 +9,4 @@
 
 #include "extra.h"
 
-#endif /* DEFINITIONS_TYPES_H */
+#endif /* DEFINITION_TYPES_H */

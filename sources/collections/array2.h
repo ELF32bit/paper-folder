@@ -1,5 +1,5 @@
-#ifndef COLLECTIONS_ARRAY2_H
-#define COLLECTIONS_ARRAY2_H
+#ifndef COLLECTION_ARRAY2_H
+#define COLLECTION_ARRAY2_H
 
 #include "array.h"
 
@@ -74,4 +74,4 @@ bool array2_iterator_next(Array2Iterator* iterator);
 		ARRAY_FOR_EACH_IN_RANGE(&(array2)->data, index, \
 			type, element, array.start, array.end)
 
-#endif /* COLLECTIONS_ARRAY2_H */
+#endif /* COLLECTION_ARRAY2_H */

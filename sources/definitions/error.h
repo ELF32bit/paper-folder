@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_ERROR_H
-#define DEFINITIONS_ERROR_H
+#ifndef DEFINITION_ERROR_H
+#define DEFINITION_ERROR_H
 
 #include "integer.h"
 
@@ -25,7 +25,7 @@ typedef int Error;
 	: "ok")
 
 #define ERROR_STRING(result) \
-	ERROR_STRING_OR("generic error")
+	ERROR_STRING_OR(result, "generic error")
 
 #define IS_OK(result) ((result) == OK)
 #define IS_ERROR(result) ((result) != OK)
@@ -140,4 +140,4 @@ typedef int Error;
 #define TRY_SIZEOF_OR_ERROR(type, count, execute) \
 	TRY_MULTIPLY_OR_ERROR(sizeof(type), (usize)(count), execute)
 
-#endif /* DEFINITIONS_ERROR_H */
+#endif /* DEFINITION_ERROR_H */

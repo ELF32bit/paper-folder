@@ -1,5 +1,5 @@
-#ifndef COLLECTIONS_STRING_H
-#define COLLECTIONS_STRING_H
+#ifndef COLLECTION_STRING_H
+#define COLLECTION_STRING_H
 
 #include "definitions/types.h"
 
@@ -95,4 +95,4 @@ static inline int string_sort_descending(const void* a, const void* b) {
 	return string_compare((const String*)b, (const String*)a);
 }
 
-#endif /* COLLECTIONS_STRING_H */
+#endif /* COLLECTION_STRING_H */

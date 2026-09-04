@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_MATH_H
-#define DEFINITIONS_MATH_H
+#ifndef DEFINITION_MATH_H
+#define DEFINITION_MATH_H
 
 #include <math.h>
 
@@ -334,4 +334,4 @@
 	default: fma((x), (y), (z)) \
 )
 
-#endif /* DEFINITIONS_MATH_H */
+#endif /* DEFINITION_MATH_H */

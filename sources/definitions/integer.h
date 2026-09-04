@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_INTEGER_H
-#define DEFINITIONS_INTEGER_H
+#ifndef DEFINITION_INTEGER_H
+#define DEFINITION_INTEGER_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -44,4 +44,4 @@ typedef size_t usize;
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#endif /* DEFINITIONS_INTEGER_H */
+#endif /* DEFINITION_INTEGER_H */
