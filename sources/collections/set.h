@@ -1,5 +1,5 @@
-#ifndef COLLECTIONS_SET_H
-#define COLLECTIONS_SET_H
+#ifndef COLLECTION_SET_H
+#define COLLECTION_SET_H
 
 #include "array.h"
 #include "definitions/hash.h"
@@ -23,6 +23,7 @@ typedef struct Set {
 
 typedef struct SetIterator {
 	const Set* set;
+	usize key_index;
 	usize index;
 	void* key;
 } SetIterator;
@@ -83,4 +84,4 @@ bool set_iterator_next(SetIterator* it);
 	SetIterator iterator = set_iterator((set)); \
 	while (set_iterator_next(&iterator))
 
-#endif /* COLLECTIONS_SET_H */
+#endif /* COLLECTION_SET_H */
