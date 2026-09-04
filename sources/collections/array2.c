@@ -160,13 +160,15 @@ Array2Iterator array2_iterator(const Array2* array2) {
 
 bool array2_iterator_next(Array2Iterator* iterator) {
 	if (iterator->array2->offsets.size == 0) return false;
-	usize i = (iterator->index != USIZE_MAX)
-		? iterator->index + 1 : 0;
+	TRY_SAFE(iterator->index++);
 
-	if (i < iterator->array2->offsets.size) {
-		iterator->index = i;
-		iterator->start = array2_start_offset_at(iterator->array2, i);
-		iterator->end = array2_end_offset_at(iterator->array2, i);
+	if (iterator->index < iterator->array2->offsets.size) {
+		iterator->start = array2_start_offset_at(
+			iterator->array2, iterator->index);
+
+		iterator->end = array2_end_offset_at(
+			iterator->array2, iterator->index);
+
 		iterator->size = iterator->end - iterator->start;
 		return true;
 	}

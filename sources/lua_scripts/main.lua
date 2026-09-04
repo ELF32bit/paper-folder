@@ -1,2 +1,1 @@
-local args = require("commands.all")
-args.execute(arg)
+require("commands.all").execute()

@@ -1,32 +1,57 @@
-local args = {}
-local modules = {
-	(require("commands.test")),
+local module = {}
+local argparse = require("thirdparty.argparse")
+
+local commands = {
+	(require("commands.generate")),
 	(require("commands.convert")),
+	(require("commands.convert.fold")),
+	(require("commands.convert.svg")),
+	(require("commands.convert.obj")),
 	(require("commands.validate")),
-	(require("commands.help")),
+	(require("commands.test")),
 }
 
-local commands = {}
-for _, module in ipairs(modules) do
-	commands[module.name] = module
-	for _, alias in ipairs(module.aliases) do
-		commands[alias] = module
+local function create_parser()
+	local parser = argparse("paper-folder")
+		:description("powerful origami toolkit")
+
+	parser:require_command(true)
+
+	return parser
+end
+
+local function register_commands(parser)
+	local groups, order = {}, {}
+	for _, command in ipairs(commands) do
+		local object = command.register(parser)
+		local group_name = command.group or "Other Commands"
+		if groups[group_name] == nil then
+			groups[group_name] = { object }
+			table.insert(order, group_name)
+		else
+			table.insert(groups[group_name], object)
+		end
+	end
+	for _, group_name in ipairs(order) do
+		local objects = groups[group_name]
+		parser:group(group_name, table.unpack(objects))
 	end
 end
 
-function args.execute(arg)
-	local name = arg[1]
-	if type(name) ~= "string" then
-		return commands.help.execute(arg,
-			modules, nil)
+local function execute_command(args)
+	for _, command in ipairs(commands) do
+		if args[command.name] then
+			command.execute(args)
+			break
+		end
 	end
-	local command = commands[name]
-	if type(command) ~= "table" then
-		return commands.help.execute(arg,
-			modules, name)
-	end
-	command.execute(arg,
-		modules, nil)
 end
 
-return args
+function module.execute()
+	local parser = create_parser()
+	register_commands(parser)
+	local args = parser:parse()
+	execute_command(args)
+end
+
+return module

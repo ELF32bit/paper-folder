@@ -4,7 +4,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "fold/graph.h"
+#include "fold_specification/graph.h"
 
 #define FOLD_GRAPH_METATABLE "fold_graph_C.instance"
 
@@ -48,8 +48,21 @@ int l_fold_graph_is_self_intersecting_meta(lua_State* L);
 int l_fold_graph_has_concave_faces_meta(lua_State* L);
 
 /* ========================================================================= */
+/* Properties                                                                */
+/* ========================================================================= */
+
+int l_fold_graph_is_maekawa_compliant_meta(lua_State* L);
+int l_fold_graph_is_kawasaki_compliant_meta(lua_State* L);
+int l_fold_graph_is_kawasaki_compatible_meta(lua_State* L);
+
+/* ========================================================================= */
 /* Vertices Building                                                         */
 /* ========================================================================= */
+
+int l_fold_graph_VV_from_EV_meta(lua_State* L);
+int l_fold_graph_VV_from_FV_meta(lua_State* L);
+int l_fold_graph_VE_from_VV_meta(lua_State* L);
+int l_fold_graph_VF_from_VV_meta(lua_State* L);
 
 /* ========================================================================= */
 /* Edges Building                                                            */
@@ -63,5 +76,11 @@ int l_fold_graph_EL_from_EVC_meta(lua_State* L);
 /* ========================================================================= */
 /* Faces Building                                                            */
 /* ========================================================================= */
+
+int l_fold_graph_FE_from_FV_meta(lua_State* L);
+int l_fold_graph_FF_from_FV_meta(lua_State* L);
+
+int l_fold_graph_FV_triangulate_meta(lua_State* L);
+int l_fold_graph_FV_flip_meta(lua_State* L);
 
 #endif /* LUA_MODULE_FOLD_GRAPH_H */

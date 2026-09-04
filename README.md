@@ -6,6 +6,11 @@ Export precomputed folding animation as an easy to parse series of meshes.<br>
 ## Current features
 * FOLD specification (version 1.2) validation.
 * Convert from and to FOLD, SVG, OBJ files.
+* Generate locally flat-foldable SVG crease patterns.
+
+> The research mission of this project is to classify locally flat-foldable graphs,<br>
+with the condition that their dual graphs also retain interior flat-foldability.<br>
+One example is a hyperbolic paraboloid origami without a central square.
 
 ## Building the project
 Run the command inside a terminal.<br>

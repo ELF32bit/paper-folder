@@ -409,12 +409,11 @@ ArrayIterator array_iterator(const Array* array) {
 
 bool array_iterator_next(ArrayIterator* iterator) {
 	if (iterator->array->size == 0) return false;
-	usize i = (iterator->index != USIZE_MAX)
-		? iterator->index + 1 : 0;
+	TRY_SAFE(iterator->index++);
 
-	if (i < iterator->array->size) {
-		iterator->index = i;
-		iterator->element = array_get(iterator->array, i);
+	if (iterator->index < iterator->array->size) {
+		iterator->element = array_get(
+			iterator->array, iterator->index);
 		return true;
 	}
 
