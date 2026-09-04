@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_CPU_H
-#define DEFINITIONS_CPU_H
+#ifndef DEFINITION_CPU_H
+#define DEFINITION_CPU_H
 
 #include "integer.h"
 
@@ -21,4 +21,4 @@
 	#define CPU_ARCHITECTURE_AT_LEAST_64_BIT
 #endif
 
-#endif /* DEFINITIONS_CPU_H */
+#endif /* DEFINITION_CPU_H */

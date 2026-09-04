@@ -4,7 +4,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "fold/file.h"
+#include "fold_specification/file.h"
 
 #define FOLD_FILE_METATABLE "fold_file_C.instance"
 

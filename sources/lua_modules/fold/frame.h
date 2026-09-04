@@ -4,7 +4,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-#include "fold/frame.h"
+#include "fold_specification/frame.h"
 
 #define FOLD_FRAME_METATABLE "fold_frame_C.instance"
 

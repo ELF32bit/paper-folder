@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_OS_H
-#define DEFINITIONS_OS_H
+#ifndef DEFINITION_OS_H
+#define DEFINITION_OS_H
 
 #if defined(_WIN32) || defined(_WIN64)
 	#define OS_WINDOWS 1
@@ -9,4 +9,4 @@
 	#define OS_MAC 1
 #endif
 
-#endif /* DEFINITIONS_OS_H */
+#endif /* DEFINITION_OS_H */

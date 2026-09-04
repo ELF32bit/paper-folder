@@ -1,0 +1,4 @@
+#ifndef FOLD_SIMULATION_H
+#define FOLD_SIMULATION_H
+
+#endif /* FOLD_SIMULATION_H */

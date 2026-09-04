@@ -270,6 +270,7 @@ Error set_copy(Set* set, const Set* source_set) {
 SetIterator set_iterator(const Set* set) {
 	SetIterator iterator;
 	iterator.set = set;
+	iterator.key_index = USIZE_MAX;
 	iterator.index = USIZE_MAX;
 	iterator.key = NULL;
 	return iterator;
@@ -277,18 +278,24 @@ SetIterator set_iterator(const Set* set) {
 
 bool set_iterator_next(SetIterator* iterator) {
 	if (iterator->set->size == 0) return false;
-	usize i = (iterator->index != USIZE_MAX)
-		? iterator->index + 1 : 0;
+	TRY_SAFE(iterator->key_index++);
 
-	for (; i < iterator->set->keys.capacity; i++) {
-		if (_get_flag(&iterator->set->flags, i) == SET_FLAG_OCCUPIED) {
-			iterator->index = i;
-			iterator->key = array_get(&iterator->set->keys, i);
+	for (; iterator->key_index < iterator->set->keys.capacity;
+		iterator->key_index++)
+	{
+		if (_get_flag(&iterator->set->flags, iterator->key_index)
+			== SET_FLAG_OCCUPIED)
+		{
+			iterator->key = array_get(
+				&iterator->set->keys, iterator->key_index);
+
+			iterator->index++;
 			return true;
 		}
 	}
 
-	iterator->index = iterator->set->keys.capacity;
+	iterator->key_index = iterator->set->keys.capacity;
+	iterator->index = iterator->set->size;
 	iterator->key = NULL;
 	return false;
 }

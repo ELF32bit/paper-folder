@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_FLOAT_H
-#define DEFINITIONS_FLOAT_H
+#ifndef DEFINITION_FLOAT_H
+#define DEFINITION_FLOAT_H
 
 #include <float.h>
 #include <assert.h>
@@ -38,4 +38,4 @@ typedef double real;
 	default: DBL_EPSILON \
 )
 
-#endif /* DEFINITIONS_FLOAT_H */
+#endif /* DEFINITION_FLOAT_H */
