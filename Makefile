@@ -6,11 +6,12 @@ EXE = $(if $(COMSPEC),.exe,)
 CC = gcc
 CFLAGS = -std=c11 \
 	-I. -I$(SOURCES_DIRECTORY) \
-	-I$(THIRDPARTY_DIRECTORY)/xoshiro \
 	-I$(THIRDPARTY_DIRECTORY)/lua \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
+	-I$(THIRDPARTY_DIRECTORY)/triangle \
 	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
+	-I$(THIRDPARTY_DIRECTORY)/xoshiro \
 	-Wall -Wextra
 #CFLAGS += -DNDEBUG
 CFLAGS += -O2
@@ -79,6 +80,10 @@ lua_compile:
 		'$(LUA_SCRIPTS_HEADER)' \
 		'$(LUA_SCRIPTS_CODE)' \
 		'$(LUA_SCRIPTS)'
+
+$(THIRDPARTY_DIRECTORY)/triangle/triangle.o: \
+	CFLAGS += -DTRILIBRARY -DANSI_DECLARATORS -DNO_TIMER -w \
+		-DREAL=double
 
 $(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 	@$(CC) $(CFLAGS) $(LDFLAGS) $(C_OBJECTS) \
