@@ -1,6 +1,6 @@
 #include "lua_modules/fold/file.h"
 
-#include "codecs/svg.h"
+#include "io/svg.h"
 
 /* ========================================================================= */
 /* FOLD Serialization & Deserialization                                      */

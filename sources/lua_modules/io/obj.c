@@ -1,6 +1,6 @@
 #include "lua_modules/fold/file.h"
 
-#include "codecs/obj.h"
+#include "io/obj.h"
 
 /* ========================================================================= */
 /* FOLD Serialization & Deserialization                                      */

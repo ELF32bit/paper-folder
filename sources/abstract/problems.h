@@ -3,6 +3,6 @@
 
 #include "definitions/error.h"
 
-Error abstract_problem1_solve(void);
+Error abstract_problems_solve1(void);
 
 #endif /* ABSTRACT_PROBLEMS_H */

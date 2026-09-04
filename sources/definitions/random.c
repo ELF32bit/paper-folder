@@ -7,12 +7,12 @@
 static u64 global_seed = 0;
 
 #define LOCAL_CONTEXT_START(rng) \
-	u64 _global_state[4]; \
+	u64 global_state[4]; \
 	if (rng != NULL) { \
-		_global_state[0] = s[0]; \
-		_global_state[1] = s[1]; \
-		_global_state[2] = s[2]; \
-		_global_state[3] = s[3]; \
+		global_state[0] = s[0]; \
+		global_state[1] = s[1]; \
+		global_state[2] = s[2]; \
+		global_state[3] = s[3]; \
 		s[0] = rng->state[0]; \
 		s[1] = rng->state[1]; \
 		s[2] = rng->state[2]; \
@@ -25,10 +25,10 @@ static u64 global_seed = 0;
 		rng->state[1] = s[1]; \
 		rng->state[2] = s[2]; \
 		rng->state[3] = s[3]; \
-		s[0] = _global_state[0]; \
-		s[1] = _global_state[1]; \
-		s[2] = _global_state[2]; \
-		s[3] = _global_state[3]; \
+		s[0] = global_state[0]; \
+		s[1] = global_state[1]; \
+		s[2] = global_state[2]; \
+		s[3] = global_state[3]; \
 	}
 
 void random_set_state(RNG* rng, const u64 state[4]) {
@@ -59,7 +59,7 @@ void random_get_state(const RNG* rng, u64 state[4]) {
 	}
 }
 
-static inline u64 _xoshiro_split_mix64_next(u64* state) {
+static inline u64 _xoshiro_splitmix64_next(u64* state) {
 	u64 z = (*state += 0x9e3779b97f4a7c15);
 	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
 	z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
@@ -67,11 +67,11 @@ static inline u64 _xoshiro_split_mix64_next(u64* state) {
 }
 
 void random_set_seed(RNG* rng, u64 seed) {
-	u64 _seed = seed;
-	u64 s0 = _xoshiro_split_mix64_next(&_seed);
-	u64 s1 = _xoshiro_split_mix64_next(&_seed);
-	u64 s2 = _xoshiro_split_mix64_next(&_seed);
-	u64 s3 = _xoshiro_split_mix64_next(&_seed);
+	u64 S = seed;
+	u64 s0 = _xoshiro_splitmix64_next(&S);
+	u64 s1 = _xoshiro_splitmix64_next(&S);
+	u64 s2 = _xoshiro_splitmix64_next(&S);
+	u64 s3 = _xoshiro_splitmix64_next(&S);
 	if (rng != NULL) {
 		rng->seed = seed;
 		rng->state[0] = s0;

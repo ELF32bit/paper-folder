@@ -377,6 +377,22 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph) {
 /* Vertices Building                                                         */
 /* ========================================================================= */
 
+usize fold_graph_get_abstract_size(const FoldGraph* graph) {
+	usize size = 0;
+	bool has_size = false;
+	ARRAY_FOR_EACH(&graph->EV, _, FoldGraphEdge*, ev) {
+		size = MAX(size, ev->a);
+		size = MAX(size, ev->b);
+		has_size = true;
+	}
+	ARRAY2_FOR_EACH(&graph->FV, __, _, usize*, fvi) {
+		size = MAX(size, *fvi);
+		has_size = true;
+	}
+	return has_size ?
+		TRY_SAFE(size + 1) : 0;
+}
+
 AABB2 fold_graph_get_aabb2(const FoldGraph* graph) {
 	AABB2 aabb2 = aabb2_empty();
 	if (fold_graph_is_2D(graph)) {
@@ -412,7 +428,7 @@ AABB3 fold_graph_get_aabb3(const FoldGraph* graph) {
 }
 
 static inline
-Error get_VV_map_from_EV(const FoldGraph* graph, Map* map) {
+Error fold_graph_get_VV_map_from_EV(const FoldGraph* graph, Map* map) {
 	MAP_CREATE_MANAGED_VALUES(VV_map, usize, Set);
 	VV_map.hash = usize_hash_identity;
 
@@ -455,21 +471,60 @@ Error get_VV_map_from_EV(const FoldGraph* graph, Map* map) {
 static inline
 Error fold_graph_VV_from_EV_unsorted(FoldGraph* graph) {
 	Map VV_map;
-	TRY(get_VV_map_from_EV(graph, &VV_map));
+	TRY(fold_graph_get_VV_map_from_EV(graph, &VV_map));
+
 	array2_recreate(&graph->VV);
 	array2_recreate(&graph->VE);
 	array2_recreate(&graph->VF);
-	// TODO
+
+	usize size = graph->VC.size;
+	if (size == 0) {
+		size = fold_graph_get_abstract_size(graph);
+	}
+
+	usize data_size = 0;
+	MAP_ITERATE(&VV_map, vv) {
+		Set* set = vv.value;
+		TRY_ADD_OR_ELSE(data_size, set->size,
+			map_destroy(&VV_map));
+		data_size += set->size;
+	}
+
+	TRY_OR_ELSE(array_resize(&graph->VV.data, data_size),
+		map_destroy(&VV_map));
+
+	TRY_OR_ELSE(array_resize(&graph->VV.offsets, size),
+		array_destroy(&graph->VV.data);
+		map_destroy(&VV_map));
+
+
+	usize offset = 0;
+	FOR_EACH(i, size) {
+		usize _a = hash_usize(i); // TODO
+		Set* vv = map_get(&VV_map, &_a, NULL);
+		if (vv != NULL) {
+			usize index = 0;
+			SET_ITERATE(vv, vvi) {
+				array_set(&graph->VV.data,
+					offset + index, vvi.key);
+				index++;
+			}
+			offset += vv->size;
+		}
+		array_set(&graph->VV.offsets, i, &offset);
+	}
+
+	map_destroy(&VV_map);
 	return OK;
 }
 
 Error fold_graph_VV_from_EV(FoldGraph* graph) {
-	(void)graph; // TODO
+	TRY(fold_graph_VV_from_EV_unsorted(graph));
 	return OK;
 }
 
 static inline
-Error get_VV_map_from_FV(const FoldGraph* graph, Map* map) {
+Error fold_graph_get_VV_map_from_FV(const FoldGraph* graph, Map* map) {
 	MAP_CREATE_MANAGED_VALUES(VV_map, usize, Set);
 	VV_map.hash = usize_hash_identity;
 
@@ -511,7 +566,7 @@ Error get_VV_map_from_FV(const FoldGraph* graph, Map* map) {
 static inline
 Error fold_graph_VV_from_FV_unsorted(FoldGraph* graph) {
 	Map VV_map;
-	TRY(get_VV_map_from_FV(graph, &VV_map));
+	TRY(fold_graph_get_VV_map_from_FV(graph, &VV_map));
 	array2_recreate(&graph->VV);
 	array2_recreate(&graph->VE);
 	array2_recreate(&graph->VF);
@@ -545,10 +600,7 @@ Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
 		{
 			usize ab = hash_usize_mix2(vv.index, *vvi);
 			usize* vei = map_get(EV_map, &ab, NULL);
-			if (vei == NULL) { if (EV_map == &_EV_map) {
-				map_destroy(&_EV_map); }
-				return ERROR;
-			}
+			ASSERT(vei != NULL);
 
 			array_set(&graph->VE.data, i, vei);
 		}
@@ -700,10 +752,7 @@ Error fold_graph_FE_from_FV(FoldGraph* graph, const Map* EV_map) {
 
 			usize ab = hash_usize_mix2(*a, *b);
 			usize* fei = map_get(EV_map, &ab, NULL);
-			if (fei == NULL) { if (EV_map == &_EV_map) {
-				map_destroy(&_EV_map); }
-				return ERROR;
-			}
+			ASSERT(fei != NULL);
 
 			array_set(&graph->FE.data, i, fei);
 		}

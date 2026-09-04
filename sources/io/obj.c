@@ -310,13 +310,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 
 	usize abstract_VC_size = 0;
 	if (fold_graph_is_abstract(graph)) {
-		ARRAY_FOR_EACH(&graph->EV, _, FoldGraphEdge*, ev) {
-			abstract_VC_size = MAX(abstract_VC_size, TRY_SAFE(ev->a + 1));
-			abstract_VC_size = MAX(abstract_VC_size, TRY_SAFE(ev->b + 1));
-		}
-		ARRAY2_FOR_EACH(&graph->FV, __, _, usize*, fvi) {
-			abstract_VC_size = MAX(abstract_VC_size, TRY_SAFE(*fvi + 1));
-		}
+		abstract_VC_size = fold_graph_get_abstract_size(graph);
 		FOR_EACH(_, abstract_VC_size) {
 			fprintf(output_file, "v 0.0 0.0 0.0\n");
 		}

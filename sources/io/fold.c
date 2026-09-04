@@ -1,6 +1,6 @@
-#include "file.h"
-#include "frame.h"
-#include "graph.h"
+#include "fold/file.h"
+#include "fold/frame.h"
+#include "fold/graph.h"
 
 #include <yyjson.h>
 

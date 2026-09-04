@@ -195,6 +195,7 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph);
 /* Vertices Building                                                         */
 /* ========================================================================= */
 
+usize fold_graph_get_abstract_size(const FoldGraph* graph);
 AABB2 fold_graph_get_aabb2(const FoldGraph* graph);
 AABB3 fold_graph_get_aabb3(const FoldGraph* graph);
 
