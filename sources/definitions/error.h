@@ -132,12 +132,12 @@ typedef int Error;
 } while (0)
 
 #define TRY_SIZEOF(type, count) \
-	TRY_MULTIPLY(sizeof(type), (usize)(count))
+	TRY_MULTIPLY(sizeof(type), USIZE((count)))
 
 #define TRY_SIZEOF_OR_ELSE(type, count, execute) \
-	TRY_MULTIPLY_OR_ELSE(sizeof(type), (usize)(count), execute)
+	TRY_MULTIPLY_OR_ELSE(sizeof(type), USIZE((count)), execute)
 
 #define TRY_SIZEOF_OR_ERROR(type, count, execute) \
-	TRY_MULTIPLY_OR_ERROR(sizeof(type), (usize)(count), execute)
+	TRY_MULTIPLY_OR_ERROR(sizeof(type), USIZE((count)), execute)
 
 #endif /* DEFINITION_ERROR_H */

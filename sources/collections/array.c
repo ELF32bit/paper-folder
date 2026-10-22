@@ -33,8 +33,8 @@ void array_create_managed(Array* array, usize element_size,
 static inline
 void _array_destroy(Array* array, usize start, usize end) {
 	if (array->destroy == NULL) return;
-	FOR_EACH_IN_RANGE(i, start, end) {
-		array->destroy(array_get(array, i));
+	FOR_EACH_IN_RANGE(index, start, end) {
+		array->destroy(array_get(array, index));
 	}
 }
 
@@ -173,11 +173,11 @@ Error array_copy(Array* array, const Array* source) {
 	TRY(array_resize(array, source->size));
 
 	if (array->copy != NULL) {
-		FOR_EACH(i, source->size) {
+		FOR_EACH(index, source->size) {
 			TRY_OR_ELSE(source->copy(
-				_array_get(array, i),
-				array_get(source, i)),
-				array->size = i);
+				_array_get(array, index),
+				array_get(source, index)),
+				array->size = index);
 		}
 	} else {
 		memcpy(array->data, source->data,

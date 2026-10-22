@@ -51,7 +51,7 @@ Error _parse_json_array_coords(yyjson_val* object,
 
 		yyjson_arr_foreach(inner_array, i, _, element) {
 			if (i >= dimensions) break;
-			vector.components[i] = (real)yyjson_get_num(element);
+			vector.components[i] = REAL(yyjson_get_num(element));
 		}
 
 		array_set(array, ii, vector.components);
@@ -143,7 +143,7 @@ Error _parse_json_array_edges(yyjson_val* object,
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		FoldGraphEdge edge;
 		yyjson_arr_foreach(inner_array, i, _, element) {
-			edge.components[i] = (usize)yyjson_get_uint(element);
+			edge.components[i] = USIZE(yyjson_get_uint(element));
 		}
 		array_set(array, ii, &edge);
 	}
@@ -250,7 +250,7 @@ Error _parse_json_array_orders(yyjson_val* object,
 		FoldGraphOrder order;
 		yyjson_arr_foreach(inner_array, i, _, element) {
 			if (i != 2) {
-				order.components[i] = (usize)yyjson_get_uint(element);
+				order.components[i] = USIZE(yyjson_get_uint(element));
 			} else if (i == 2) {
 				i64 number = yyjson_get_sint(element);
 				if (number == 1) {
@@ -290,7 +290,7 @@ Error _parse_json_array_colors(yyjson_val* object,
 	array_recreate(array);
 	TRY(array_resize(array, size));
 	yyjson_arr_foreach(json_array, i, _, element) {
-		u32 number = (u32)yyjson_get_uint(element);
+		u32 number = U32(yyjson_get_uint(element));
 		Color color = color_unpack(number);
 		array_set(array, i, &color);
 	}
@@ -324,7 +324,7 @@ Error _parse_json_array_coords2(yyjson_val* object,
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		Vector2 vector;
 		yyjson_arr_foreach(inner_array, i, _, element) {
-			vector.components[i] = (real)yyjson_get_num(element);
+			vector.components[i] = REAL(yyjson_get_num(element));
 		}
 		array_set(array, ii, &vector);
 	}
@@ -358,7 +358,7 @@ Error _parse_json_array_coords3(yyjson_val* object,
 	yyjson_arr_foreach(json_array, ii, __, inner_array) {
 		Vector3 vector;
 		yyjson_arr_foreach(inner_array, i, _, element) {
-			vector.components[i] = (real)yyjson_get_num(element);
+			vector.components[i] = REAL(yyjson_get_num(element));
 		}
 		array_set(array, ii, &vector);
 	}
@@ -468,7 +468,7 @@ Error _parse_json_index(yyjson_val* object,
 	if (yyjson_get_uint(json_int) > USIZE_MAX - 1) {
 		return ERROR_INTEGER_OVERFLOW;
 	}
-	*value = (usize)yyjson_get_uint(json_int);
+	*value = USIZE(yyjson_get_uint(json_int));
 	return OK;
 }
 
@@ -558,7 +558,7 @@ Error fold_file_from_json(FoldFile* file, void* JSON, void* Object) {
 	TRY(_parse_json_string(object, &file->title, "file_title"));
 	TRY(_parse_json_string(object, &file->description, "file_description"));
 	TRY(_parse_json_array_strings(object, &file->classes, "file_classes"));
-	TRY(fold_frame_from_json(array_get(&file->frames, 0), json, object));
+	TRY(fold_frame_from_json(fold_file_get_key_frame(file), json, object));
 	TRY(_parse_json_frames(object, &file->frames, "file_frames"));
 	return OK;
 }

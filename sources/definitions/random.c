@@ -117,7 +117,7 @@ bool random_bool_with_probability(RNG* rng, f32 probability) {
 
 u8 random_u8(RNG* rng) {
 	LOCAL_CONTEXT_START(rng);
-	u8 result = (u8)next();
+	u8 result = U8(next());
 	LOCAL_CONTEXT_END(rng);
 	return result;
 }
@@ -142,7 +142,7 @@ u8 random_u8_in_range(RNG* rng, u8 min, u8 max) {
 
 u16 random_u16(RNG* rng) {
 	LOCAL_CONTEXT_START(rng);
-	u16 result = (u16)next();
+	u16 result = U16(next());
 	LOCAL_CONTEXT_END(rng);
 	return result;
 }
@@ -167,7 +167,7 @@ u16 random_u16_in_range(RNG* rng, u16 min, u16 max) {
 
 u32 random_u32(RNG* rng) {
 	LOCAL_CONTEXT_START(rng);
-	u32 result = (u32)next();
+	u32 result = U32(next());
 	LOCAL_CONTEXT_END(rng);
 	return result;
 }
@@ -192,7 +192,7 @@ u32 random_u32_in_range(RNG* rng, u32 min, u32 max) {
 
 u64 random_u64(RNG* rng) {
 	LOCAL_CONTEXT_START(rng);
-	u64 result = (u64)next();
+	u64 result = U64(next());
 	LOCAL_CONTEXT_END(rng);
 	return result;
 }
@@ -217,13 +217,13 @@ u64 random_u64_in_range(RNG* rng, u64 min, u64 max) {
 
 usize random_usize(RNG* rng) {
 #if defined(CPU_ARCHITECTURE_AT_LEAST_64_BIT)
-	return (usize)random_u64(rng);
+	return USIZE(random_u64(rng));
 #elif defined(CPU_ARCHITECTURE_AT_LEAST_32_BIT)
-	return (usize)random_u32(rng);
+	return USIZE(random_u32(rng));
 #elif defined(CPU_ARCHITECTURE_AT_LEAST_16_BIT)
-	return (usize)random_u16(rng);
+	return USIZE(random_u16(rng));
 #else
-	return (usize)random_u8(rng);
+	return USIZE(random_u8(rng));
 #endif
 }
 
@@ -247,7 +247,7 @@ usize random_usize_in_range(RNG* rng, usize min, usize max) {
 
 f32 random_f32(RNG* rng) {
 	LOCAL_CONTEXT_START(rng);
-	f32 result = (f32)((next() >> 40) * 0x1.0p-24f);
+	f32 result = F32((next() >> 40) * 0x1.0p-24f);
 	LOCAL_CONTEXT_END(rng);
 	return result;
 }
@@ -262,7 +262,7 @@ f32 random_f32_in_range(RNG* rng, f32 min, f32 max) {
 
 f64 random_f64(RNG* rng) {
 	LOCAL_CONTEXT_START(rng);
-	f64 result = (f64)((next() >> 11) * 0x1.0p-53);
+	f64 result = F64((next() >> 11) * 0x1.0p-53);
 	LOCAL_CONTEXT_END(rng);
 	return result;
 }
@@ -277,11 +277,11 @@ f64 random_f64_in_range(RNG* rng, f64 min, f64 max) {
 
 real random_real(RNG* rng) {
 	if (sizeof(real) == sizeof(f32)) {
-		return (real)random_f32(rng);
+		return REAL(random_f32(rng));
 	} else if (sizeof(real) == sizeof(f64)) {
-		return (real)random_f64(rng);
+		return REAL(random_f64(rng));
 	} else if (sizeof(real) == sizeof(long double)) {
-		return (real)random_f64(rng);
+		return REAL(random_f64(rng));
 	} else return 0.0;
 }
 

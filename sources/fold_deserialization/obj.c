@@ -36,7 +36,7 @@ void _tiny_obj_file_reader(void* ctx, const char* filename, int is_mtl,
 		return;
 	}
 
-	*len = (usize)file_length;
+	*len = USIZE(file_length);
 	TRY_OR_ERROR(fseek(file, 0, SEEK_SET),
 		*buf = NULL; *len = 0;
 		fclose(file);
@@ -53,9 +53,9 @@ void _tiny_obj_file_reader(void* ctx, const char* filename, int is_mtl,
 		return);
 
 	usize bytes = fread(*buf, 1, *len, file);
-	if (bytes < *len) { free(*buf);
-		*buf = NULL; *len = 0;
-		fclose(file);
+	if (bytes < *len) {
+		free(*buf); *buf = NULL;
+		fclose(file); *len = 0;
 		return;
 	}
 
@@ -79,7 +79,7 @@ Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
 
 	usize EV_size = 0, FV_size = 0;
 	FOR_EACH(fi, shape->length) {
-		usize face_index = (usize)shape->face_offset + fi;
+		usize face_index = USIZE(shape->face_offset) + fi;
 		usize face_vertices = attributes->face_num_verts[face_index];
 		if (face_vertices == 2) { EV_size++; }
 		else { FV_size++; }
@@ -99,7 +99,7 @@ Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
 
 	usize fv_offset = 0;
 	FOR_EACH(fi, shape->length) {
-		usize face_index = (usize)shape->face_offset + fi;
+		usize face_index = USIZE(shape->face_offset) + fi;
 		usize face_vertices = attributes->face_num_verts[face_index];
 		if (face_vertices == 2) continue;
 		TRY_ADD(fv_offset, face_vertices);
@@ -122,7 +122,7 @@ Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
 	usize offset = 0;
 	usize ev_index = 0, fv_index = 0;
 	FOR_EACH(fi, shape->length) {
-		usize face_index = (usize)shape->face_offset + fi;
+		usize face_index = USIZE(shape->face_offset) + fi;
 		usize face_vertices = attributes->face_num_verts[face_index];
 
 		if (face_vertices == 2) {
@@ -132,8 +132,8 @@ Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
 				attributes->faces[shape_offset + offset + 1];
 
 			FoldGraphEdge edge;
-			edge.a = (usize)line_vertex0.v_idx;
-			edge.b = (usize)line_vertex1.v_idx;
+			edge.a = USIZE(line_vertex0.v_idx);
+			edge.b = USIZE(line_vertex1.v_idx);
 			array_set(&graph->EV, ev_index, &edge);
 
 			if (num_materials != 0) {
@@ -153,18 +153,18 @@ Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
 				tinyobj_vertex_index_t face_vertex =
 					attributes->faces[shape_offset + offset + vi];
 
-				usize fvi = (usize)face_vertex.v_idx;
+				usize fvi = USIZE(face_vertex.v_idx);
 				array_set(&graph->FV.data, fv_offset + vi, &fvi);
 
 				if (attributes->num_texcoords != 0) {
 					usize fvt = (face_vertex.vt_idx >= 0)
-						? (usize)face_vertex.vt_idx : FOLD_GRAPH_NULL;
+						? USIZE(face_vertex.vt_idx) : FOLD_GRAPH_NULL;
 					array_set(&graph->FT.data, fv_offset + vi, &fvt);
 				}
 
 				if (attributes->num_normals != 0) {
 					usize fvn = (face_vertex.vn_idx >= 0)
-						? (usize)face_vertex.vn_idx : FOLD_GRAPH_NULL;
+						? USIZE(face_vertex.vn_idx) : FOLD_GRAPH_NULL;
 					array_set(&graph->FN.data, fv_offset + vi, &fvn);
 				}
 			}

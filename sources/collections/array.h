@@ -154,4 +154,14 @@ bool array_iterator_next(ArrayIterator* iterator);
 			_state_##index == 0; \
 			_state_##index = 1)
 
+#define ARRAY_FOR_EACH_IN_RANGE_FROM_END(array, index, type, element, start, end) \
+	for (usize index = (end), _state_##index = 0; \
+		(index) > (start) && _state_##index != 2; \
+		_state_##index == 1 \
+			? (_state_##index = 0) \
+			: (_state_##index = 2)) \
+		for (type element = array_get((array), --(index)); \
+			_state_##index == 0; \
+			_state_##index = 1)
+
 #endif /* COLLECTION_ARRAY_H */

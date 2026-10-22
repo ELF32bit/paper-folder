@@ -9,13 +9,13 @@ CFLAGS = -std=c11 \
 	-I$(THIRDPARTY_DIRECTORY)/lua \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
-	-I$(THIRDPARTY_DIRECTORY)/triangle -DREAL=double \
+	-I$(THIRDPARTY_DIRECTORY)/triangle \
 	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
-	-I$(THIRDPARTY_DIRECTORY)/xoshiro \
-	-Wall -Wextra
-
-CFLAGS += -O2
+	-I$(THIRDPARTY_DIRECTORY)/xoshiro
+CFLAGS += -D_REAL_=double
+CFLAGS += -Wall -Wextra
 #CFLAGS += -DNDEBUG
+CFLAGS += -O2
 
 LDFLAGS =
 LDLIBS = -lm
@@ -52,14 +52,17 @@ C_SOURCES_ALL += $(wildcard \
 	$(THIRDPARTY_DIRECTORY)/*/*/*.c \
 	$(THIRDPARTY_DIRECTORY)/*/*/*/*.c)
 
-C_SOURCES = $(filter-out \
-	$(THIRDPARTY_DIRECTORY)/xoshiro/xoshiro256starstar.c \
-	$(THIRDPARTY_DIRECTORY)/xoshiro/f2x.c \
-	$(THIRDPARTY_DIRECTORY)/lua/lua.c \
-	$(THIRDPARTY_DIRECTORY)/lua/luac.c \
+C_SOURCES_ALL_WITHOUT_LUA = $(filter-out \
 	$(LUA_MODULES_CODE) \
 	$(LUA_SCRIPTS_CODE), \
 	$(C_SOURCES_ALL))
+
+C_SOURCES = $(filter-out \
+	$(THIRDPARTY_DIRECTORY)/lua/lua.c \
+	$(THIRDPARTY_DIRECTORY)/lua/luac.c \
+	$(THIRDPARTY_DIRECTORY)/xoshiro/xoshiro256starstar.c \
+	$(THIRDPARTY_DIRECTORY)/xoshiro/f2x.c, \
+	$(C_SOURCES_ALL_WITHOUT_LUA))
 
 C_OBJECTS = $(C_SOURCES:.c=.o)
 
@@ -82,8 +85,9 @@ lua_compile:
 		'$(LUA_SCRIPTS_CODE)' \
 		'$(LUA_SCRIPTS)'
 
+# WARNING: Triangle library is designed for double precision
 $(THIRDPARTY_DIRECTORY)/triangle/triangle.o: \
-	CFLAGS += -DTRILIBRARY -DANSI_DECLARATORS -DNO_TIMER -w
+	CFLAGS += -DTRILIBRARY -DREAL=double -DANSI_DECLARATORS -DNO_TIMER -w
 
 $(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 	@$(CC) $(CFLAGS) $(LDFLAGS) $(C_OBJECTS) \

@@ -25,13 +25,13 @@ static const FoldGraphEdgeAssignment EA_display_priority[] = {
 };
 
 static const char EA_display_colors[][10] = {
-	"#00000040",
-	"#ffff00ff",
-	"#808080ff",
-	"#0000ffff",
-	"#ff0000ff",
-	"#000000ff",
-	"#00ff00ff",
+	"#00000040", /* TRANSPARENT */
+	"#ffff00ff", /* YELLOW */
+	"#808080ff", /* GRAY */
+	"#0000ffff", /* BLUE */
+	"#ff0000ff", /* RED */
+	"#000000ff", /* BLACK */
+	"#00ff00ff", /* GREEN */
 };
 
 /* ========================================================================= */
@@ -130,9 +130,9 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG) {
 		"id=\"edges\""
 		">\n");
 
-	FOR_EACH(i, BUFFER_SIZE(EA_display_priority)) {
-		FoldGraphEdgeAssignment assignment = EA_display_priority[i];
-		const char* color = EA_display_colors[i];
+	FOR_EACH(index, BUFFER_SIZE(EA_display_priority)) {
+		FoldGraphEdgeAssignment assignment = EA_display_priority[index];
+		const char* color = EA_display_colors[index];
 
 		ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
 			if (graph->EA.size != 0) {

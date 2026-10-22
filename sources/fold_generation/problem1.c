@@ -4,6 +4,8 @@
 #include "fold_graph/properties.h"
 #include "definitions/constants.h"
 
+#undef REAL
+#define REAL double
 #include "triangle.h"
 
 struct ProblemParameters {
@@ -124,47 +126,67 @@ Error generate_fold_graph_step4(FoldGraph* graph,
 	_triangulateio_create(&in);
 	_triangulateio_create(&out);
 
-	in.pointlist = graph->VC.data;
+	bool is_real = false;
 	in.numberofpoints = graph->VC.size;
+	if (sizeof(REAL) == sizeof(real)) {
+		in.pointlist = graph->VC.data;
+		is_real = true;
+	} else {
+		TRY_MULTIPLY(graph->VC.size, 2);
+		TRY_SIZEOF(REAL, graph->VC.size * 2);
+		in.pointlist = malloc(SIZEOF(REAL, graph->VC.size * 2));
+		ARRAY_FOR_EACH(&graph->VC, index, Vector2*, vc) {
+			in.pointlist[index * 2 + 0] = (REAL)vc->x;
+			in.pointlist[index * 2 + 1] = (REAL)vc->y;
+		}
+	}
 
 	triangulate("zeQ", &in, &out, NULL);
 
 	TRY_OR_ELSE(array_resize(&graph->EV, out.numberofedges),
-		_triangulateio_destroy(&out));
-	TRY_OR_ELSE(array_resize(&graph->EA, out.numberofedges),
-		_triangulateio_destroy(&out));
-	TRY_OR_ELSE(array_resize(&graph->FV.data, out.numberoftriangles * 3),
-		_triangulateio_destroy(&out));
-	TRY_OR_ELSE(array_resize(&graph->FV.offsets, out.numberoftriangles),
+		if NOT(is_real) free(in.pointlist);
 		_triangulateio_destroy(&out));
 
-	FOR_EACH(i, out.numberofedges) {
-		usize a = out.edgelist[i * 2 + 0];
-		usize b = out.edgelist[i * 2 + 1];
-		ARRAY_SET(&graph->EV, i, FoldGraphEdge,
+	TRY_OR_ELSE(array_resize(&graph->EA, out.numberofedges),
+		if NOT(is_real) free(in.pointlist);
+		_triangulateio_destroy(&out));
+
+	TRY_OR_ELSE(array_resize(&graph->FV.data, out.numberoftriangles * 3),
+		if NOT(is_real) free(in.pointlist);
+		_triangulateio_destroy(&out));
+
+	TRY_OR_ELSE(array_resize(&graph->FV.offsets, out.numberoftriangles),
+		if NOT(is_real) free(in.pointlist);
+		_triangulateio_destroy(&out));
+
+	FOR_EACH(index, out.numberofedges) {
+		usize a = out.edgelist[index * 2 + 0];
+		usize b = out.edgelist[index * 2 + 1];
+		ARRAY_SET(&graph->EV, index, FoldGraphEdge,
 			{ .a = a, .b = b });
 
-		if (out.edgemarkerlist[i] == 0) {
-			ARRAY_SET(&graph->EA, i, FoldGraphEdgeAssignment,
+		if (out.edgemarkerlist[index] == 0) {
+			ARRAY_SET(&graph->EA, index, FoldGraphEdgeAssignment,
 				FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN);
 		} else {
-			ARRAY_SET(&graph->EA, i, FoldGraphEdgeAssignment,
+			ARRAY_SET(&graph->EA, index, FoldGraphEdgeAssignment,
 				FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY);
 		}
 	}
 
-	FOR_EACH(i, out.numberoftriangles) {
-		usize a = out.trianglelist[i * 3 + 0];
-		usize b = out.trianglelist[i * 3 + 1];
-		usize c = out.trianglelist[i * 3 + 2];
-		array_set(&graph->FV.data, i * 3 + 0, &a);
-		array_set(&graph->FV.data, i * 3 + 1, &b);
-		array_set(&graph->FV.data, i * 3 + 2, &c);
-		ARRAY_SET(&graph->FV.offsets, i, usize,
-			i * 3 + 3);
+	FOR_EACH(index, out.numberoftriangles) {
+		usize a = out.trianglelist[index * 3 + 0];
+		usize b = out.trianglelist[index * 3 + 1];
+		usize c = out.trianglelist[index * 3 + 2];
+		array_set(&graph->FV.data, index * 3 + 0, &a);
+		array_set(&graph->FV.data, index * 3 + 1, &b);
+		array_set(&graph->FV.data, index * 3 + 2, &c);
+		ARRAY_SET(&graph->FV.offsets, index, usize,
+			index * 3 + 3);
 	}
 
 	_triangulateio_destroy(&out);
+	if NOT(is_real) free(in.pointlist);
 	TRY(generate_fold_graph_step5(graph, parameters));
 	return OK;
 }
@@ -185,13 +207,13 @@ Error generate_fold_graph_step3(FoldGraph* graph,
 	usize unique_boundary_vertices = 0;
 	usize unique_interior_vertices = 0;
 	ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
-		isize ix = (isize)(vc->x / parameters->cell_size);
-		isize iy = (isize)(vc->y / parameters->cell_size);
+		isize ix = ISIZE(vc->x / parameters->cell_size);
+		isize iy = ISIZE(vc->y / parameters->cell_size);
 
 		bool is_duplicate = false;
 		for (int dx = -1; dx <= 1; dx++) {
 			for (int dy = -1; dy <= 1; dy++) {
-				usize cell = (usize)hash_isize_pack2(ix + dx, iy + dy);
+				usize cell = USIZE(hash_isize_pack2(ix + dx, iy + dy));
 				if (set_has(&set, &cell)) {
 					is_duplicate = true;
 					break;
@@ -201,7 +223,7 @@ Error generate_fold_graph_step3(FoldGraph* graph,
 		}
 		if (is_duplicate) continue;
 
-		usize cell = (usize)hash_isize_pack2(ix, iy);
+		usize cell = USIZE(hash_isize_pack2(ix, iy));
 		TRY_OR_ELSE(set_add(&set, &cell, NULL),
 			array_destroy(&unique_vertices);
 			set_destroy(&set));
@@ -255,9 +277,9 @@ Error generate_fold_graph_step2(FoldGraph* graph,
 	TRY_ADD(old_size, n1); TRY_ADD(old_size + n1, n2);
 	TRY(array_resize(&graph->VC, old_size + n1 + n2));
 
-	FOR_EACH_IN_RANGE(i, old_size, old_size + n1) {
+	FOR_EACH_IN_RANGE(index, old_size, old_size + n1) {
 		real t = random_real_in_range(rng, 0.0, 4.0);
-		usize side = (usize)t;
+		usize side = USIZE(t);
 		if (side > 3) side = 3;
 		t -= side;
 		Vector2 v = {
@@ -270,14 +292,14 @@ Error generate_fold_graph_step2(FoldGraph* graph,
 				: (side == 2) ? 1.0
 				: t
 		};
-		array_set(&graph->VC, i, &v);
+		array_set(&graph->VC, index, &v);
 	}
 
-	FOR_EACH_IN_RANGE(i, old_size + n1, old_size + n1 + n2) {
+	FOR_EACH_IN_RANGE(index, old_size + n1, old_size + n1 + n2) {
 		Vector2 v = {
 			.x = random_real_in_range(rng, offset, 1.0 - offset),
 			.y = random_real_in_range(rng, offset, 1.0 - offset)};
-		array_set(&graph->VC, i, &v);
+		array_set(&graph->VC, index, &v);
 	}
 
 	TRY(generate_fold_graph_step3(graph, parameters));
@@ -297,11 +319,14 @@ Error generate_fold_graph(FoldGraph* graph,
 	return OK;
 }
 
+#undef REAL
+#define REAL(x) ((real)(x))
 Error fold_generate_locally_flat_foldable(FoldFile* file,
 	const struct LFFParameters* parameters)
 {
 	TRY(fold_file_recreate(file));
-	FoldFrame* key_frame = array_get(&file->frames, 0);
+	FoldFrame* key_frame =
+		fold_file_get_key_frame(file);
 	FoldGraph* graph = &key_frame->graph;
 	graph->VC.element_size = sizeof(Vector2);
 

@@ -53,6 +53,8 @@ Error fold_file_recreate(FoldFile* file);
 #define FoldFile_copy fold_file_copy
 Error fold_file_copy(FoldFile* file, const FoldFile* source);
 
+FoldFrame* fold_file_get_key_frame(const FoldFile* file);
+
 FoldFrame* fold_file_frame_inherit(FoldFile* file, usize index);
 void fold_file_frames_inherit(FoldFile* file);
 

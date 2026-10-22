@@ -70,7 +70,7 @@ usize hash_string_raw(const char* string);
 
 #define String_hash string_hash
 static inline usize string_hash(const void* a) {
-	return (usize)hash_string((const String*)a);
+	return USIZE(hash_string((const String*)a));
 }
 
 #define String_equals string_equals

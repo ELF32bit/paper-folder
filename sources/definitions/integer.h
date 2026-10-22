@@ -5,38 +5,48 @@
 #include <stddef.h>
 
 typedef int8_t i8;
+#define I8(x) ((i8)(x))
 #define I8_MIN INT8_MIN
 #define I8_MAX INT8_MAX
 
 typedef int16_t i16;
+#define I16(x) ((i16)(x))
 #define I16_MIN INT16_MIN
 #define I16_MAX INT16_MAX
 
 typedef int32_t i32;
+#define I32(x) ((i32)(x))
 #define I32_MIN INT32_MIN
 #define I32_MAX INT32_MAX
 
 typedef int64_t i64;
+#define I64(x) ((i64)(x))
 #define I64_MIN INT64_MIN
 #define I64_MAX INT64_MAX
 
 typedef ptrdiff_t isize;
+#define ISIZE(x) ((isize)(x))
 #define ISIZE_MIN PTRDIFF_MIN
 #define ISIZE_MAX PTRDIFF_MAX
 
 typedef uint8_t u8;
+#define U8(x) ((u8)(x))
 #define U8_MAX UINT8_MAX
 
 typedef uint16_t u16;
+#define U16(x) ((u16)(x))
 #define U16_MAX UINT16_MAX
 
 typedef uint32_t u32;
+#define U32(x) ((u32)(x))
 #define U32_MAX UINT32_MAX
 
 typedef uint64_t u64;
+#define U64(x) ((u64)(x))
 #define U64_MAX UINT64_MAX
 
 typedef size_t usize;
+#define USIZE(x) ((usize)(x))
 #define USIZE_MAX SIZE_MAX
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))

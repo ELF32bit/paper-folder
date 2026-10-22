@@ -6,14 +6,14 @@
 
 int l_fold_generation_locally_flat_foldable(lua_State* L) {
 	struct LFFParameters parameters;
-	parameters.min_boundary_vertices = (usize)luaL_optinteger(L, 1, 4);
-	parameters.max_boundary_vertices = (usize)luaL_optinteger(L, 2, 4);
-	parameters.min_interior_vertices = (usize)luaL_optinteger(L, 3, 0);
-	parameters.max_interior_vertices = (usize)luaL_optinteger(L, 4, 0);
-	parameters.boundary_offset = (real)luaL_optnumber(L, 5, 0.015625);
-	parameters.cell_size = (real)luaL_optnumber(L, 6, 0.015625);
-	parameters.kawasaki_error = (real)luaL_optnumber(L, 7, 1.0);
-	parameters.seed = (usize)luaL_optinteger(L, 8, 0);
+	parameters.min_boundary_vertices = USIZE(luaL_optinteger(L, 1, 4));
+	parameters.max_boundary_vertices = USIZE(luaL_optinteger(L, 2, 4));
+	parameters.min_interior_vertices = USIZE(luaL_optinteger(L, 3, 0));
+	parameters.max_interior_vertices = USIZE(luaL_optinteger(L, 4, 0));
+	parameters.boundary_offset = REAL(luaL_optnumber(L, 5, 0.015625));
+	parameters.cell_size = REAL(luaL_optnumber(L, 6, 0.015625));
+	parameters.kawasaki_error = REAL(luaL_optnumber(L, 7, 1.0));
+	parameters.seed = USIZE(luaL_optinteger(L, 8, 0));
 
 	FoldFile* file = lua_newuserdata(L, sizeof(FoldFile));
 	luaL_getmetatable(L, FOLD_FILE_METATABLE);

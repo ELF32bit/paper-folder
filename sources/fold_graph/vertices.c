@@ -174,8 +174,8 @@ Error fold_graph_VV_from_VV_map_unsorted(FoldGraph* graph,
 		array_recreate(&graph->VV.data));
 
 	usize offset = 0;
-	FOR_EACH(i, size) {
-		usize a_hash = hash_usize(i);
+	FOR_EACH(vi, size) {
+		usize a_hash = hash_usize(vi);
 		Set* vv = map_get(VV_map, &a_hash, NULL);
 		if (vv != NULL) {
 			SET_ITERATE(vv, vvi) {
@@ -184,7 +184,7 @@ Error fold_graph_VV_from_VV_map_unsorted(FoldGraph* graph,
 			}
 			offset += vv->size;
 		}
-		array_set(&graph->VV.offsets, i, &offset);
+		array_set(&graph->VV.offsets, vi, &offset);
 	}
 
 	return OK;
