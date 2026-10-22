@@ -26,19 +26,19 @@ static inline Color color_from_rgba8(u8 r, u8 g, u8 b, u8 a) {
 }
 
 static inline u8 color_get_r8(Color c) {
-	return (u8)(CLAMP(c.r, 0.0, 1.0) * 255.0 + 0.5);
+	return U8(CLAMP(c.r, 0.0, 1.0) * 255.0 + 0.5);
 }
 
 static inline u8 color_get_g8(Color c) {
-	return (u8)(CLAMP(c.g, 0.0, 1.0) * 255.0 + 0.5);
+	return U8(CLAMP(c.g, 0.0, 1.0) * 255.0 + 0.5);
 }
 
 static inline u8 color_get_b8(Color c) {
-	return (u8)(CLAMP(c.b, 0.0, 1.0) * 255.0 + 0.5);
+	return U8(CLAMP(c.b, 0.0, 1.0) * 255.0 + 0.5);
 }
 
 static inline u8 color_get_a8(Color c) {
-	return (u8)(CLAMP(c.a, 0.0, 1.0) * 255.0 + 0.5);
+	return U8(CLAMP(c.a, 0.0, 1.0) * 255.0 + 0.5);
 }
 
 static inline f32 color_min(Color c) {
@@ -74,10 +74,10 @@ static inline Color color_unpack(u32 c) {
 
 static inline u32 color_pack(Color c) {
 	return
-		((u32)color_get_r8(c) << 24) |
-		((u32)color_get_g8(c) << 16) |
-		((u32)color_get_b8(c) << 8) |
-		(u32)color_get_a8(c);
+		(U32(color_get_r8(c)) << 24) |
+		(U32(color_get_g8(c)) << 16) |
+		(U32(color_get_b8(c)) << 8) |
+		(U32(color_get_a8(c)));
 }
 
 static inline f32 color_get_luminance(Color c) {

@@ -5,6 +5,7 @@
 #include <assert.h>
 
 typedef float f32;
+#define F32(x) ((f32)(x))
 #define F32_MIN FLT_MIN
 #define F32_MAX FLT_MAX
 #define F32_EPSILON FLT_EPSILON
@@ -12,13 +13,19 @@ typedef float f32;
 static_assert(sizeof(f32) == 4, "sizeof(f32) != 4");
 
 typedef double f64;
+#define F64(x) ((f64)(x))
 #define F64_MIN DBL_MIN
 #define F64_MAX DBL_MAX
 #define F64_EPSILON DBL_EPSILON
 
 static_assert(sizeof(f64) == 8, "sizeof(f64) != 8");
 
-typedef double real;
+#ifndef _REAL_
+#define _REAL_ double
+#endif
+
+typedef _REAL_ real;
+#define REAL(x) ((real)(x))
 
 #define REAL_MIN _Generic((real)0, \
 	float: FLT_MIN, \

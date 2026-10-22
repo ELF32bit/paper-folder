@@ -4,18 +4,18 @@
 #include <math.h>
 
 #ifdef F32_EPSILON
-#define F32_INFINITY ((f32)INFINITY)
-#define F32_NAN ((f32)NAN)
+#define F32_INFINITY (F32(INFINITY))
+#define F32_NAN (F32(NAN))
 #endif
 
 #ifdef F64_EPSILON
-#define F64_INFINITY ((f64)INFINITY)
-#define F64_NAN ((f64)NAN)
+#define F64_INFINITY (F64(INFINITY))
+#define F64_NAN (F64(NAN))
 #endif
 
 #ifdef REAL_EPSILON
-#define REAL_INFINITY ((real)INFINITY)
-#define REAL_NAN ((real)NAN)
+#define REAL_INFINITY (REAL(INFINITY))
+#define REAL_NAN (REAL(NAN))
 #endif
 
 /* ========================================================================= */

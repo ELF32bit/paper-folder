@@ -24,9 +24,9 @@ static inline
 void _map_array_destroy(Map* map, Array* array) {
 	if (array->is_view) return;
 	if (array->destroy != NULL) {
-		FOR_EACH(i, array->capacity) {
-			if (_get_flag(&map->flags, i) == MAP_FLAG_OCCUPIED) {
-				array->destroy(array_get(array, i));
+		FOR_EACH(index, array->capacity) {
+			if (_get_flag(&map->flags, index) == MAP_FLAG_OCCUPIED) {
+				array->destroy(array_get(array, index));
 			}
 		}
 	}
@@ -158,10 +158,10 @@ Error _map_reallocate(Map* map, usize new_capacity) {
 		SIZEOF(u8, new_flags_size));
 
 	if (old_capacity > 0) {
-		FOR_EACH(i, old_capacity) {
-			if (_get_flag(&map->flags, i) == MAP_FLAG_OCCUPIED) {
-				void* old_key = array_get(&map->keys, i);
-				void* old_value = array_get(&map->values, i);
+		FOR_EACH(index, old_capacity) {
+			if (_get_flag(&map->flags, index) == MAP_FLAG_OCCUPIED) {
+				void* old_key = array_get(&map->keys, index);
+				void* old_value = array_get(&map->values, index);
 
 				bool exists;
 				usize new_bucket = _map_find_bucket(&new_map,

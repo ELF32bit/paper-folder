@@ -93,11 +93,11 @@ real random_real_in_range(RNG* rng, real min, real max);
 /* ========================================================================= */
 
 static inline i8 random_i8(RNG* rng) {
-	return (i8)random_u8(rng);
+	return I8(random_u8(rng));
 }
 
 static inline i8 random_i8_in_range(RNG* rng, i8 min, i8 max) {
-	return min + (i8)random_u8_in_range(rng, 0, (u8)(max - min));
+	return min + I8(random_u8_in_range(rng, 0, U8(max - min)));
 }
 
 /* ========================================================================= */
@@ -105,11 +105,11 @@ static inline i8 random_i8_in_range(RNG* rng, i8 min, i8 max) {
 /* ========================================================================= */
 
 static inline i16 random_i16(RNG* rng) {
-	return (i16)random_u16(rng);
+	return I16(random_u16(rng));
 }
 
 static inline i16 random_i16_in_range(RNG* rng, i16 min, i16 max) {
-	return min + (i16)random_u16_in_range(rng, 0, (u16)(max - min));
+	return min + I16(random_u16_in_range(rng, 0, U16(max - min)));
 }
 
 /* ========================================================================= */
@@ -117,11 +117,11 @@ static inline i16 random_i16_in_range(RNG* rng, i16 min, i16 max) {
 /* ========================================================================= */
 
 static inline i32 random_i32(RNG* rng) {
-	return (i32)random_u32(rng);
+	return I32(random_u32(rng));
 }
 
 static inline i32 random_i32_in_range(RNG* rng, i32 min, i32 max) {
-	return min + (i32)random_u32_in_range(rng, 0, (u32)(max - min));
+	return min + I32(random_u32_in_range(rng, 0, U32(max - min)));
 }
 
 /* ========================================================================= */
@@ -129,11 +129,11 @@ static inline i32 random_i32_in_range(RNG* rng, i32 min, i32 max) {
 /* ========================================================================= */
 
 static inline i64 random_i64(RNG* rng) {
-	return (i64)random_u64(rng);
+	return I64(random_u64(rng));
 }
 
 static inline i64 random_i64_in_range(RNG* rng, i64 min, i64 max) {
-	return min + (i64)random_u64_in_range(rng, 0, (u64)(max - min));
+	return min + I64(random_u64_in_range(rng, 0, U64(max - min)));
 }
 
 /* ========================================================================= */
@@ -141,11 +141,11 @@ static inline i64 random_i64_in_range(RNG* rng, i64 min, i64 max) {
 /* ========================================================================= */
 
 static inline isize random_isize(RNG* rng) {
-	return (isize)random_usize(rng);
+	return ISIZE(random_usize(rng));
 }
 
 static inline isize random_isize_in_range(RNG* rng, isize min, isize max) {
-	return min + (isize)random_usize_in_range(rng, 0, (usize)(max - min));
+	return min + ISIZE(random_usize_in_range(rng, 0, USIZE(max - min)));
 }
 
 #endif /* DEFINITION_RANDOM_H */

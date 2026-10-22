@@ -62,7 +62,7 @@ Error _encode_json_array2_indices(yyjson_mut_doc* json, yyjson_mut_val* object,
 					TRY(!yyjson_mut_arr_add_null(json, inner_array));
 				} else {
 					TRY(!yyjson_mut_arr_add_uint(json, inner_array,
-						(u64)*number));
+						U64(*number)));
 				}
 			}
 		} else {
@@ -98,8 +98,8 @@ Error _encode_json_array_edges(yyjson_mut_doc* json, yyjson_mut_val* object,
 
 	ARRAY_FOR_EACH(array, __, FoldGraphEdge*, edge) {
 		u64 components[2] = {
-			(u64)edge->components[0],
-			(u64)edge->components[1]};
+			U64(edge->components[0]),
+			U64(edge->components[1])};
 
 		yyjson_mut_val* inner_array =
 			yyjson_mut_arr_with_uint64(json, components, 2);
@@ -169,8 +169,8 @@ Error _encode_json_array_orders(yyjson_mut_doc* json, yyjson_mut_val* object,
 		yyjson_mut_val* inner_array = yyjson_mut_arr(json);
 		TRY_NEW_MEMORY(inner_array);
 
-		TRY(!yyjson_mut_arr_add_uint(json, inner_array, (u64)order->a));
-		TRY(!yyjson_mut_arr_add_uint(json, inner_array, (u64)order->b));
+		TRY(!yyjson_mut_arr_add_uint(json, inner_array, U64(order->a)));
+		TRY(!yyjson_mut_arr_add_uint(json, inner_array, U64(order->b)));
 
 		if (order->o == FOLD_GRAPH_ORDER_POSITIVE) {
 			TRY(!yyjson_mut_arr_add_int(json, inner_array, 1));
@@ -196,7 +196,7 @@ Error _encode_json_array_colors(yyjson_mut_doc* json, yyjson_mut_val* object,
 	TRY_NEW_MEMORY(json_array);
 
 	ARRAY_FOR_EACH(array, _, Color*, color) {
-		u64 code = (u64)color_pack(*color);
+		u64 code = U64(color_pack(*color));
 		TRY(!yyjson_mut_arr_add_uint(json, json_array, code));
 	}
 
@@ -268,7 +268,7 @@ Error _encode_json_array_indices(yyjson_mut_doc* json, yyjson_mut_val* object,
 				TRY(!yyjson_mut_arr_add_null(json, json_array));
 			} else {
 				TRY(!yyjson_mut_arr_add_uint(json, json_array,
-					(u64)*number));
+					U64(*number)));
 			}
 		}
 
@@ -346,7 +346,7 @@ Error _encode_json_index(yyjson_mut_doc* json, yyjson_mut_val* object,
 	const usize* value, const char* name)
 {
 	if (*value == FOLD_FRAME_PARENT_NONE) return OK;
-	TRY(!yyjson_mut_obj_add_uint(json, object, name, (u64)*value));
+	TRY(!yyjson_mut_obj_add_uint(json, object, name, U64(*value)));
 	return OK;
 }
 

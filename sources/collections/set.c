@@ -24,9 +24,9 @@ static inline
 void _set_array_destroy(Set* set, Array* array) {
 	if (array->is_view) return;
 	if (array->destroy != NULL) {
-		FOR_EACH(i, array->capacity) {
-			if (_get_flag(&set->flags, i) == SET_FLAG_OCCUPIED) {
-				array->destroy(array_get(array, i));
+		FOR_EACH(index, array->capacity) {
+			if (_get_flag(&set->flags, index) == SET_FLAG_OCCUPIED) {
+				array->destroy(array_get(array, index));
 			}
 		}
 	}
@@ -147,9 +147,9 @@ Error _set_reallocate(Set* set, usize new_capacity) {
 		SIZEOF(u8, new_flags_size));
 
 	if (old_capacity > 0) {
-		FOR_EACH(i, old_capacity) {
-			if (_get_flag(&set->flags, i) == SET_FLAG_OCCUPIED) {
-				void* old_key = array_get(&set->keys, i);
+		FOR_EACH(index, old_capacity) {
+			if (_get_flag(&set->flags, index) == SET_FLAG_OCCUPIED) {
+				void* old_key = array_get(&set->keys, index);
 
 				bool exists;
 				usize new_bucket = _set_find_bucket(&new_set,

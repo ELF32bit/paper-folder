@@ -65,7 +65,7 @@ FoldFrame* fold_file_frame_inherit(FoldFile* file, usize index) {
 }
 
 void fold_file_frames_inherit(FoldFile* file) {
-	FOR_EACH(i, file->frames.size) {
-		fold_file_frame_inherit(file, i);
+	FOR_EACH(index, file->frames.size) {
+		fold_file_frame_inherit(file, index);
 	}
 }

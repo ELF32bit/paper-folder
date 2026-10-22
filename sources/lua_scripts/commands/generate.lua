@@ -42,7 +42,7 @@ function command.register(parser)
 		:default("0.015625"):show_default(true)
 	generate:option("-e"):argname("DEGREES")
 		:target("kawasaki_error")
-		:description("max kawasaki theorem deviation")
+		:description("max Kawasaki theorem deviation")
 		:convert(tonumber)
 		:default("1.0"):show_default(true)
 

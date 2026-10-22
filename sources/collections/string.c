@@ -141,7 +141,7 @@ char* string_buffer_raw(const char* string, char* buffer, usize size) {
 usize string_buffer_length(const char* buffer, usize size) {
 	ASSERT(size > 0);
 	const char* end = memchr(buffer, '\0', size);
-	return end ? (usize)(end - buffer) : size;
+	return end ? USIZE(end - buffer) : size;
 }
 
 Error string_append(String* string, const String* another) {
@@ -245,8 +245,8 @@ usize hash_string(const String* string) {
 	usize data_size = SIZEOF(char, string->length);
 
 	usize h = FNV_OFFSET_BASIS;
-	FOR_EACH(i, data_size) {
-		h ^= data[i];
+	FOR_EACH(index, data_size) {
+		h ^= data[index];
 		h *= FNV_PRIME;
 	}
 
@@ -259,8 +259,8 @@ usize hash_string_raw(const char* string) {
 	usize data_size = SIZEOF(char, strlen(string));
 
 	usize h = FNV_OFFSET_BASIS;
-	FOR_EACH(i, data_size) {
-		h ^= data[i];
+	FOR_EACH(index, data_size) {
+		h ^= data[index];
 		h *= FNV_PRIME;
 	}
 

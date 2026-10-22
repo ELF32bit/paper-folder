@@ -6,8 +6,8 @@
 static inline
 void _array_destroy(Array* array, usize start, usize end) {
 	if (array->destroy == NULL) return;
-	FOR_EACH_IN_RANGE(i, start, end) {
-		array->destroy(array_get(array, i));
+	FOR_EACH_IN_RANGE(index, start, end) {
+		array->destroy(array_get(array, index));
 	}
 }
 
@@ -77,8 +77,8 @@ Error array2_copy(Array2* array2, const Array2* source) {
 	if IS_ERROR(result) {
 		usize new_offsets_size = 0;
 		usize max_offset = array2->data.size;
-		FOR_EACH(i, source->offsets.size) {
-			usize* offset = array_get(&source->offsets, i);
+		FOR_EACH(index, source->offsets.size) {
+			usize* offset = array_get(&source->offsets, index);
 			if (*offset > max_offset) break;
 			new_offsets_size++;
 		}
@@ -94,9 +94,9 @@ Error array2_copy(Array2* array2, const Array2* source) {
 		}
 
 		if (new_offsets_size > 0) {
-			FOR_EACH(i, new_offsets_size - 1) {
-				usize* offset = array_get(&source->offsets, i);
-				array_set(&new_offsets, i, offset);
+			FOR_EACH(index, new_offsets_size - 1) {
+				usize* offset = array_get(&source->offsets, index);
+				array_set(&new_offsets, index, offset);
 			}
 			array_set(&new_offsets,
 				new_offsets_size - 1,

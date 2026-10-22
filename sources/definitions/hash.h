@@ -147,31 +147,31 @@ usize hash_real_mix4(real a, real b, real c, real d);
 /* ========================================================================= */
 
 static inline i8 hash_i8(i8 a) {
-	return (i8)hash_u8((u8)a);
+	return I8(hash_u8(U8(a)));
 }
 
 static inline i8 hash_i8_pack2(i8 a, i8 b) {
-	return (i8)hash_u8_pack2((u8)a, (u8)b);
+	return I8(hash_u8_pack2(U8(a), U8(b)));
 }
 
 static inline i8 hash_i8_mix2(i8 a, i8 b) {
-	return (i8)hash_u8_mix2((u8)a, (u8)b);
+	return I8(hash_u8_mix2(U8(a), U8(b)));
 }
 
 static inline i8 hash_i8_pack3(i8 a, i8 b, i8 c) {
-	return (i8)hash_u8_pack3((u8)a, (u8)b, (u8)c);
+	return I8(hash_u8_pack3(U8(a), U8(b), U8(c)));
 }
 
 static inline i8 hash_i8_mix3(i8 a, i8 b, i8 c) {
-	return (i8)hash_u8_mix3((u8)a, (u8)b, (u8)c);
+	return I8(hash_u8_mix3(U8(a), U8(b), U8(c)));
 }
 
 static inline i8 hash_i8_pack4(i8 a, i8 b, i8 c, i8 d) {
-	return (i8)hash_u8_pack4((u8)a, (u8)b, (u8)c, (u8)d);
+	return I8(hash_u8_pack4(U8(a), U8(b), U8(c), U8(d)));
 }
 
 static inline i8 hash_i8_mix4(i8 a, i8 b, i8 c, i8 d) {
-	return (i8)hash_u8_mix4((u8)a, (u8)b, (u8)c, (u8)d);
+	return I8(hash_u8_mix4(U8(a), U8(b), U8(c), U8(d)));
 }
 
 /* ========================================================================= */
@@ -179,31 +179,31 @@ static inline i8 hash_i8_mix4(i8 a, i8 b, i8 c, i8 d) {
 /* ========================================================================= */
 
 static inline i16 hash_i16(i16 a) {
-	return (i16)hash_u16((u16)a);
+	return I16(hash_u16(U16(a)));
 }
 
 static inline i16 hash_i16_pack2(i16 a, i16 b) {
-	return (i16)hash_u16_pack2((u16)a, (u16)b);
+	return I16(hash_u16_pack2(U16(a), U16(b)));
 }
 
 static inline i16 hash_i16_mix2(i16 a, i16 b) {
-	return (i16)hash_u16_mix2((u16)a, (u16)b);
+	return I16(hash_u16_mix2(U16(a), U16(b)));
 }
 
 static inline i16 hash_i16_pack3(i16 a, i16 b, i16 c) {
-	return (i16)hash_u16_pack3((u16)a, (u16)b, (u16)c);
+	return I16(hash_u16_pack3(U16(a), U16(b), U16(c)));
 }
 
 static inline i16 hash_i16_mix3(i16 a, i16 b, i16 c) {
-	return (i16)hash_u16_mix3((u16)a, (u16)b, (u16)c);
+	return I16(hash_u16_mix3(U16(a), U16(b), U16(c)));
 }
 
 static inline i16 hash_i16_pack4(i16 a, i16 b, i16 c, i16 d) {
-	return (i16)hash_u16_pack4((u16)a, (u16)b, (u16)c, (u16)d);
+	return I16(hash_u16_pack4(U16(a), U16(b), U16(c), U16(d)));
 }
 
 static inline i16 hash_i16_mix4(i16 a, i16 b, i16 c, i16 d) {
-	return (i16)hash_u16_mix4((u16)a, (u16)b, (u16)c, (u16)d);
+	return I16(hash_u16_mix4(U16(a), U16(b), U16(c), U16(d)));
 }
 
 /* ========================================================================= */
@@ -211,31 +211,31 @@ static inline i16 hash_i16_mix4(i16 a, i16 b, i16 c, i16 d) {
 /* ========================================================================= */
 
 static inline i32 hash_i32(i32 a) {
-	return (i32)hash_u32((u32)a);
+	return I32(hash_u32(U32(a)));
 }
 
 static inline i32 hash_i32_pack2(i32 a, i32 b) {
-	return (i32)hash_u32_pack2((u32)a, (u32)b);
+	return I32(hash_u32_pack2(U32(a), U32(b)));
 }
 
 static inline i32 hash_i32_mix2(i32 a, i32 b) {
-	return (i32)hash_u32_mix2((u32)a, (u32)b);
+	return I32(hash_u32_mix2(U32(a), U32(b)));
 }
 
 static inline i32 hash_i32_pack3(i32 a, i32 b, i32 c) {
-	return (i32)hash_u32_pack3((u32)a, (u32)b, (u32)c);
+	return I32(hash_u32_pack3(U32(a), U32(b), U32(c)));
 }
 
 static inline i32 hash_i32_mix3(i32 a, i32 b, i32 c) {
-	return (i32)hash_u32_mix3((u32)a, (u32)b, (u32)c);
+	return I32(hash_u32_mix3(U32(a), U32(b), U32(c)));
 }
 
 static inline i32 hash_i32_pack4(i32 a, i32 b, i32 c, i32 d) {
-	return (i32)hash_u32_pack4((u32)a, (u32)b, (u32)c, (u32)d);
+	return I32(hash_u32_pack4(U32(a), U32(b), U32(c), U32(d)));
 }
 
 static inline i32 hash_i32_mix4(i32 a, i32 b, i32 c, i32 d) {
-	return (i32)hash_u32_mix4((u32)a, (u32)b, (u32)c, (u32)d);
+	return I32(hash_u32_mix4(U32(a), U32(b), U32(c), U32(d)));
 }
 
 /* ========================================================================= */
@@ -243,31 +243,31 @@ static inline i32 hash_i32_mix4(i32 a, i32 b, i32 c, i32 d) {
 /* ========================================================================= */
 
 static inline i64 hash_i64(i64 a) {
-	return (i64)hash_u64((u64)a);
+	return I64(hash_u64(U64(a)));
 }
 
 static inline i64 hash_i64_pack2(i64 a, i64 b) {
-	return (i64)hash_u64_pack2((u64)a, (u64)b);
+	return I64(hash_u64_pack2(U64(a), U64(b)));
 }
 
 static inline i64 hash_i64_mix2(i64 a, i64 b) {
-	return (i64)hash_u64_mix2((u64)a, (u64)b);
+	return I64(hash_u64_mix2(U64(a), U64(b)));
 }
 
 static inline i64 hash_i64_pack3(i64 a, i64 b, i64 c) {
-	return (i64)hash_u64_pack3((u64)a, (u64)b, (u64)c);
+	return I64(hash_u64_pack3(U64(a), U64(b), U64(c)));
 }
 
 static inline i64 hash_i64_mix3(i64 a, i64 b, i64 c) {
-	return (i64)hash_u64_mix3((u64)a, (u64)b, (u64)c);
+	return I64(hash_u64_mix3(U64(a), U64(b), U64(c)));
 }
 
 static inline i64 hash_i64_pack4(i64 a, i64 b, i64 c, i64 d) {
-	return (i64)hash_u64_pack4((u64)a, (u64)b, (u64)c, (u64)d);
+	return I64(hash_u64_pack4(U64(a), U64(b), U64(c), U64(d)));
 }
 
 static inline i64 hash_i64_mix4(i64 a, i64 b, i64 c, i64 d) {
-	return (i64)hash_u64_mix4((u64)a, (u64)b, (u64)c, (u64)d);
+	return I64(hash_u64_mix4(U64(a), U64(b), U64(c), U64(d)));
 }
 
 /* ========================================================================= */
@@ -275,31 +275,31 @@ static inline i64 hash_i64_mix4(i64 a, i64 b, i64 c, i64 d) {
 /* ========================================================================= */
 
 static inline isize hash_isize(isize a) {
-	return (isize)hash_usize((usize)a);
+	return ISIZE(hash_usize(USIZE(a)));
 }
 
 static inline isize hash_isize_pack2(isize a, isize b) {
-	return (isize)hash_usize_pack2((usize)a, (usize)b);
+	return ISIZE(hash_usize_pack2(USIZE(a), USIZE(b)));
 }
 
 static inline isize hash_isize_mix2(isize a, isize b) {
-	return (isize)hash_usize_mix2((usize)a, (usize)b);
+	return ISIZE(hash_usize_mix2(USIZE(a), USIZE(b)));
 }
 
 static inline isize hash_isize_pack3(isize a, isize b, isize c) {
-	return (isize)hash_usize_pack3((usize)a, (usize)b, (usize)c);
+	return ISIZE(hash_usize_pack3(USIZE(a), USIZE(b), USIZE(c)));
 }
 
 static inline isize hash_isize_mix3(isize a, isize b, isize c) {
-	return (isize)hash_usize_mix3((usize)a, (usize)b, (usize)c);
+	return ISIZE(hash_usize_mix3(USIZE(a), USIZE(b), USIZE(c)));
 }
 
 static inline isize hash_isize_pack4(isize a, isize b, isize c, isize d) {
-	return (isize)hash_usize_pack4((usize)a, (usize)b, (usize)c, (usize)d);
+	return ISIZE(hash_usize_pack4(USIZE(a), USIZE(b), USIZE(c), USIZE(d)));
 }
 
 static inline isize hash_isize_mix4(isize a, isize b, isize c, isize d) {
-	return (isize)hash_usize_mix4((usize)a, (usize)b, (usize)c, (usize)d);
+	return ISIZE(hash_usize_mix4(USIZE(a), USIZE(b), USIZE(c), USIZE(d)));
 }
 
 /* ========================================================================= */
@@ -307,7 +307,7 @@ static inline isize hash_isize_mix4(isize a, isize b, isize c, isize d) {
 /* ========================================================================= */
 
 static inline u8 u8_hash(const void* a) {
-	return (u8)hash_u8(*(const u8*)a);
+	return U8(hash_u8(*(const u8*)a));
 }
 
 static inline u8 u8_hash_identity(const void* a) {
@@ -315,7 +315,7 @@ static inline u8 u8_hash_identity(const void* a) {
 }
 
 static inline u16 u16_hash(const void* a) {
-	return (u16)hash_u16(*(const u16*)a);
+	return U16(hash_u16(*(const u16*)a));
 }
 
 static inline u16 u16_hash_identity(const void* a) {
@@ -323,7 +323,7 @@ static inline u16 u16_hash_identity(const void* a) {
 }
 
 static inline u32 u32_hash(const void* a) {
-	return (u32)hash_u32(*(const u32*)a);
+	return U32(hash_u32(*(const u32*)a));
 }
 
 static inline u32 u32_hash_identity(const void* a) {
@@ -331,7 +331,7 @@ static inline u32 u32_hash_identity(const void* a) {
 }
 
 static inline u64 u64_hash(const void* a) {
-	return (u64)hash_u64(*(const u64*)a);
+	return U64(hash_u64(*(const u64*)a));
 }
 
 static inline u64 u64_hash_identity(const void* a) {
@@ -339,7 +339,7 @@ static inline u64 u64_hash_identity(const void* a) {
 }
 
 static inline usize usize_hash(const void* a) {
-	return (usize)hash_usize(*(const usize*)a);
+	return USIZE(hash_usize(*(const usize*)a));
 }
 
 static inline usize usize_hash_identity(const void* a) {
@@ -347,7 +347,7 @@ static inline usize usize_hash_identity(const void* a) {
 }
 
 static inline i8 i8_hash(const void* a) {
-	return (i8)hash_i8(*(const i8*)a);
+	return I8(hash_i8(*(const i8*)a));
 }
 
 static inline i8 i8_hash_identity(const void* a) {
@@ -355,7 +355,7 @@ static inline i8 i8_hash_identity(const void* a) {
 }
 
 static inline i16 i16_hash(const void* a) {
-	return (i16)hash_i16(*(const i16*)a);
+	return I16(hash_i16(*(const i16*)a));
 }
 
 static inline i16 i16_hash_identity(const void* a) {
@@ -363,7 +363,7 @@ static inline i16 i16_hash_identity(const void* a) {
 }
 
 static inline i32 i32_hash(const void* a) {
-	return (i32)hash_i32(*(const i32*)a);
+	return I32(hash_i32(*(const i32*)a));
 }
 
 static inline i32 i32_hash_identity(const void* a) {
@@ -371,7 +371,7 @@ static inline i32 i32_hash_identity(const void* a) {
 }
 
 static inline i64 i64_hash(const void* a) {
-	return (i64)hash_i64(*(const i64*)a);
+	return I64(hash_i64(*(const i64*)a));
 }
 
 static inline i64 i64_hash_identity(const void* a) {
@@ -379,7 +379,7 @@ static inline i64 i64_hash_identity(const void* a) {
 }
 
 static inline isize isize_hash(const void* a) {
-	return (isize)hash_isize(*(const isize*)a);
+	return ISIZE(hash_isize(*(const isize*)a));
 }
 
 static inline isize isize_hash_identity(const void* a) {
@@ -387,7 +387,7 @@ static inline isize isize_hash_identity(const void* a) {
 }
 
 static inline f32 f32_hash(const void* a) {
-	return (f32)hash_f32(*(const f32*)a);
+	return F32(hash_f32(*(const f32*)a));
 }
 
 static inline f32 f32_hash_identity(const void* a) {
@@ -395,7 +395,7 @@ static inline f32 f32_hash_identity(const void* a) {
 }
 
 static inline f64 f64_hash(const void* a) {
-	return (f64)hash_f64(*(const f64*)a);
+	return F64(hash_f64(*(const f64*)a));
 }
 
 static inline f64 f64_hash_identity(const void* a) {
@@ -403,7 +403,7 @@ static inline f64 f64_hash_identity(const void* a) {
 }
 
 static inline real real_hash(const void* a) {
-	return (real)hash_real(*(const real*)a);
+	return REAL(hash_real(*(const real*)a));
 }
 
 static inline real real_hash_identity(const void* a) {
