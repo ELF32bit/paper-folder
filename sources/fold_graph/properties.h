@@ -5,6 +5,8 @@
 
 bool fold_graph_is_maekawa_compliant(const FoldGraph* graph);
 bool fold_graph_is_kawasaki_compliant(const FoldGraph* graph, real error);
-bool fold_graph_is_kawasaki_compatible(const FoldGraph* graph, real error);
+bool fold_graph_is_locally_flat_foldable(const FoldGraph* graph, real error);
+
+bool fold_graph_has_unassigned_vertices(const FoldGraph* graph);
 
 #endif /* FOLD_GRAPH_PROPERTIES_H */

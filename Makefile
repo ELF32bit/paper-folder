@@ -12,7 +12,7 @@ CFLAGS = -std=c11 \
 	-I$(THIRDPARTY_DIRECTORY)/triangle \
 	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
 	-I$(THIRDPARTY_DIRECTORY)/xoshiro
-CFLAGS += -D_REAL_=double
+CFLAGS += -DREAL_TYPE=double
 CFLAGS += -Wall -Wextra
 #CFLAGS += -DNDEBUG
 CFLAGS += -O2

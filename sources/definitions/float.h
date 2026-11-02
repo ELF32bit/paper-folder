@@ -20,11 +20,11 @@ typedef double f64;
 
 static_assert(sizeof(f64) == 8, "sizeof(f64) != 8");
 
-#ifndef _REAL_
-#define _REAL_ double
+#ifndef REAL_TYPE
+#define REAL_TYPE double
 #endif
 
-typedef _REAL_ real;
+typedef REAL_TYPE real;
 #define REAL(x) ((real)(x))
 
 #define REAL_MIN _Generic((real)0, \

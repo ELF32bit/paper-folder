@@ -53,7 +53,8 @@ int l_fold_graph_has_concave_faces_meta(lua_State* L);
 
 int l_fold_graph_is_maekawa_compliant_meta(lua_State* L);
 int l_fold_graph_is_kawasaki_compliant_meta(lua_State* L);
-int l_fold_graph_is_kawasaki_compatible_meta(lua_State* L);
+int l_fold_graph_is_locally_flat_foldable(lua_State* L);
+int l_fold_graph_has_unassigned_vertices(lua_State* L);
 
 /* ========================================================================= */
 /* Vertices Building                                                         */

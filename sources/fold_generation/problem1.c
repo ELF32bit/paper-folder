@@ -8,7 +8,7 @@
 #define REAL double
 #include "triangle.h"
 
-struct ProblemParameters {
+struct GenerationParameters {
 	union {
 		struct LFFParameters parameters;
 		struct {
@@ -73,44 +73,36 @@ void _triangulateio_destroy(struct triangulateio* io) {
 
 static inline
 Error generate_fold_graph_step6(FoldGraph* graph,
-	struct ProblemParameters* parameters)
+	struct GenerationParameters* parameters)
 {
-	RNG* rng = parameters->rng;
-	ARRAY_FOR_EACH(&graph->EA, ei, FoldGraphEdgeAssignment*, ea) {
-		if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN) {
-			ARRAY_SET(&graph->EA, ei,
-				FoldGraphEdgeAssignment, random_bool(rng)
-					? FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN
-					: FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY);
-		}
-	}
-
-	while NOT(fold_graph_is_maekawa_compliant(graph)) {
-		ARRAY_FOR_EACH(&graph->EA, ei, FoldGraphEdgeAssignment*, ea) {
-			if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN ||
-				*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY) {
-				ARRAY_SET(&graph->EA, ei,
-					FoldGraphEdgeAssignment, random_bool(rng)
-						? FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN
-						: FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY);
-			}
-		}
-	}
-
-	parameters->success = true;
+	parameters->success =
+		fold_graph_is_kawasaki_compliant(
+			graph, parameters->kawasaki_error);
 	return OK;
 }
 
 static inline
 Error generate_fold_graph_step5(FoldGraph* graph,
-	struct ProblemParameters* parameters)
+	struct GenerationParameters* parameters)
 {
 	TRY(fold_graph_VV_from_EV(graph, true));
 	TRY(fold_graph_VE_from_VV(graph, NULL));
 
-	if NOT(fold_graph_is_kawasaki_compatible(
-		graph, parameters->kawasaki_error)) {
-		return OK;
+	RNG* rng = parameters->rng;
+	FoldGraphEdgeAssignment assignments[3] = {
+		FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN,
+		FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY,
+		FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN
+	};
+
+	bool is_valid = false;
+	while NOT(is_valid && fold_graph_is_maekawa_compliant(graph)) {
+		ARRAY_FOR_EACH(&graph->EA, ei, FoldGraphEdgeAssignment*, ea) {
+			if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY) continue;
+			ARRAY_SET(&graph->EA, ei, FoldGraphEdgeAssignment,
+				assignments[random_usize_in_range(rng, 0, 2)]);
+		}
+		is_valid = NOT(fold_graph_has_unassigned_vertices(graph));
 	}
 
 	TRY(generate_fold_graph_step6(graph, parameters));
@@ -119,7 +111,7 @@ Error generate_fold_graph_step5(FoldGraph* graph,
 
 static inline
 Error generate_fold_graph_step4(FoldGraph* graph,
-	struct ProblemParameters* parameters)
+	struct GenerationParameters* parameters)
 {
 	struct triangulateio in;
 	struct triangulateio out;
@@ -193,7 +185,7 @@ Error generate_fold_graph_step4(FoldGraph* graph,
 
 static inline
 Error generate_fold_graph_step3(FoldGraph* graph,
-	struct ProblemParameters* parameters)
+	struct GenerationParameters* parameters)
 {
 	SET_CREATE(set, usize);
 	set.hash = usize_hash_identity;
@@ -262,7 +254,7 @@ Error generate_fold_graph_step3(FoldGraph* graph,
 
 static inline
 Error generate_fold_graph_step2(FoldGraph* graph,
-	struct ProblemParameters* parameters)
+	struct GenerationParameters* parameters)
 {
 	RNG* rng = parameters->rng;
 	usize n1 = random_usize_in_range(rng,
@@ -308,7 +300,7 @@ Error generate_fold_graph_step2(FoldGraph* graph,
 
 static inline
 Error generate_fold_graph(FoldGraph* graph,
-	struct ProblemParameters* parameters)
+	struct GenerationParameters* parameters)
 {
 	TRY(array_resize(&graph->VC, 4));
 	ARRAY_SET(&graph->VC, 0, Vector2, { .x = 0.0, .y = 0.0 });
@@ -330,7 +322,7 @@ Error fold_generate_locally_flat_foldable(FoldFile* file,
 	FoldGraph* graph = &key_frame->graph;
 	graph->VC.element_size = sizeof(Vector2);
 
-	struct ProblemParameters p = { .parameters = *parameters };
+	struct GenerationParameters p = { .parameters = *parameters };
 	p.min_boundary_vertices = CLAMP(p.min_boundary_vertices, 4, USIZE_MAX) - 4;
 	p.max_boundary_vertices = CLAMP(p.max_boundary_vertices, 4, USIZE_MAX) - 4;
 	p.max_boundary_vertices = MAX(p.min_boundary_vertices, p.max_boundary_vertices);
