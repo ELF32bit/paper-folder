@@ -3,10 +3,10 @@
 #include "fold_graph/vertices.h"
 
 int l_fold_graph_VV_from_EV_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 	bool sorted = lua_toboolean(L, 2);
 
-	Error result = fold_graph_VV_from_EV(graph, sorted);
+	Error result = fold_graph_VV_from_EV(wrapper->graph, sorted);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));
@@ -19,10 +19,10 @@ int l_fold_graph_VV_from_EV_meta(lua_State* L) {
 }
 
 int l_fold_graph_VV_from_FV_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 	bool sorted = lua_toboolean(L, 2);
 
-	Error result = fold_graph_VV_from_FV(graph, sorted);
+	Error result = fold_graph_VV_from_FV(wrapper->graph, sorted);
 		if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));
@@ -35,9 +35,9 @@ int l_fold_graph_VV_from_FV_meta(lua_State* L) {
 }
 
 int l_fold_graph_VE_from_VV_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 
-	Error result = fold_graph_VE_from_VV(graph, NULL);
+	Error result = fold_graph_VE_from_VV(wrapper->graph, NULL);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));
@@ -50,9 +50,9 @@ int l_fold_graph_VE_from_VV_meta(lua_State* L) {
 }
 
 int l_fold_graph_VF_from_VV_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 
-	Error result = fold_graph_VF_from_VV(graph);
+	Error result = fold_graph_VF_from_VV(wrapper->graph);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));

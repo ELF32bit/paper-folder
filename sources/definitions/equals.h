@@ -1,5 +1,5 @@
-#ifndef DEFINITION_EQUALS_H
-#define DEFINITION_EQUALS_H
+#ifndef DEFINITIONS_EQUALS_H
+#define DEFINITIONS_EQUALS_H
 
 #include "bool.h"
 #include "integer.h"
@@ -57,4 +57,4 @@ static inline bool real_equals(const void* a, const void* b) {
 	return *(const real*)a == *(const real*)b;
 }
 
-#endif /* DEFINITION_EQUALS_H */
+#endif /* DEFINITIONS_EQUALS_H */

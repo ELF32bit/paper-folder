@@ -1,5 +1,5 @@
-#ifndef COLLECTION_MAP_H
-#define COLLECTION_MAP_H
+#ifndef COLLECTIONS_MAP_H
+#define COLLECTIONS_MAP_H
 
 #include "set.h"
 
@@ -86,11 +86,39 @@ void map_view(Map* map, const Map* source_map);
 
 Error map_reserve(Map* map, usize capacity);
 
-Error map_add(Map* map, const void* key, const void* value, bool* exists);
+Error map_add(Map* map, const void* key, const void* value);
+
+#define MAP_ADD(map, key_type, key, value_type, value) do { \
+	key_type _key = (key_type)(key); \
+	value_type _value = (value_type)(value); \
+	TRY(map_add((map), &_key, &_value)); \
+} while (0)
+
+#define MAP_ADD_OR_ELSE(map, key_type, key, value_type, value, execute) do { \
+	key_type _key = (key_type)(key); \
+	value_type _value = (value_type)(value); \
+	TRY_OR_ELSE(map_add((map), &_key, &_value), execute); \
+} while (0)
+
+#define MAP_ADD_OR_ERROR(map, key_type, key, value_type, value, execute) do { \
+	key_type _key = (key_type)(key); \
+	value_type _value = (value_type)(value); \
+	TRY_OR_ERROR(map_add((map), &_key, &_value), execute); \
+} while (0)
+
 bool map_remove(Map* map, const void* key);
 
+#define MAP_REMOVE(map, key_type, ...) do { \
+	key_type _key = (key_type){__VA_ARGS__}; \
+	map_remove((map), &_key); \
+} while (0)
+
 bool map_has(const Map* map, const void* key);
-void* map_get(const Map* map, const void* key, const void* default_value);
+void* map_get(const Map* map, const void* key,
+	const void* NULLABLE(default_value));
+
+#define MAP_GET(map, key) \
+	map_get(map, key, NULL)
 
 #define Map_copy map_copy
 Error map_copy(Map* map, const Map* source_map);
@@ -106,4 +134,4 @@ bool map_iterator_next(MapIterator* iterator);
 	MapIterator iterator = map_iterator((map)); \
 	while (map_iterator_next(&iterator))
 
-#endif /* COLLECTION_MAP_H */
+#endif /* COLLECTIONS_MAP_H */

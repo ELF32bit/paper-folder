@@ -1,5 +1,5 @@
-#ifndef FOLD_GRAPH_VALIDATION_SIZES_H
-#define FOLD_GRAPH_VALIDATION_SIZES_H
+#ifndef FOLD_VALIDATION_GRAPH_SIZES_H
+#define FOLD_VALIDATION_GRAPH_SIZES_H
 
 #include "fold_specification/graph.h"
 
@@ -20,4 +20,4 @@ void fold_graph_validate_FT2_FV_sizes(const FoldGraph* graph, bool* is);
 void fold_graph_validate_FN_FV_sizes(const FoldGraph* graph, bool* is);
 void fold_graph_validate_FM_FV_sizes(const FoldGraph* graph, bool* is);
 
-#endif /* FOLD_GRAPH_VALIDATION_SIZES_H */
+#endif /* FOLD_VALIDATION_GRAPH_SIZES_H */

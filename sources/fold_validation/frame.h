@@ -1,9 +1,12 @@
-#ifndef FOLD_FRAME_VALIDATION
-#define FOLD_FRAME_VALIDATION
+#ifndef FOLD_VALIDATION_FRAME_H
+#define FOLD_VALIDATION_FRAME_H
 
 #include "fold_specification/frame.h"
 
-Error fold_frame_validate(const FoldFrame* frame, bool* is, String* errors);
-Error fold_frame_validate_inherited(FoldFrame* frame, bool* is, String* errors);
+Error fold_frame_validate(const FoldFrame* frame, bool* is,
+	String* NULLABLE(errors));
 
-#endif /* FOLD_FRAME_VALIDATION */
+Error fold_frame_validate_inherited(FoldFrame* frame, bool* is,
+	String* NULLABLE(errors));
+
+#endif /* FOLD_VALIDATION_FRAME_H */

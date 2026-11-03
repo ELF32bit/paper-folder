@@ -1,5 +1,5 @@
-#ifndef DEFINITION_CONSTANTS_H
-#define DEFINITION_CONSTANTS_H
+#ifndef DEFINITIONS_CONSTANTS_H
+#define DEFINITIONS_CONSTANTS_H
 
 #include "float.h"
 
@@ -39,4 +39,4 @@
 #define REAL_RADIANS(degrees) ((degrees) * (REAL_PI / REAL(180.0L)))
 #define REAL_DEGREES(radians) ((radians) * (REAL(180.0L) / REAL_PI))
 
-#endif /* DEFINITION_CONSTANTS_H */
+#endif /* DEFINITIONS_CONSTANTS_H */

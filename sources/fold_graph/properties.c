@@ -1,6 +1,55 @@
 #include "properties.h"
+#include "attributes.h"
 
-#include "math/vector2.h"
+usize fold_graph_get_abstract_size(const FoldGraph* graph) {
+	usize size = 0;
+	bool has_size = false;
+	ARRAY_FOR_EACH(&graph->EV, _, FoldGraphEdge*, ev) {
+		size = MAX(size, ev->a);
+		size = MAX(size, ev->b);
+		has_size = true;
+	}
+	ARRAY2_FOR_EACH(&graph->FV, __, _, usize*, fvi) {
+		size = MAX(size, *fvi);
+		has_size = true;
+	}
+	return has_size ?
+		TRY_SAFE(size + 1) : 0;
+}
+
+AABB2 fold_graph_get_aabb2(const FoldGraph* graph) {
+	AABB2 aabb2 = aabb2_empty();
+	if (fold_graph_is_2D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
+			aabb2 = aabb2_expand(aabb2, *vc);
+		}
+	} else if (fold_graph_is_3D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
+			aabb2 = aabb2_expand(aabb2, (Vector2)
+				{ .x = vc->x, .y = vc->y });
+		}
+	}
+	return aabb2_is_degenerate(aabb2)
+		? aabb2_from_point(vector2_zero())
+		: aabb2;
+}
+
+AABB3 fold_graph_get_aabb3(const FoldGraph* graph) {
+	AABB3 aabb3 = aabb3_empty();
+	if (fold_graph_is_2D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
+			aabb3 = aabb3_expand(aabb3, (Vector3)
+				{ .x = vc->x, .y = vc->y, .z = 0.0 });
+		}
+	} else if (fold_graph_is_3D(graph)) {
+		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
+			aabb3 = aabb3_expand(aabb3, *vc);
+		}
+	}
+	return aabb3_is_degenerate(aabb3)
+		? aabb3_from_point(vector3_zero())
+		: aabb3;
+}
 
 bool fold_graph_is_maekawa_compliant(const FoldGraph* graph) {
 	ASSERT(graph->VE.size != 0);
@@ -87,7 +136,7 @@ bool fold_graph_is_kawasaki_compliant(const FoldGraph* graph, real error) {
 				FoldGraphEdge* e1 = array_get(&graph->EV, *vei);
 				usize a = (ve.index != e1->a) ? e1->a : e1->b;
 				Vector2* A = array_get(&graph->VC, a);
-				CA = vector2_subtract(*A, *C);
+				CA = vector2_direction(*C, *A);
 				CA_start = CA;
 				continue;
 			}
@@ -103,7 +152,7 @@ bool fold_graph_is_kawasaki_compliant(const FoldGraph* graph, real error) {
 			FoldGraphEdge* e2 = array_get(&graph->EV, *vei);
 			usize b = (ve.index != e2->a) ? e2->a : e2->b;
 			Vector2* B = array_get(&graph->VC, b);
-			Vector2 CB = vector2_subtract(*B, *C);
+			Vector2 CB = vector2_direction(*C, *B);
 
 			kawasaki_sum += vector2_angle_to(CA, CB) * sign;
 			sign *= -1.0;
@@ -119,11 +168,6 @@ bool fold_graph_is_kawasaki_compliant(const FoldGraph* graph, real error) {
 	}
 
 	return true;
-}
-
-bool fold_graph_is_locally_flat_foldable(const FoldGraph* graph, real error) {
-	return fold_graph_is_maekawa_compliant(graph) &&
-		fold_graph_is_kawasaki_compliant(graph, error);
 }
 
 bool fold_graph_has_unassigned_vertices(const FoldGraph* graph) {
@@ -152,4 +196,14 @@ bool fold_graph_has_unassigned_vertices(const FoldGraph* graph) {
 	}
 
 	return false;
+}
+
+bool fold_graph_is_triangulated(const FoldGraph* graph) {
+	ARRAY2_ITERATE(&graph->FV, fv) {
+		ASSERT(fv.size >= 3);
+		if (fv.size != 3) {
+			return false;
+		}
+	}
+	return true;
 }

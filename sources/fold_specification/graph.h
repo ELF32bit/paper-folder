@@ -1,5 +1,5 @@
-#ifndef FOLD_GRAPH_H
-#define FOLD_GRAPH_H
+#ifndef FOLD_SPECIFICATION_GRAPH_H
+#define FOLD_SPECIFICATION_GRAPH_H
 
 #include "collections/array.h"
 #include "collections/array2.h"
@@ -156,4 +156,4 @@ Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source);
 void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source);
 bool fold_graph_is_inherited(const FoldGraph* graph);
 
-#endif /* FOLD_GRAPH_H */
+#endif /* FOLD_SPECIFICATION_GRAPH_H */

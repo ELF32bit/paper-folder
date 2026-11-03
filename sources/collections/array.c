@@ -373,6 +373,58 @@ void array_reverse(Array* array) {
 	return array_reverse_range(array, 0, array->size);
 }
 
+void array_shift_range(Array* array, isize shift, usize start, usize end) {
+	ASSERT(NOT(array->is_view));
+	ASSERT(end <= array->size);
+	ASSERT(start <= end);
+
+	if (shift == 0) return;
+	if (end - start <= 1) return;
+	usize index = wrap_index_in_range(start, shift, start, end);
+	if (index == start) return;
+
+	if (index == start + 1) {
+		u8 buffer[array->element_size];
+		memcpy(buffer, (u8*)array->data +
+			(end - 1) * array->element_size,
+				array->element_size);
+
+		memmove((u8*)array->data + (start + 1) * array->element_size,
+			(u8*)array->data + start * array->element_size,
+			(end - start - 1) * array->element_size);
+
+		memcpy((u8*)array->data +
+			start * array->element_size,
+				buffer, array->element_size);
+		return;
+	}
+
+	if (index == end - 1) {
+		u8 buffer[array->element_size];
+		memcpy(buffer, (u8*)array->data +
+			start * array->element_size,
+				array->element_size);
+
+		memmove((u8*)array->data + start * array->element_size,
+			(u8*)array->data + (start + 1) * array->element_size,
+			(end - start - 1) * array->element_size);
+
+		memcpy((u8*)array->data +
+			(end - 1) * array->element_size,
+				buffer, array->element_size);
+		return;
+	}
+
+	usize shift_size = end - index;
+	array_reverse_range(array, start, end);
+	array_reverse_range(array, start, start + shift_size);
+	array_reverse_range(array, start + shift_size, end);
+}
+
+void array_shift(Array* array, isize shift) {
+	return array_shift_range(array, shift, 0, array->size);
+}
+
 /* ========================================================================= */
 /* Sorting                                                                   */
 /* ========================================================================= */

@@ -3,9 +3,9 @@
 #include "fold_graph/edges.h"
 
 int l_fold_graph_EA_from_EF_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 
-	Error result = fold_graph_EA_from_EF(graph);
+	Error result = fold_graph_EA_from_EF(wrapper->graph);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));
@@ -18,9 +18,9 @@ int l_fold_graph_EA_from_EF_meta(lua_State* L) {
 }
 
 int l_fold_graph_EA_from_EFA_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 
-	Error result = fold_graph_EA_from_EFA(graph);
+	Error result = fold_graph_EA_from_EFA(wrapper->graph);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));
@@ -33,9 +33,9 @@ int l_fold_graph_EA_from_EFA_meta(lua_State* L) {
 }
 
 int l_fold_graph_EFA_from_EA_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 
-	Error result = fold_graph_EFA_from_EA(graph);
+	Error result = fold_graph_EFA_from_EA(wrapper->graph);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));
@@ -48,9 +48,9 @@ int l_fold_graph_EFA_from_EA_meta(lua_State* L) {
 }
 
 int l_fold_graph_EL_from_EVC_meta(lua_State* L) {
-	FoldGraph* graph = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
 
-	Error result = fold_graph_EL_from_EVC(graph);
+	Error result = fold_graph_EL_from_EVC(wrapper->graph);
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING(result));

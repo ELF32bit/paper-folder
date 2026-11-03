@@ -3,7 +3,13 @@
 
 #include "fold_specification/file.h"
 
+struct FoldFileToOBJParameters {
+	bool vertex_colors;
+	bool triangulate;
+};
+
 /* TODO: Track unique vertices to output less data */
-Error fold_file_to_obj(FoldFile* file, void* OBJ);
+Error fold_file_to_obj(FoldFile* file, void* NULLABLE(OBJ),
+	const struct FoldFileToOBJParameters* parameters);
 
 #endif /* FOLD_SERIALIZATION_OBJ_H */

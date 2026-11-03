@@ -1,5 +1,5 @@
-#ifndef LUA_MODULE_FOLD_FILE_H
-#define LUA_MODULE_FOLD_FILE_H
+#ifndef LUA_MODULES_FOLD_FILE_H
+#define LUA_MODULES_FOLD_FILE_H
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -32,9 +32,32 @@ int l_fold_file_from_obj_file_meta(lua_State* L);
 int l_fold_file_to_obj_file_meta(lua_State* L);
 
 /* ========================================================================= */
+/* Getters                                                                   */
+/* ========================================================================= */
+
+int l_fold_file_get_version_meta(lua_State* L);
+int l_fold_file_get_creator_meta(lua_State* L);
+int l_fold_file_get_author_meta(lua_State* L);
+int l_fold_file_get_title_meta(lua_State* L);
+int l_fold_file_get_description_meta(lua_State* L);
+int l_fold_file_get_classes_meta(lua_State* L);
+int l_fold_file_get_frames_meta(lua_State* L);
+int l_fold_file_get_frames_size_meta(lua_State* L);
+int l_fold_file_get_key_frame_meta(lua_State* L);
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+int l_fold_file_copy_meta(lua_State* L);
+int l_fold_file_frame_inherit_meta(lua_State* L);
+int l_fold_file_frames_inherit_meta(lua_State* L);
+
+/* ========================================================================= */
 /* Validation                                                                */
 /* ========================================================================= */
 
+int l_fold_file_validate_inherit_meta(lua_State* L);
 int l_fold_file_validate_meta(lua_State* L);
 
-#endif /* LUA_MODULE_FOLD_FILE_H */
+#endif /* LUA_MODULES_FOLD_FILE_H */

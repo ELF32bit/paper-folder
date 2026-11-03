@@ -1,5 +1,5 @@
-#ifndef FOLD_GRAPH_VALIDATION_VALUES_H
-#define FOLD_GRAPH_VALIDATION_VALUES_H
+#ifndef FOLD_VALIDATION_GRAPH_VALUES_H
+#define FOLD_VALIDATION_GRAPH_VALUES_H
 
 #include "fold_specification/graph.h"
 
@@ -10,4 +10,4 @@ void fold_graph_validate_EL_values(const FoldGraph* graph, bool* is);
 Error fold_graph_validate_EO_pairs(const FoldGraph* graph, bool* is);
 Error fold_graph_validate_FO_pairs(const FoldGraph* graph, bool* is);
 
-#endif /* FOLD_GRAPH_VALIDATION_VALUES_H */
+#endif /* FOLD_VALIDATION_GRAPH_VALUES_H */

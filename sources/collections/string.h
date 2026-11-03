@@ -1,11 +1,14 @@
-#ifndef COLLECTION_STRING_H
-#define COLLECTION_STRING_H
+#ifndef COLLECTIONS_STRING_H
+#define COLLECTIONS_STRING_H
 
 #include "definitions/types.h"
 
 typedef struct String {
 	char* data;
-	usize length;
+	union {
+		usize length;
+		usize size;
+	};
 	bool is_view;
 } String;
 
@@ -95,4 +98,4 @@ static inline int string_sort_descending(const void* a, const void* b) {
 	return string_compare((const String*)b, (const String*)a);
 }
 
-#endif /* COLLECTION_STRING_H */
+#endif /* COLLECTIONS_STRING_H */

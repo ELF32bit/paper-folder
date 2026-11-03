@@ -14,9 +14,9 @@
 
 #define JSON_READ_ERROR "failed to read FOLD file"
 
-#define GENERATE_FUNCTIONS(Fold, fold, METATABLE) \
+#define GENERATE_FUNCTIONS(Fold, fold, wrapper, wrapper_property, METATABLE) \
 int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
-	Fold* fold = luaL_checkudata(L, 1, METATABLE); \
+	Fold* wrapper = luaL_checkudata(L, 1, METATABLE); \
 	const char* input_file_path = luaL_checkstring(L, 2); \
 \
 	yyjson_read_err json_errors; \
@@ -30,7 +30,7 @@ int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
 	} \
 \
 	yyjson_val* object = yyjson_doc_get_root(json); \
-	Error result = fold_##fold##_from_json(fold, json, object); \
+	Error result = fold_##fold##_from_json(wrapper_property, json, object); \
 	yyjson_doc_free(json); \
 \
 	if IS_ERROR(result) { \
@@ -47,7 +47,7 @@ int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
 \
 int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 	size_t string_length; \
-	Fold* fold = luaL_checkudata(L, 1, METATABLE); \
+	Fold* wrapper = luaL_checkudata(L, 1, METATABLE); \
 	const char* string = luaL_checklstring(L, 2, &string_length); \
 \
 	yyjson_read_err json_errors; \
@@ -61,7 +61,7 @@ int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 	} \
 \
 	yyjson_val* object = yyjson_doc_get_root(json); \
-	Error result = fold_##fold##_from_json(fold, json, object); \
+	Error result = fold_##fold##_from_json(wrapper_property, json, object); \
 	yyjson_doc_free(json); \
 \
 	if IS_ERROR(result) { \
@@ -76,6 +76,6 @@ int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 	return 2; \
 }
 
-GENERATE_FUNCTIONS(FoldFile, file, FOLD_FILE_METATABLE)
-GENERATE_FUNCTIONS(FoldFrame, frame, FOLD_FRAME_METATABLE)
-GENERATE_FUNCTIONS(FoldGraph, graph, FOLD_GRAPH_METATABLE)
+GENERATE_FUNCTIONS(FoldFile, file, file, file, FOLD_FILE_METATABLE)
+GENERATE_FUNCTIONS(LuaFoldFrame, frame, wrapper, wrapper->frame, FOLD_FRAME_METATABLE)
+GENERATE_FUNCTIONS(LuaFoldGraph, graph, wrapper, wrapper->graph, FOLD_GRAPH_METATABLE)

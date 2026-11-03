@@ -1,5 +1,5 @@
-#ifndef DEFINITION_HASH_H
-#define DEFINITION_HASH_H
+#ifndef DEFINITIONS_HASH_H
+#define DEFINITIONS_HASH_H
 
 #include "integer.h"
 #include "float.h"
@@ -410,4 +410,4 @@ static inline real real_hash_identity(const void* a) {
 	return *(const real*)a;
 }
 
-#endif /* DEFINITION_HASH_H */
+#endif /* DEFINITIONS_HASH_H */

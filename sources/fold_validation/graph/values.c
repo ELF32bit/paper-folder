@@ -83,9 +83,9 @@ Error _fold_graph_validate_orders_pairs(const Array* orders, bool* is) {
 					return OK;
 				}
 			} else {
-				TRY_OR_ELSE(map_add(&pairs, &ab, &abo, NULL),
+				TRY_OR_ELSE(map_add(&pairs, &ab, &abo),
 					map_destroy(&pairs));
-				TRY_OR_ELSE(map_add(&pairs, &ba, &bao, NULL),
+				TRY_OR_ELSE(map_add(&pairs, &ba, &bao),
 					map_destroy(&pairs));
 			}
 		}

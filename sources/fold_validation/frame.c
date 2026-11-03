@@ -2,20 +2,26 @@
 #include "graph.h"
 
 static
-Error fold_frame_metadata_validate(const FoldFrame* frame, bool* is, String* errors) {
+Error fold_frame_metadata_validate(const FoldFrame* frame, bool* is,
+	String* NULLABLE(errors))
+{
 	(void)frame; (void)errors;
 	*is = true;
 	return OK;
 }
 
 static
-Error fold_frame_metadata_validate_inherited(FoldFrame* frame, bool* is, String* errors) {
+Error fold_frame_metadata_validate_inherited(FoldFrame* frame, bool* is,
+	String* NULLABLE(errors))
+{
 	(void)frame; (void)errors;
 	*is = true;
 	return OK;
 }
 
-Error fold_frame_validate(const FoldFrame* frame, bool* is, String* errors) {
+Error fold_frame_validate(const FoldFrame* frame, bool* is,
+	String* NULLABLE(errors))
+{
 	*is = false;
 	bool is_graph = true;
 	bool is_metadata = true;
@@ -25,7 +31,9 @@ Error fold_frame_validate(const FoldFrame* frame, bool* is, String* errors) {
 	return OK;
 }
 
-Error fold_frame_validate_inherited(FoldFrame* frame, bool* is, String* errors) {
+Error fold_frame_validate_inherited(FoldFrame* frame, bool* is,
+	String* NULLABLE(errors))
+{
 	*is = false;
 	bool is_graph = true;
 	bool is_metadata = true;

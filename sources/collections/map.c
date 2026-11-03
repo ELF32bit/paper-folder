@@ -20,23 +20,6 @@ void _set_flag(Array* flags, usize i, u8 value) {
 	*byte = (*byte & ~(3 << shift)) | (value << shift);
 }
 
-static inline
-void _map_array_destroy(Map* map, Array* array) {
-	if (array->is_view) return;
-	if (array->destroy != NULL) {
-		FOR_EACH(index, array->capacity) {
-			if (_get_flag(&map->flags, index) == MAP_FLAG_OCCUPIED) {
-				array->destroy(array_get(array, index));
-			}
-		}
-	}
-	free(array->data);
-	array->data = NULL;
-	array->capacity = 0;
-	array->size = 0;
-	array->is_view = false;
-}
-
 /* ========================================================================= */
 /* Creation & Destruction                                                    */
 /* ========================================================================= */
@@ -71,6 +54,23 @@ void map_create_managed(Map* map, usize key_size, usize value_size,
 	map->hash = hash;
 	map->equals = equals;
 	map->is_view = false;
+}
+
+static inline
+void _map_array_destroy(Map* map, Array* array) {
+	if (array->is_view) return;
+	if (array->destroy != NULL) {
+		FOR_EACH(index, array->capacity) {
+			if (_get_flag(&map->flags, index) == MAP_FLAG_OCCUPIED) {
+				array->destroy(array_get(array, index));
+			}
+		}
+	}
+	free(array->data);
+	array->data = NULL;
+	array->capacity = 0;
+	array->size = 0;
+	array->is_view = false;
 }
 
 void map_destroy(Map* map) {
@@ -202,9 +202,8 @@ Error map_reserve(Map* map, usize capacity) {
 	return _map_reallocate(map, new_capacity);
 }
 
-Error map_add(Map* map, const void* key, const void* value, bool* exists) {
+Error map_add(Map* map, const void* key, const void* value) {
 	ASSERT(NOT(map->is_view));
-	if (exists != NULL) *exists = false;
 
 	TRY_ADD(map->size, map->tombstones);
 	TRY_ADD(map->size + map->tombstones, 1);
@@ -218,7 +217,6 @@ Error map_add(Map* map, const void* key, const void* value, bool* exists) {
 
 	bool key_exists;
 	usize bucket = _map_find_bucket(map, key, &key_exists);
-	if (exists != NULL) *exists = key_exists;
 	if (key_exists) {
 		array_set(&map->values, bucket, value);
 		return OK;
@@ -259,7 +257,9 @@ bool map_has(const Map* map, const void* key) {
 	return exists;
 }
 
-void* map_get(const Map* map, const void* key, const void* default_value) {
+void* map_get(const Map* map, const void* key,
+	const void* NULLABLE(default_value))
+{
 	bool exists;
 	usize bucket = _map_find_bucket(map, key, &exists);
 	if (exists) return array_get(&map->values, bucket);
@@ -302,7 +302,7 @@ Error map_copy(Map* map, const Map* source_map) {
 
 		TRY_OR_ELSE(map_add(map,
 			key_copied ? key : iterator.key,
-			value_copied ? value : iterator.value, NULL),
+			value_copied ? value : iterator.value),
 			if (key_copied && map->keys.destroy != NULL)
 				map->keys.destroy(key);
 			if (value_copied && map->values.destroy != NULL)
@@ -333,13 +333,16 @@ bool map_iterator_next(MapIterator* iterator) {
 	for (; iterator->key_index < iterator->map->keys.capacity;
 		iterator->key_index++)
 	{
-		if (_get_flag(&iterator->map->flags, iterator->key_index)
-			== MAP_FLAG_OCCUPIED) {
+		if (_get_flag(&iterator->map->flags,
+			iterator->key_index) == MAP_FLAG_OCCUPIED)
+		{
 			iterator->key = array_get(
-				&iterator->map->keys, iterator->key_index);
+				&iterator->map->keys,
+				iterator->key_index);
 
 			iterator->value = array_get(
-				&iterator->map->values, iterator->key_index);
+				&iterator->map->values,
+				iterator->key_index);
 
 			iterator->index++;
 			return true;

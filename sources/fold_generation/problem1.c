@@ -216,7 +216,7 @@ Error generate_fold_graph_step3(FoldGraph* graph,
 		if (is_duplicate) continue;
 
 		usize cell = USIZE(hash_isize_pack2(ix, iy));
-		TRY_OR_ELSE(set_add(&set, &cell, NULL),
+		TRY_OR_ELSE(set_add(&set, &cell),
 			array_destroy(&unique_vertices);
 			set_destroy(&set));
 
@@ -271,8 +271,7 @@ Error generate_fold_graph_step2(FoldGraph* graph,
 
 	FOR_EACH_IN_RANGE(index, old_size, old_size + n1) {
 		real t = random_real_in_range(rng, 0.0, 4.0);
-		usize side = USIZE(t);
-		if (side > 3) side = 3;
+		usize side = MIN(USIZE(t), 3);
 		t -= side;
 		Vector2 v = {
 			.x = (side == 0) ? t

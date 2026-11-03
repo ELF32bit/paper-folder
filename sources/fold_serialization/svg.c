@@ -1,7 +1,7 @@
 #include "svg.h"
 
 #include "fold_graph/attributes.h"
-#include "fold_graph/vertices.h"
+#include "fold_graph/properties.h"
 
 #include <stdio.h>
 
@@ -39,7 +39,9 @@ static const char EA_display_colors[][10] = {
 /* ========================================================================= */
 
 static inline
-Error fold_graph_to_svg(FoldGraph* graph, void* SVG) {
+Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
+	const struct FoldFileFrameToSVGParameters* parameters)
+{
 	FILE* output_file = SVG;
 	real scale = 1.0;
 
@@ -199,7 +201,9 @@ svg_finish:
 /* ========================================================================= */
 
 static inline
-Error fold_frame_to_svg(FoldFrame* frame, void* SVG) {
+Error fold_frame_to_svg(FoldFrame* frame, void* NULLABLE(SVG),
+	const struct FoldFileFrameToSVGParameters* parameters)
+{
 	FILE* output_file = (SVG != NULL)
 		? fopen((const char*)SVG, "w")
 		: stdout;
@@ -207,8 +211,9 @@ Error fold_frame_to_svg(FoldFrame* frame, void* SVG) {
 	TRY_NEW_MEMORY_OR_ERROR(output_file,
 		return ERROR);
 
-	TRY_OR_ELSE(fold_graph_to_svg(&frame->graph, output_file),
-		fclose(output_file));
+	TRY_OR_ELSE(
+		fold_graph_to_svg(&frame->graph, output_file, parameters),
+			fclose(output_file));
 
 	TRY_OR_ERROR(ferror(output_file),
 		fclose(output_file);
@@ -222,9 +227,11 @@ Error fold_frame_to_svg(FoldFrame* frame, void* SVG) {
 /* FOLD File                                                                 */
 /* ========================================================================= */
 
-Error fold_file_frame_to_svg(FoldFile* file, usize index, void* SVG) {
+Error fold_file_frame_to_svg(FoldFile* file, usize index, void* NULLABLE(SVG),
+	const struct FoldFileFrameToSVGParameters* parameters)
+{
 	if NOT(index < file->frames.size) return ERROR;
 	FoldFrame* frame = fold_file_frame_inherit(file, index);
-	TRY(fold_frame_to_svg(frame, SVG));
+	TRY(fold_frame_to_svg(frame, SVG, parameters));
 	return OK;
 }

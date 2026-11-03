@@ -1,5 +1,5 @@
-#ifndef DEFINITION_RANDOM_H
-#define DEFINITION_RANDOM_H
+#ifndef DEFINITIONS_RANDOM_H
+#define DEFINITIONS_RANDOM_H
 
 #include "bool.h"
 #include "integer.h"
@@ -148,4 +148,4 @@ static inline isize random_isize_in_range(RNG* rng, isize min, isize max) {
 	return min + ISIZE(random_usize_in_range(rng, 0, USIZE(max - min)));
 }
 
-#endif /* DEFINITION_RANDOM_H */
+#endif /* DEFINITIONS_RANDOM_H */

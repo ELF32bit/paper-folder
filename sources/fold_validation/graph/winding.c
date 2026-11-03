@@ -16,11 +16,11 @@ Error _to_map2(const Array2* array2, Set* map2) {
 			wrap_index_in_range(index, +1, array.start, array.end));
 
 		usize Iab = hash_usize_mix3(array.index, *a, *b);
-		TRY_OR_ELSE(set_add(&set, &Iab, NULL),
+		TRY_OR_ELSE(set_add(&set, &Iab),
 			set_destroy(&set));
 
 		usize Iba = hash_usize_mix3(array.index, *b, *a);
-		TRY_OR_ELSE(set_add(&set, &Iba, NULL),
+		TRY_OR_ELSE(set_add(&set, &Iba),
 			set_destroy(&set));
 	}
 
@@ -44,11 +44,11 @@ Error _to_map3(const Array2* array2, Set* map3) {
 			wrap_index_in_range(index, +2, array.start, array.end));
 
 		usize Iabc = hash_usize_mix4(array.index, *a, *b, *c);
-		TRY_OR_ELSE(set_add(&set, &Iabc, NULL),
+		TRY_OR_ELSE(set_add(&set, &Iabc),
 			set_destroy(&set));
 
 		usize Icba = hash_usize_mix4(array.index, *c, *b, *a);
-		TRY_OR_ELSE(set_add(&set, &Icba, NULL),
+		TRY_OR_ELSE(set_add(&set, &Icba),
 			set_destroy(&set));
 	}
 

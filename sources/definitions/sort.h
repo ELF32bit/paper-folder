@@ -1,5 +1,5 @@
-#ifndef DEFINITION_SORT_H
-#define DEFINITION_SORT_H
+#ifndef DEFINITIONS_SORT_H
+#define DEFINITIONS_SORT_H
 
 #include <stdlib.h>
 #include "integer.h"
@@ -213,4 +213,4 @@ static inline int real_sort_descending(const void* a, const void* b) {
 	return 0;
 }
 
-#endif /* DEFINITION_SORT_H */
+#endif /* DEFINITIONS_SORT_H */

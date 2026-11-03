@@ -1,5 +1,5 @@
-#ifndef FOLD_FRAME_H
-#define FOLD_FRAME_H
+#ifndef FOLD_SPECIFICATION_FRAME_H
+#define FOLD_SPECIFICATION_FRAME_H
 
 #include "graph.h"
 
@@ -90,4 +90,4 @@ bool fold_frame_is_inherited(const FoldFrame* frame);
 
 Error fold_frame_attributes_assign(FoldFrame* frame);
 
-#endif /* FOLD_FRAME_H */
+#endif /* FOLD_SPECIFICATION_FRAME_H */

@@ -5,14 +5,14 @@
 #define FOLD_VALIDATE_ERROR "failed to validate"
 
 int l_fold_frame_validate_meta(lua_State* L) {
-	FoldFrame* frame = luaL_checkudata(L, 1, FOLD_FRAME_METATABLE);
+	LuaFoldFrame* wrapper = luaL_checkudata(L, 1, FOLD_FRAME_METATABLE);
 	int write_errors = NOT(lua_toboolean(L, 2));
 
 	STRING_CREATE(errors);
 	bool is = true;
 
-	Error result = fold_frame_validate(frame, &is,
-		write_errors ? (&errors) : NULL);
+	Error result = fold_frame_validate(wrapper->frame,
+		&is, write_errors ? (&errors) : NULL);
 	if IS_ERROR(result) {
 		string_destroy(&errors);
 		lua_pushboolean(L, false);
@@ -30,14 +30,14 @@ int l_fold_frame_validate_meta(lua_State* L) {
 }
 
 int l_fold_frame_validate_inherited_meta(lua_State* L) {
-	FoldFrame* frame = luaL_checkudata(L, 1, FOLD_FRAME_METATABLE);
+	LuaFoldFrame* wrapper = luaL_checkudata(L, 1, FOLD_FRAME_METATABLE);
 	int write_errors = NOT(lua_toboolean(L, 2));
 
 	STRING_CREATE(errors);
 	bool is = true;
 
-	Error result = fold_frame_validate_inherited(frame, &is,
-		write_errors ? (&errors) : NULL);
+	Error result = fold_frame_validate_inherited(wrapper->frame,
+		&is, write_errors ? (&errors) : NULL);
 	if IS_ERROR(result) {
 		string_destroy(&errors);
 		lua_pushboolean(L, false);

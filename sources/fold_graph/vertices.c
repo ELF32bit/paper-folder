@@ -1,68 +1,19 @@
 #include "vertices.h"
 #include "attributes.h"
+#include "properties.h"
 #include "edges.h"
 
 #include <stdlib.h>
 
-struct SortPrimitive { usize index; real weight; };
+struct WeightedIndex { usize index; real weight; };
 
 static inline
-int _sort_primitives_ascending(const void* a, const void* b) {
-	real w1 = ((const struct SortPrimitive*)a)->weight;
-	real w2 = ((const struct SortPrimitive*)b)->weight;
+int _weighted_index_sort_ascending(const void* a, const void* b) {
+	real w1 = ((const struct WeightedIndex*)a)->weight;
+	real w2 = ((const struct WeightedIndex*)b)->weight;
 	if (w1 < w2) return -1;
 	if (w1 > w2) return 1;
 	return 0;
-}
-
-usize fold_graph_get_abstract_size(const FoldGraph* graph) {
-	usize size = 0;
-	bool has_size = false;
-	ARRAY_FOR_EACH(&graph->EV, _, FoldGraphEdge*, ev) {
-		size = MAX(size, ev->a);
-		size = MAX(size, ev->b);
-		has_size = true;
-	}
-	ARRAY2_FOR_EACH(&graph->FV, __, _, usize*, fvi) {
-		size = MAX(size, *fvi);
-		has_size = true;
-	}
-	return has_size ?
-		TRY_SAFE(size + 1) : 0;
-}
-
-AABB2 fold_graph_get_aabb2(const FoldGraph* graph) {
-	AABB2 aabb2 = aabb2_empty();
-	if (fold_graph_is_2D(graph)) {
-		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
-			aabb2 = aabb2_expand(aabb2, *vc);
-		}
-	} else if (fold_graph_is_3D(graph)) {
-		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
-			aabb2 = aabb2_expand(aabb2, (Vector2)
-				{ .x = vc->x, .y = vc->y });
-		}
-	}
-	return aabb2_is_degenerate(aabb2)
-		? aabb2_from_point(vector2_zero())
-		: aabb2;
-}
-
-AABB3 fold_graph_get_aabb3(const FoldGraph* graph) {
-	AABB3 aabb3 = aabb3_empty();
-	if (fold_graph_is_2D(graph)) {
-		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
-			aabb3 = aabb3_expand(aabb3, (Vector3)
-				{ .x = vc->x, .y = vc->y, .z = 0.0 });
-		}
-	} else if (fold_graph_is_3D(graph)) {
-		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
-			aabb3 = aabb3_expand(aabb3, *vc);
-		}
-	}
-	return aabb3_is_degenerate(aabb3)
-		? aabb3_from_point(vector3_zero())
-		: aabb3;
 }
 
 static inline
@@ -79,13 +30,13 @@ Error fold_graph_get_VV_map_from_EV(const FoldGraph* graph, Map* map) {
 		Set* a_set = map_get(&VV_map, &a_hash, NULL);
 		if (a_set == NULL) {
 			SET_CREATE(vv_set, usize);
-			TRY_OR_ELSE(set_add(&vv_set, &ev->b, NULL),
+			TRY_OR_ELSE(set_add(&vv_set, &ev->b),
 				set_destroy(&vv_set); map_destroy(&VV_map));
 
-			TRY_OR_ELSE(map_add(&VV_map, &a_hash, &vv_set, NULL),
+			TRY_OR_ELSE(map_add(&VV_map, &a_hash, &vv_set),
 				set_destroy(&vv_set); map_destroy(&VV_map));
 		} else {
-			TRY_OR_ELSE(set_add(a_set, &ev->b, NULL),
+			TRY_OR_ELSE(set_add(a_set, &ev->b),
 				map_destroy(&VV_map));
 		}
 
@@ -93,13 +44,13 @@ Error fold_graph_get_VV_map_from_EV(const FoldGraph* graph, Map* map) {
 		Set* b_set = map_get(&VV_map, &b_hash, NULL);
 		if (b_set == NULL) {
 			SET_CREATE(vv_set, usize);
-			TRY_OR_ELSE(set_add(&vv_set, &ev->a, NULL),
+			TRY_OR_ELSE(set_add(&vv_set, &ev->a),
 				set_destroy(&vv_set); map_destroy(&VV_map));
 
-			TRY_OR_ELSE(map_add(&VV_map, &b_hash, &vv_set, NULL),
+			TRY_OR_ELSE(map_add(&VV_map, &b_hash, &vv_set),
 				set_destroy(&vv_set); map_destroy(&VV_map));
 		} else {
-			TRY_OR_ELSE(set_add(b_set, &ev->a, NULL),
+			TRY_OR_ELSE(set_add(b_set, &ev->a),
 				map_destroy(&VV_map));
 		}
 	}
@@ -130,17 +81,17 @@ Error fold_graph_get_VV_map_from_FV(const FoldGraph* graph, Map* map) {
 			Set* b_set = map_get(&VV_map, &b_hash, NULL);
 			if (b_set == NULL) {
 				SET_CREATE(vv_set, usize);
-				TRY_OR_ELSE(set_add(&vv_set, a, NULL),
+				TRY_OR_ELSE(set_add(&vv_set, a),
 					set_destroy(&vv_set); map_destroy(&VV_map));
-				TRY_OR_ELSE(set_add(&vv_set, c, NULL),
+				TRY_OR_ELSE(set_add(&vv_set, c),
 					set_destroy(&vv_set); map_destroy(&VV_map));
 
-				TRY_OR_ELSE(map_add(&VV_map, &b_hash, &vv_set, NULL),
+				TRY_OR_ELSE(map_add(&VV_map, &b_hash, &vv_set),
 					set_destroy(&vv_set); map_destroy(&VV_map));
 			} else {
-				TRY_OR_ELSE(set_add(b_set, a, NULL),
+				TRY_OR_ELSE(set_add(b_set, a),
 					map_destroy(&VV_map));
-				TRY_OR_ELSE(set_add(b_set, c, NULL),
+				TRY_OR_ELSE(set_add(b_set, c),
 					map_destroy(&VV_map));
 			}
 		}
@@ -208,8 +159,8 @@ Error fold_graph_VV_sort2D(FoldGraph* graph) {
 	}
 
 	if (buffer_size < 3) return OK;
-	struct SortPrimitive* buffer = malloc(
-		SIZEOF(struct SortPrimitive, buffer_size));
+	struct WeightedIndex* buffer = malloc(
+		SIZEOF(struct WeightedIndex, buffer_size));
 	TRY_NEW_MEMORY(buffer);
 
 	ARRAY2_ITERATE(&graph->VV, vv) {
@@ -221,16 +172,16 @@ Error fold_graph_VV_sort2D(FoldGraph* graph) {
 		{
 			Vector2* B = array_get(&graph->VC, *vvi);
 
-			Vector2 AB = vector2_subtract(*B, *A);
-			buffer[i - vv.start] = (struct SortPrimitive){
+			Vector2 AB = vector2_direction(*A, *B);
+			buffer[i - vv.start] = (struct WeightedIndex){
 				.weight = ATAN2(AB.y, AB.x),
 				.index = *vvi
 			};
 		}
 
 		qsort(buffer, vv.size,
-			sizeof(struct SortPrimitive),
-			_sort_primitives_ascending);
+			sizeof(struct WeightedIndex),
+			_weighted_index_sort_ascending);
 
 		FOR_EACH_IN_RANGE(i, vv.start, vv.end) {
 			array_set(&graph->VV.data, i,
@@ -242,10 +193,95 @@ Error fold_graph_VV_sort2D(FoldGraph* graph) {
 	return OK;
 }
 
-/* TODO: Generate covariance matrix to obtain 3D plane and project */
 static inline
 Error fold_graph_VV_sort3D(FoldGraph* graph) {
-	(void)graph;
+/*
+	local VC, Sort = self.VC, table.sort
+	local Normalize = UTILITIES.Vector.normalize3
+	local Atan, Abs = math.atan2 or math.atan, math.abs
+
+	for vi, vv in ipairs(self.VV) do
+		local c, vv_size = VC[vi], #vv
+		local c1, c2, c3 = c[1], c[2], c[3]
+		local m11, m12, m13 = 0.0, 0.0, 0.0
+		local m22, m23, m33 = 0.0, 0.0, 0.0
+
+		for i = 1, vv_size do
+			local v = VC[vv[i]]
+			local d1 = v[1] - c1
+			local d2 = v[2] - c2
+			local d3 = v[3] - c3
+
+			m11 = m11 + d1 * d1
+			m12 = m12 + d1 * d2
+			m13 = m13 + d1 * d3
+			m22 = m22 + d2 * d2
+			m23 = m23 + d2 * d3
+			m33 = m33 + d3 * d3
+		end
+
+		local e1, e2, e3 = 1, 0, 0
+		if m22 >= m11 and m22 >= m33 then
+			e1, e2, e3 = 0, 1, 0
+		elseif m33 >= m11 and m33 >= m22 then
+			e1, e2, e3 = 0, 0, 1
+		end
+
+		for i = 1, 8 do
+			local n1 = m11 * e1 + m12 * e2 + m13 * e3
+			local n2 = m12 * e1 + m22 * e2 + m23 * e3
+			local n3 = m13 * e1 + m23 * e2 + m33 * e3
+
+			n1, n2, n3 = Normalize(n1, n2, n3)
+			local dot = e1 * n1 + e2 * n2 + e3 * n3
+			e1, e2, e3 = n1, n2, n3
+
+			if Abs(dot) > 0.999 then break end
+		end
+		local e1A, e2A, e3A = Abs(e1), Abs(e2), Abs(e3)
+
+		local p1, p2, p3 = 1, 0, 0
+		if e2A <= e1A and e2A <= e3A then
+			p1, p2, p3 = 0, 1, 0
+		elseif e3A <= e1A and e3A <= e2A then
+			p1, p2, p3 = 0, 0, 1
+		end
+
+		local u1 = e2 * p3 - e3 * p2
+		local u2 = e3 * p1 - e1 * p3
+		local u3 = e1 * p2 - e2 * p1
+		u1, u2, u3 = Normalize(u1, u2, u3)
+
+		local v1 = e2 * u3 - e3 * u2
+		local v2 = e3 * u1 - e1 * u3
+		local v3 = e1 * u2 - e2 * u1
+
+		for i = 1, vv_size do
+			local vvi = vv[i]
+			local v = VC[vvi]
+			local d1 = v[1] - c1
+			local d2 = v[2] - c2
+			local d3 = v[3] - c3
+
+			local x = d1 * u1 + d2 * u2 + d3 * u3
+			local y = d1 * v1 + d2 * v2 + d3 * v3
+
+			_SORT_CACHE1[i] = vvi
+			_SORT_CACHE2[vvi] = Atan(y, x)
+		end
+
+		Sort(_SORT_CACHE1, function(w1, w2)
+			return _SORT_CACHE2[w1] < _SORT_CACHE2[w2]
+		end)
+
+		for i = 1, vv_size do
+			local vvi = _SORT_CACHE1[i]
+			_SORT_CACHE2[vvi] = nil
+			_SORT_CACHE1[i] = nil
+			vv[i] = vvi
+		end
+	end
+*/
 	return OK;
 }
 
@@ -287,7 +323,9 @@ Error fold_graph_VV_from_FV(FoldGraph* graph, bool sorted) {
 	return OK;
 }
 
-Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
+Error fold_graph_VE_from_VV(FoldGraph* graph,
+	const Map* NULLABLE(EV_map))
+{
 	ASSERT(NOT(graph->VE.is_view));
 
 	Map _EV_map;
@@ -296,11 +334,14 @@ Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
 		EV_map = &_EV_map;
 	}
 
-	TRY_OR_ELSE(array_resize(&graph->VE.data, graph->VV.data.size),
-		if (EV_map == &_EV_map) map_destroy(&_EV_map));
-	TRY_OR_ELSE(array_resize(&graph->VE.offsets, graph->VV.offsets.size),
-		if (EV_map == &_EV_map) map_destroy(&_EV_map);
-		array2_recreate(&graph->VE));
+	TRY_OR_ELSE(
+		array_resize(&graph->VE.data, graph->VV.data.size),
+			if (EV_map == &_EV_map) map_destroy(&_EV_map));
+
+	TRY_OR_ELSE(
+		array_resize(&graph->VE.offsets, graph->VV.offsets.size),
+			if (EV_map == &_EV_map) map_destroy(&_EV_map);
+			array2_recreate(&graph->VE));
 
 	ARRAY2_ITERATE(&graph->VV, vv) {
 		ARRAY_FOR_EACH_IN_RANGE(&graph->VV.data,
@@ -321,6 +362,33 @@ Error fold_graph_VE_from_VV(FoldGraph* graph, const Map* EV_map) {
 
 /* TODO: Reconstruct faces by walking over directed VV edges */
 Error fold_graph_VF_from_VV(FoldGraph* graph) {
-	(void)graph;
+/* ! WRONG OLD ALGORITHM !
+	var FV_map: Dictionary = {}
+	for fi in range(graph.FV.size()):
+		var fv: Array = graph.FV[fi]
+		var d := fv.size()
+		for i in range(d):
+			var u: int = fv[i]
+			var v: int = fv[(i + 1) % d]
+			var w: int = fv[(i + 2) % d]
+			FV_map.get_or_add([u, v, w], {})[fi] = true
+			FV_map.get_or_add([w, v, u], {})[fi] = true
+
+	var new_VF: Array[Array] = []
+	new_VF.resize(graph.VV.size())
+	for vi in range(graph.VV.size()):
+		var vv: Array = graph.VV[vi]
+		var vf: Array = new_VF[vi]
+		var d := vv.size()
+		vf.resize(d)
+		for i in range(d):
+			var vvi: int = vv[i]
+			var vnvi: int = vv[(i + 1) % d]
+			if FV_map.has([vvi, vi, vnvi]):
+				vf.append_array(FV_map[[vvi, vi, vnvi]].keys())
+			elif FV_map.has([vnvi, vi, vvi]):
+				vf.append_array(FV_map[[vnvi, vi, vvi]].keys())
+			else: vf.append(null)
+*/
 	return OK;
 }

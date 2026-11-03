@@ -12,9 +12,9 @@
 
 #define JSON_WRITE_ERROR "failed to write FOLD file"
 
-#define GENERATE_FUNCTIONS(Fold, fold, METATABLE) \
+#define GENERATE_FUNCTIONS(Fold, fold, wrapper, wrapper_property, METATABLE) \
 int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
-	Fold* fold = luaL_checkudata(L, 1, METATABLE); \
+	Fold* wrapper = luaL_checkudata(L, 1, METATABLE); \
 	const char* output_file_path = luaL_checkstring(L, 2); \
 	yyjson_write_flag flags = lua_toboolean(L, 3) \
 		? JSON_WRITE_FLAGS | YYJSON_WRITE_PRETTY \
@@ -36,7 +36,7 @@ int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
 	} \
 \
 	yyjson_mut_doc_set_root(json, object); \
-	Error result = fold_##fold##_to_json(fold, json, object); \
+	Error result = fold_##fold##_to_json(wrapper_property, json, object); \
 \
 	if IS_ERROR(result) { \
 		yyjson_mut_doc_free(json); \
@@ -63,7 +63,7 @@ int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
 } \
 \
 int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
-	Fold* fold = luaL_checkudata(L, 1, METATABLE); \
+	Fold* wrapper = luaL_checkudata(L, 1, METATABLE); \
 	yyjson_write_flag flags = lua_toboolean(L, 2) \
 		? JSON_WRITE_FLAGS | YYJSON_WRITE_PRETTY \
 		: YYJSON_WRITE_NOFLAG; \
@@ -84,7 +84,7 @@ int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
 	} \
 \
 	yyjson_mut_doc_set_root(json, object); \
-	Error result = fold_##fold##_to_json(fold, json, object); \
+	Error result = fold_##fold##_to_json(wrapper_property, json, object); \
 \
 	if IS_ERROR(result) { \
 		yyjson_mut_doc_free(json); \
@@ -112,6 +112,6 @@ int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
 	return 2; \
 }
 
-GENERATE_FUNCTIONS(FoldFile, file, FOLD_FILE_METATABLE)
-GENERATE_FUNCTIONS(FoldFrame, frame, FOLD_FRAME_METATABLE)
-GENERATE_FUNCTIONS(FoldGraph, graph, FOLD_GRAPH_METATABLE)
+GENERATE_FUNCTIONS(FoldFile, file, file, file, FOLD_FILE_METATABLE)
+GENERATE_FUNCTIONS(LuaFoldFrame, frame, wrapper, wrapper->frame, FOLD_FRAME_METATABLE)
+GENERATE_FUNCTIONS(LuaFoldGraph, graph, wrapper, wrapper->graph, FOLD_GRAPH_METATABLE)

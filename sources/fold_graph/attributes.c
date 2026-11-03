@@ -84,8 +84,8 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph) {
 				Vector2* B = array_get(&graph->VC, *b);
 				Vector2* C = array_get(&graph->VC, *c);
 
-				Vector2 AB = vector2_subtract(*B, *A);
-				Vector2 BC = vector2_subtract(*C, *B);
+				Vector2 AB = vector2_direction(*A, *B);
+				Vector2 BC = vector2_direction(*B, *C);
 				real sign = vector2_cross(AB, BC);
 
 				if (sign < -VECTOR2_EPSILON) {
@@ -117,8 +117,8 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph) {
 				Vector3* B = array_get(&graph->VC, *b);
 				Vector3* C = array_get(&graph->VC, *c);
 
-				Vector3 AB = vector3_subtract(*B, *A);
-				Vector3 BC = vector3_subtract(*C, *B);
+				Vector3 AB = vector3_direction(*A, *B);
+				Vector3 BC = vector3_direction(*B, *C);
 				Vector3 ABxBC = vector3_cross(AB, BC);
 
 				if (vector3_length2(ABxBC) > VECTOR3_EPSILON) {
@@ -145,8 +145,8 @@ bool fold_graph_has_concave_faces(const FoldGraph* graph) {
 				Vector3* B = array_get(&graph->VC, *b);
 				Vector3* C = array_get(&graph->VC, *c);
 
-				Vector3 AB = vector3_subtract(*B, *A);
-				Vector3 BC = vector3_subtract(*C, *B);
+				Vector3 AB = vector3_direction(*A, *B);
+				Vector3 BC = vector3_direction(*B, *C);
 				Vector3 ABxBC = vector3_cross(AB, BC);
 				real sign = vector3_dot(ABxBC, normal);
 

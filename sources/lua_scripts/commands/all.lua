@@ -1,14 +1,20 @@
 local module = {}
-local argparse = require("thirdparty.argparse")
+local argparse = require("argparse")
 
 local commands = {
 	(require("commands.generate")),
-	(require("commands.convert")),
-	(require("commands.convert.fold")),
-	(require("commands.convert.svg")),
-	(require("commands.convert.obj")),
+	(require("commands.from.fold")),
+	(require("commands.from.json")),
+	(require("commands.from.svg")),
+	(require("commands.from.obj")),
+	(require("commands.to.fold")),
+	(require("commands.to.json")),
+	(require("commands.to.svg")),
+	(require("commands.to.obj")),
+	(require("commands.describe")),
 	(require("commands.validate")),
-	(require("commands.test")),
+	(require("commands.test.describe")),
+	(require("commands.test.validate")),
 }
 
 local function create_parser()

@@ -1,5 +1,5 @@
-#ifndef LUA_MODULE_DEFINITIONS_COLORS_H
-#define LUA_MODULE_DEFINITIONS_COLORS_H
+#ifndef LUA_MODULES_DEFINITIONS_COLORS_H
+#define LUA_MODULES_DEFINITIONS_COLORS_H
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -28,4 +28,4 @@ int l_definitions_colors_FUCHSIA(lua_State* L);
 int l_definitions_colors_AQUA(lua_State* L);
 int l_definitions_colors_WHITE(lua_State* L);
 
-#endif /* LUA_MODULE_DEFINITIONS_COLORS_H */
+#endif /* LUA_MODULES_DEFINITIONS_COLORS_H */

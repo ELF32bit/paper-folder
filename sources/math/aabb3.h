@@ -3,7 +3,8 @@
 
 #include "vector3.h"
 
-#define AABB3_EPSILON VECTOR3_EPSILON
+#define AABB3_EPSILON \
+	VECTOR3_EPSILON
 
 typedef struct AABB3 {
 	union {
@@ -13,20 +14,39 @@ typedef struct AABB3 {
 	};
 } AABB3;
 
+/* ========================================================================= */
+/* Creation                                                                  */
+/* ========================================================================= */
+
 static inline AABB3 aabb3_empty(void) {
-	return (AABB3){
-		.min = {
-			.x = REAL_INFINITY,
-			.y = REAL_INFINITY,
-			.z = REAL_INFINITY
-		},
-		.max = {
-			.x = -REAL_INFINITY,
-			.y = -REAL_INFINITY,
-			.z = -REAL_INFINITY
-		}
-	};
+	AABB3 aabb;
+	aabb.min = vector3_from_components(
+		REAL_INFINITY, REAL_INFINITY, REAL_INFINITY);
+	aabb.max = vector3_from_components(
+		-REAL_INFINITY, -REAL_INFINITY, -REAL_INFINITY);
+	return aabb;
 }
+
+static inline AABB3 aabb3_from_components(Vector3 min, Vector3 max) {
+	AABB3 aabb;
+	aabb.min = min;
+	aabb.max = max;
+	return aabb;
+}
+
+static inline AABB3 aabb3_from_point(Vector3 point) {
+	return aabb3_from_components(point, point);
+}
+
+static inline AABB3 aabb3_from_points(Vector3 point1, Vector3 point2) {
+	return aabb3_from_components(
+		vector3_min(point1, point2),
+		vector3_max(point1, point2));
+}
+
+/* ========================================================================= */
+/* Properties                                                                */
+/* ========================================================================= */
 
 static inline bool aabb3_is_degenerate(AABB3 aabb) {
 	return
@@ -40,28 +60,6 @@ static inline bool aabb3_has_volume(AABB3 aabb) {
 		aabb.max.x > aabb.min.x &&
 		aabb.max.y > aabb.min.y &&
 		aabb.max.z > aabb.min.z;
-}
-
-static inline AABB3 aabb3_from_point(Vector3 point) {
-	return (AABB3){ .min = point, .max = point };
-}
-
-static inline AABB3 aabb3_from_points(Vector3 point1, Vector3 point2) {
-	return (AABB3){
-		.min = vector3_min(point1, point2),
-		.max = vector3_max(point1, point2)
-	};
-}
-
-static inline Vector3 aabb3_clamp_point(AABB3 aabb, Vector3 point) {
-	return vector3_clamp(point, aabb.min, aabb.max);
-}
-
-static inline AABB3 aabb3_abs(AABB3 aabb) {
-	return (AABB3){
-		.min = vector3_min(aabb.min, aabb.max),
-		.max = vector3_max(aabb.min, aabb.max)
-	};
 }
 
 static inline Vector3 aabb3_size(AABB3 aabb) {
@@ -102,13 +100,6 @@ static inline bool aabb3_intersects(AABB3 aabb, AABB3 other) {
 		aabb.max.z >= other.min.z;
 }
 
-static inline AABB3 aabb3_intersect(AABB3 aabb, AABB3 other) {
-	return (AABB3){
-		.min = vector3_max(aabb.min, other.min),
-		.max = vector3_min(aabb.max, other.max)
-	};
-}
-
 static inline bool aabb3_encloses(AABB3 aabb, AABB3 other) {
 	return
 		other.min.x >= aabb.min.x &&
@@ -117,28 +108,6 @@ static inline bool aabb3_encloses(AABB3 aabb, AABB3 other) {
 		other.max.y <= aabb.max.y &&
 		other.min.z >= aabb.min.z &&
 		other.max.z <= aabb.max.z;
-}
-
-static inline AABB3 aabb3_merge(AABB3 aabb, AABB3 other) {
-	return (AABB3){
-		.min = vector3_min(aabb.min, other.min),
-		.max = vector3_max(aabb.max, other.max)
-	};
-}
-
-static inline AABB3 aabb3_expand(AABB3 aabb, Vector3 point) {
-	return (AABB3){
-		.min = vector3_min(aabb.min, point),
-		.max = vector3_max(aabb.max, point)
-	};
-}
-
-static inline AABB3 aabb3_grow(AABB3 aabb, real amount) {
-	Vector3 offset = { .x = amount, .y = amount, .z = amount };
-	return (AABB3){
-		.min = vector3_subtract(aabb.min, offset),
-		.max = vector3_add(aabb.max, offset)
-	};
 }
 
 static inline int aabb3_shortest_axis_index(AABB3 aabb) {
@@ -176,6 +145,56 @@ static inline bool aabb3_equals(AABB3 aabb, AABB3 other) {
 
 static inline bool aabb3_is_point(AABB3 aabb, real epsilon) {
 	return vector3_is_zero(aabb3_size(aabb), epsilon);
+}
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+static inline AABB3 aabb3_abs(AABB3 aabb) {
+	return aabb3_from_components(
+		vector3_min(aabb.min, aabb.max),
+		vector3_max(aabb.min, aabb.max));
+}
+
+static inline Vector3 aabb3_clamp_point(AABB3 aabb, Vector3 point) {
+	return vector3_clamp(point, aabb.min, aabb.max);
+}
+
+static inline AABB3 aabb3_intersect(AABB3 aabb, AABB3 other) {
+	return aabb3_from_components(
+		vector3_max(aabb.min, other.min),
+		vector3_min(aabb.max, other.max));
+}
+
+static inline AABB3 aabb3_merge(AABB3 aabb, AABB3 other) {
+	return aabb3_from_components(
+		vector3_min(aabb.min, other.min),
+		vector3_max(aabb.max, other.max));
+}
+
+static inline AABB3 aabb3_expand(AABB3 aabb, Vector3 point) {
+	return aabb3_from_components(
+		vector3_min(aabb.min, point),
+		vector3_max(aabb.max, point));
+}
+
+static inline AABB3 aabb3_grow(AABB3 aabb, real amount) {
+	Vector3 offset = vector3_from_components(amount, amount, amount);
+	return aabb3_from_components(
+		vector3_subtract(aabb.min, offset),
+		vector3_add(aabb.max, offset));
+}
+
+/* ========================================================================= */
+/* Hashing                                                                   */
+/* ========================================================================= */
+
+#define AABB3_hash aabb3_hash
+static inline usize aabb3_hash(AABB3 aabb) {
+	return hash_usize_mix2(
+		vector3_hash(aabb.min),
+		vector3_hash(aabb.max));
 }
 
 #endif /* MATH_AABB3_H */

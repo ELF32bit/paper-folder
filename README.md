@@ -17,18 +17,18 @@ Try proving that a triangle **dual** can never satisfy |M - V| = 2 condition.
 
 State | Module | Commentary
 -- | ---------------------- | ----------------------------------------------------------- |
-🟨 | collections            | Feels a bit undercooked.<br>
+🟨 | collections            | Needs more testing.<br>
 ✅ | definitions            | Modern, Rust-like syntax sugar.<br>
-🟨 | fold_deserialization   | No support for SVG triangulation yet.<br>Math module needs BVH2 and Bezier2.<br>
-✅ | fold_generation        | Desperate for clever math optimizations.<br>
-❌ | fold_graph             | Work in progress! Basic methods only.<br>Math module needs 3x3 covariance matrix.<br>`fold_graph_VV_from_FV` 2D example.<br>`fold_graph_VF_from_VV` complex walk.<br>`fold_graph_EF_from_FV` more hard math.<br>`fold_graph_FV_*` family not implemented.<br>
-🟨 | fold_serialization     | OBJ writing is very primitive.<br>Unique vertices are not tracked properly.<br>SVG could support more visual modes.<br>
+🟨 | fold_deserialization   | No support for SVG triangulation yet.<br>Math module needs BVH2 and Bezier2.<br>Planning to replace OBJ parsing library.<br>
+✅ | fold_generation        | Desperate for clever math optimizations.<br>Set Kawasaki error very high to see results!<br>
+❌ | fold_graph             | Work in progress! Basic methods only.<br>`fold_graph_VV_from_FV` see 2D example.<br>`fold_graph_VF_from_VV` convoluted walk.<br>`fold_graph_EF_from_FV` nasty projection.<br>`fold_graph_FV_*` family not complete.<br>
+🟨 | fold_serialization     | OBJ writing is dangerously primitive.<br>Unique vertices are not tracked properly.<br>SVG could support more visual modes.<br>
 ❌ | fold_simulation        | Considering a different approach.<br>More research is necessary.<br>
 ✅ | fold_specification     | Pretty much complete.<br>Supports generic mesh arrays.<br>
 ✅ | fold_validation        | 100% bullet-proof, very fast.<br>
 ✅ | lua_modules            | Lua bindings, see the [example](https://github.com/ELF32bit/c-lua-template/blob/main/sources/lua_modules/example.h).<br>
 ✅ | lua_scripts            | Command line parsing routines.<br>
-🟨 | math                   | Needs full BVH2, BVH3 accelerators.<br>Matrix, Plane, Bezier curves are missing.<br>Triangle/Polygon helpers would be nice.<br>
+🟨 | math                   | Needs full BVH2, BVH3 accelerators.<br>Triangle/Polygon helpers would be nice.<br>
 
 ## Building the project
 Run the command inside a terminal.<br>

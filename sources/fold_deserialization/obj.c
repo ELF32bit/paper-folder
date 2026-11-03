@@ -6,7 +6,7 @@
 #include "math/vector2.h"
 #include "math/vector3.h"
 
-struct TinyObjObject {
+struct TinyObject {
 	tinyobj_shape_t* shape;
 	tinyobj_attrib_t* attributes;
 	tinyobj_material_t* materials;
@@ -68,9 +68,11 @@ void _tiny_obj_file_reader(void* ctx, const char* filename, int is_mtl,
 /* ========================================================================= */
 
 static inline
-Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
+Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object,
+	const struct FoldFileFromOBJParameters* parameters)
+{
 	(void)OBJ;
-	struct TinyObjObject* object = Object;
+	struct TinyObject* object = Object;
 	tinyobj_shape_t* shape = object->shape;
 	tinyobj_attrib_t* attributes = object->attributes;
 	tinyobj_material_t* materials = object->materials;
@@ -192,11 +194,13 @@ Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error fold_frame_from_obj(FoldFrame* frame, void* OBJ, void* Object) {
+Error fold_frame_from_obj(FoldFrame* frame, void* OBJ, void* Object,
+	const struct FoldFileFromOBJParameters* parameters)
+{
 	(void)OBJ;
-	struct TinyObjObject* object = Object;
+	struct TinyObject* object = Object;
 	TRY(string_copy_raw(&frame->title, object->shape->name));
-	TRY(fold_graph_from_obj(&frame->graph, NULL, object));
+	TRY(fold_graph_from_obj(&frame->graph, NULL, object, parameters));
 	return OK;
 }
 
@@ -204,7 +208,9 @@ Error fold_frame_from_obj(FoldFrame* frame, void* OBJ, void* Object) {
 /* FOLD File                                                                 */
 /* ========================================================================= */
 
-Error fold_file_from_obj(FoldFile* file, void* OBJ) {
+Error fold_file_from_obj(FoldFile* file, void* OBJ,
+	const struct FoldFileFromOBJParameters* parameters)
+{
 	const char* input_file_path = OBJ;
 
 	tinyobj_attrib_t attributes;
@@ -260,7 +266,7 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ) {
 		array_set(&key_frame->graph.MN, index, buffer);
 	}
 
-	struct TinyObjObject object;
+	struct TinyObject object;
 	object.shape = NULL;
 	object.attributes = &attributes;
 	object.materials = materials;
@@ -276,7 +282,7 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ) {
 		frame->inherit = true;
 		frame->parent = 0;
 
-		TRY(fold_frame_from_obj(frame, NULL, &object));
+		TRY(fold_frame_from_obj(frame, NULL, &object, parameters));
 		fold_file_frame_inherit(file, shape);
 	}
 

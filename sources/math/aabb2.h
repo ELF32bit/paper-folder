@@ -3,7 +3,8 @@
 
 #include "vector2.h"
 
-#define AABB2_EPSILON VECTOR2_EPSILON
+#define AABB2_EPSILON \
+	VECTOR2_EPSILON
 
 typedef struct AABB2 {
 	union {
@@ -13,18 +14,39 @@ typedef struct AABB2 {
 	};
 } AABB2;
 
+/* ========================================================================= */
+/* Creation                                                                  */
+/* ========================================================================= */
+
 static inline AABB2 aabb2_empty(void) {
-	return (AABB2){
-		.min = {
-			.x = REAL_INFINITY,
-			.y = REAL_INFINITY
-		},
-		.max = {
-			.x = -REAL_INFINITY,
-			.y = -REAL_INFINITY
-		}
-	};
+	AABB2 aabb;
+	aabb.min = vector2_from_components(
+		REAL_INFINITY, REAL_INFINITY);
+	aabb.max = vector2_from_components(
+		-REAL_INFINITY, -REAL_INFINITY);
+	return aabb;
 }
+
+static inline AABB2 aabb2_from_components(Vector2 min, Vector2 max) {
+	AABB2 aabb;
+	aabb.min = min;
+	aabb.max = max;
+	return aabb;
+}
+
+static inline AABB2 aabb2_from_point(Vector2 point) {
+	return aabb2_from_components(point, point);
+}
+
+static inline AABB2 aabb2_from_points(Vector2 point1, Vector2 point2) {
+	return aabb2_from_components(
+		vector2_min(point1, point2),
+		vector2_max(point1, point2));
+}
+
+/* ========================================================================= */
+/* Properties                                                                */
+/* ========================================================================= */
 
 static inline bool aabb2_is_degenerate(AABB2 aabb) {
 	return
@@ -36,28 +58,6 @@ static inline bool aabb2_has_area(AABB2 aabb) {
 	return
 		aabb.max.x > aabb.min.x &&
 		aabb.max.y > aabb.min.y;
-}
-
-static inline AABB2 aabb2_from_point(Vector2 point) {
-	return (AABB2){ .min = point, .max = point };
-}
-
-static inline AABB2 aabb2_from_points(Vector2 point1, Vector2 point2) {
-	return (AABB2){
-		.min = vector2_min(point1, point2),
-		.max = vector2_max(point1, point2)
-	};
-}
-
-static inline Vector2 aabb2_clamp_point(AABB2 aabb, Vector2 point) {
-	return vector2_clamp(point, aabb.min, aabb.max);
-}
-
-static inline AABB2 aabb2_abs(AABB2 aabb) {
-	return (AABB2){
-		.min = vector2_min(aabb.min, aabb.max),
-		.max = vector2_max(aabb.min, aabb.max)
-	};
 }
 
 static inline Vector2 aabb2_size(AABB2 aabb) {
@@ -94,41 +94,12 @@ static inline bool aabb2_intersects(AABB2 aabb, AABB2 other) {
 		aabb.max.y >= other.min.y;
 }
 
-static inline AABB2 aabb2_intersect(AABB2 aabb, AABB2 other) {
-	return (AABB2){
-		.min = vector2_max(aabb.min, other.min),
-		.max = vector2_min(aabb.max, other.max)
-	};
-}
-
 static inline bool aabb2_encloses(AABB2 aabb, AABB2 other) {
 	return
 		other.min.x >= aabb.min.x &&
 		other.max.x <= aabb.max.x &&
 		other.min.y >= aabb.min.y &&
 		other.max.y <= aabb.max.y;
-}
-
-static inline AABB2 aabb2_merge(AABB2 aabb, AABB2 other) {
-	return (AABB2){
-		.min = vector2_min(aabb.min, other.min),
-		.max = vector2_max(aabb.max, other.max)
-	};
-}
-
-static inline AABB2 aabb2_expand(AABB2 aabb, Vector2 point) {
-	return (AABB2){
-		.min = vector2_min(aabb.min, point),
-		.max = vector2_max(aabb.max, point)
-	};
-}
-
-static inline AABB2 aabb2_grow(AABB2 aabb, real amount) {
-	Vector2 offset = { .x = amount,.y = amount };
-	return (AABB2){
-		.min = vector2_subtract(aabb.min, offset),
-		.max = vector2_add(aabb.max, offset)
-	};
 }
 
 static inline int aabb2_shortest_axis_index(AABB2 aabb) {
@@ -164,6 +135,56 @@ static inline bool aabb2_equals(AABB2 aabb, AABB2 other) {
 
 static inline bool aabb2_is_point(AABB2 aabb, real epsilon) {
 	return vector2_is_zero(aabb2_size(aabb), epsilon);
+}
+
+/* ========================================================================= */
+/* Methods                                                                   */
+/* ========================================================================= */
+
+static inline AABB2 aabb2_abs(AABB2 aabb) {
+	return aabb2_from_components(
+		vector2_min(aabb.min, aabb.max),
+		vector2_max(aabb.min, aabb.max));
+}
+
+static inline Vector2 aabb2_clamp_point(AABB2 aabb, Vector2 point) {
+	return vector2_clamp(point, aabb.min, aabb.max);
+}
+
+static inline AABB2 aabb2_intersect(AABB2 aabb, AABB2 other) {
+	return aabb2_from_components(
+		vector2_max(aabb.min, other.min),
+		vector2_min(aabb.max, other.max));
+}
+
+static inline AABB2 aabb2_merge(AABB2 aabb, AABB2 other) {
+	return aabb2_from_components(
+		vector2_min(aabb.min, other.min),
+		vector2_max(aabb.max, other.max));
+}
+
+static inline AABB2 aabb2_expand(AABB2 aabb, Vector2 point) {
+	return aabb2_from_components(
+		vector2_min(aabb.min, point),
+		vector2_max(aabb.max, point));
+}
+
+static inline AABB2 aabb2_grow(AABB2 aabb, real amount) {
+	Vector2 offset = vector2_from_components(amount, amount);
+	return aabb2_from_components(
+		vector2_subtract(aabb.min, offset),
+		vector2_add(aabb.max, offset));
+}
+
+/* ========================================================================= */
+/* Hashing                                                                   */
+/* ========================================================================= */
+
+#define AABB2_hash aabb2_hash
+static inline usize aabb2_hash(AABB2 aabb) {
+	return hash_usize_mix2(
+		vector2_hash(aabb.min),
+		vector2_hash(aabb.max));
 }
 
 #endif /* MATH_AABB2_H */

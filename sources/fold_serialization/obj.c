@@ -1,7 +1,8 @@
 #include "obj.h"
 
 #include "fold_graph/attributes.h"
-#include "fold_graph/vertices.h"
+#include "fold_graph/properties.h"
+#include "fold_graph/faces.h"
 
 #include "math/color.h"
 #include "math/vector2.h"
@@ -12,7 +13,7 @@
 #define _F "%.6f"
 #define _FF float
 
-struct FoldFrameObject {
+struct FoldObject {
 	usize vertex_offset;
 	usize texture_offset;
 	usize normal_offset;
@@ -24,9 +25,11 @@ struct FoldFrameObject {
 /* ========================================================================= */
 
 static inline
-Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
+Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object,
+	const struct FoldFileToOBJParameters* parameters)
+{
 	FILE* output_file = OBJ;
-	struct FoldFrameObject* object = Object;
+	struct FoldObject* object = Object;
 
 	usize abstract_size = 0;
 	if (fold_graph_is_abstract(graph)) {
@@ -36,7 +39,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 		}
 	} else if (fold_graph_is_2D(graph)) {
 		ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
-			if (graph->VP.size == 0) {
+			if (graph->VP.size == 0 || NOT(parameters->vertex_colors)) {
 				fprintf(output_file, "v "_F" "_F" 0.0\n",
 					(_FF)vc->x, (_FF)vc->y);
 			} else {
@@ -51,7 +54,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 		}
 	} else if (fold_graph_is_3D(graph)) {
 		ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
-			if (graph->VP.size == 0) {
+			if (graph->VP.size == 0 || NOT(parameters->vertex_colors)) {
 				fprintf(output_file, "v "_F" "_F" "_F"\n",
 					(_FF)vc->x, (_FF)vc->y, (_FF)vc->z);
 			} else {
@@ -146,11 +149,31 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error fold_frame_to_obj(const FoldFrame* frame, void* OBJ, void* Object) {
+Error fold_frame_to_obj(const FoldFrame* frame, void* OBJ, void* Object,
+	const struct FoldFileToOBJParameters* parameters)
+{
 	FILE* output_file = OBJ;
-	struct FoldFrameObject* object = Object;
+	struct FoldObject* object = Object;
+
+	FoldGraph graph;
+	bool is_new_graph = false;
+	if NOT(parameters->triangulate) {
+		graph = frame->graph;
+	} else {
+		is_new_graph = true;
+		fold_graph_create(&graph);
+		TRY_OR_ELSE(fold_graph_copy(&graph, &frame->graph),
+			fold_graph_destroy(&graph));
+
+		TRY_OR_ELSE(fold_graph_FV_triangulate(&graph),
+			fold_graph_destroy(&graph));
+	}
+
 	fprintf(output_file, "o frame_%zu\n", object->frame_index);
-	TRY(fold_graph_to_obj(&frame->graph, output_file, object));
+	TRY_OR_ELSE(fold_graph_to_obj(&graph, output_file, object, parameters),
+		if (is_new_graph) fold_graph_destroy(&graph));
+
+	if (is_new_graph) fold_graph_destroy(&graph);
 	object->frame_index++;
 	return OK;
 }
@@ -159,7 +182,9 @@ Error fold_frame_to_obj(const FoldFrame* frame, void* OBJ, void* Object) {
 /* FOLD File                                                                 */
 /* ========================================================================= */
 
-Error fold_file_to_obj(FoldFile* file, void* OBJ) {
+Error fold_file_to_obj(FoldFile* file, void* NULLABLE(OBJ),
+	const struct FoldFileToOBJParameters* parameters)
+{
 	FILE* output_file = (OBJ != NULL)
 		? fopen((const char*)OBJ, "w")
 		: stdout;
@@ -167,7 +192,7 @@ Error fold_file_to_obj(FoldFile* file, void* OBJ) {
 	TRY_NEW_MEMORY_OR_ERROR(output_file,
 		return ERROR);
 
-	struct FoldFrameObject object;
+	struct FoldObject object;
 	object.vertex_offset = 1;
 	object.texture_offset = 1;
 	object.normal_offset = 1;
@@ -175,8 +200,9 @@ Error fold_file_to_obj(FoldFile* file, void* OBJ) {
 
 	fold_file_frames_inherit(file);
 	ARRAY_FOR_EACH(&file->frames, _, FoldFrame*, frame) {
-		TRY_OR_ELSE(fold_frame_to_obj(frame, output_file, &object),
-			fclose(output_file));
+		TRY_OR_ELSE(
+			fold_frame_to_obj(frame, output_file, &object, parameters),
+				fclose(output_file));
 	}
 
 	TRY_OR_ERROR(ferror(output_file),
