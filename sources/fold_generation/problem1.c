@@ -216,7 +216,7 @@ Error generate_fold_graph_step3(FoldGraph* graph,
 		if (is_duplicate) continue;
 
 		usize cell = USIZE(hash_isize_pack2(ix, iy));
-		TRY_OR_ELSE(set_add(&set, &cell, NULL),
+		TRY_OR_ELSE(set_add(&set, &cell),
 			array_destroy(&unique_vertices);
 			set_destroy(&set));
 

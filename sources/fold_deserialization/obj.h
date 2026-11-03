@@ -3,6 +3,11 @@
 
 #include "fold_specification/file.h"
 
-Error fold_file_from_obj(FoldFile* file, void* OBJ);
+struct FoldFileFromOBJParameters {
+	bool triangulate;
+};
+
+Error fold_file_from_obj(FoldFile* file, void* OBJ,
+	const struct FoldFileFromOBJParameters* parameters);
 
 #endif /* FOLD_DESERIALIZATION_OBJ_H */

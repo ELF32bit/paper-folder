@@ -26,6 +26,36 @@ int l_fold_graph_to_json_file_meta(lua_State* L);
 int l_fold_graph_to_json_string_meta(lua_State* L);
 
 /* ========================================================================= */
+/* Getters                                                                   */
+/* ========================================================================= */
+
+int l_fold_graph_get_VC_size_meta(lua_State* L);
+int l_fold_graph_get_VV_size_meta(lua_State* L);
+int l_fold_graph_get_VE_size_meta(lua_State* L);
+int l_fold_graph_get_VF_size_meta(lua_State* L);
+int l_fold_graph_get_EV_size_meta(lua_State* L);
+int l_fold_graph_get_EF_size_meta(lua_State* L);
+int l_fold_graph_get_EA_size_meta(lua_State* L);
+int l_fold_graph_get_EFA_size_meta(lua_State* L);
+int l_fold_graph_get_EL_size_meta(lua_State* L);
+int l_fold_graph_get_EO_size_meta(lua_State* L);
+int l_fold_graph_get_FV_size_meta(lua_State* L);
+int l_fold_graph_get_FE_size_meta(lua_State* L);
+int l_fold_graph_get_FF_size_meta(lua_State* L);
+int l_fold_graph_get_FO_size_meta(lua_State* L);
+
+int l_fold_graph_get_PC_size_meta(lua_State* L);
+int l_fold_graph_get_TC_size_meta(lua_State* L);
+int l_fold_graph_get_T2C_size_meta(lua_State* L);
+int l_fold_graph_get_NC_size_meta(lua_State* L);
+int l_fold_graph_get_MN_size_meta(lua_State* L);
+int l_fold_graph_get_VP_size_meta(lua_State* L);
+int l_fold_graph_get_FT_size_meta(lua_State* L);
+int l_fold_graph_get_FT2_size_meta(lua_State* L);
+int l_fold_graph_get_FN_size_meta(lua_State* L);
+int l_fold_graph_get_FM_size_meta(lua_State* L);
+
+/* ========================================================================= */
 /* Validation                                                                */
 /* ========================================================================= */
 
@@ -51,10 +81,16 @@ int l_fold_graph_has_concave_faces_meta(lua_State* L);
 /* Properties                                                                */
 /* ========================================================================= */
 
+int l_fold_graph_get_abstract_size_meta(lua_State* L);
+int l_fold_graph_get_aabb2_meta(lua_State* L);
+int l_fold_graph_get_aabb3_meta(lua_State* L);
+
 int l_fold_graph_is_maekawa_compliant_meta(lua_State* L);
 int l_fold_graph_is_kawasaki_compliant_meta(lua_State* L);
-int l_fold_graph_is_locally_flat_foldable(lua_State* L);
-int l_fold_graph_has_unassigned_vertices(lua_State* L);
+int l_fold_graph_is_locally_flat_foldable_meta(lua_State* L);
+
+int l_fold_graph_has_unassigned_vertices_meta(lua_State* L);
+int l_fold_graph_is_triangulated_meta(lua_State* L);
 
 /* ========================================================================= */
 /* Vertices Building                                                         */

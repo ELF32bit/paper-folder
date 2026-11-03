@@ -27,22 +27,22 @@ static_assert(sizeof(f64) == 8, "sizeof(f64) != 8");
 typedef REAL_TYPE real;
 #define REAL(x) ((real)(x))
 
-#define REAL_MIN _Generic((real)0, \
-	float: FLT_MIN, \
-	long double: LDBL_MIN, \
-	default: DBL_MIN \
-)
+#define SWITCH_BASED_ON_REAL_TYPE(FLOAT, DOUBLE, LONG) \
+	_Generic(REAL(0), \
+		float: (FLOAT), \
+		long double: (LONG), \
+		default: (DOUBLE))
 
-#define REAL_MAX _Generic((real)0, \
-	float: FLT_MAX, \
-	long double: LDBL_MAX, \
-	default: DBL_MAX \
-)
+#define REAL_MIN \
+	SWITCH_BASED_ON_REAL_TYPE \
+		(FLT_MIN, DBL_MIN, LDBL_MIN)
 
-#define REAL_EPSILON _Generic((real)0, \
-	float: FLT_EPSILON, \
-	long double: LDBL_EPSILON, \
-	default: DBL_EPSILON \
-)
+#define REAL_MAX \
+	SWITCH_BASED_ON_REAL_TYPE \
+		(FLT_MAX, DBL_MAX, LDBL_MAX)
+
+#define REAL_EPSILON \
+	SWITCH_BASED_ON_REAL_TYPE \
+		(FLT_EPSILON, DBL_EPSILON, LDBL_EPSILON)
 
 #endif /* DEFINITION_FLOAT_H */

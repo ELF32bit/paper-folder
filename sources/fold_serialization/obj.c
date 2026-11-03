@@ -1,7 +1,8 @@
 #include "obj.h"
 
 #include "fold_graph/attributes.h"
-#include "fold_graph/vertices.h"
+#include "fold_graph/properties.h"
+#include "fold_graph/faces.h"
 
 #include "math/color.h"
 #include "math/vector2.h"
@@ -24,7 +25,9 @@ struct FoldFrameObject {
 /* ========================================================================= */
 
 static inline
-Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
+Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object,
+	const struct FoldFileToOBJParameters* parameters)
+{
 	FILE* output_file = OBJ;
 	struct FoldFrameObject* object = Object;
 
@@ -146,11 +149,28 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ, void* Object) {
 /* ========================================================================= */
 
 static inline
-Error fold_frame_to_obj(const FoldFrame* frame, void* OBJ, void* Object) {
+Error fold_frame_to_obj(const FoldFrame* frame, void* OBJ, void* Object,
+	const struct FoldFileToOBJParameters* parameters)
+{
 	FILE* output_file = OBJ;
 	struct FoldFrameObject* object = Object;
+
+	FoldGraph graph;
+	bool is_new_graph = false;
+	if (parameters->triangulate) {
+		fold_graph_create(&graph);
+		fold_graph_copy(&graph, &frame->graph);
+		fold_graph_FV_triangulate(&graph);
+		is_new_graph = true;
+	} else {
+		graph = frame->graph;
+	}
+
 	fprintf(output_file, "o frame_%zu\n", object->frame_index);
-	TRY(fold_graph_to_obj(&frame->graph, output_file, object));
+	TRY_OR_ELSE(fold_graph_to_obj(&graph, output_file, object, parameters),
+		if (is_new_graph) fold_graph_destroy(&graph));
+
+	if (is_new_graph) fold_graph_destroy(&graph);
 	object->frame_index++;
 	return OK;
 }
@@ -159,7 +179,9 @@ Error fold_frame_to_obj(const FoldFrame* frame, void* OBJ, void* Object) {
 /* FOLD File                                                                 */
 /* ========================================================================= */
 
-Error fold_file_to_obj(FoldFile* file, void* OBJ) {
+Error fold_file_to_obj(FoldFile* file, void* NULLABLE(OBJ),
+	const struct FoldFileToOBJParameters* parameters)
+{
 	FILE* output_file = (OBJ != NULL)
 		? fopen((const char*)OBJ, "w")
 		: stdout;
@@ -175,8 +197,9 @@ Error fold_file_to_obj(FoldFile* file, void* OBJ) {
 
 	fold_file_frames_inherit(file);
 	ARRAY_FOR_EACH(&file->frames, _, FoldFrame*, frame) {
-		TRY_OR_ELSE(fold_frame_to_obj(frame, output_file, &object),
-			fclose(output_file));
+		TRY_OR_ELSE(
+			fold_frame_to_obj(frame, output_file, &object, parameters),
+				fclose(output_file));
 	}
 
 	TRY_OR_ERROR(ferror(output_file),

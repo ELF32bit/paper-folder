@@ -95,7 +95,17 @@ Error array_append_array(Array* array, const Array* another);
 
 #define ARRAY_APPEND(array, type, ...) do { \
 	type _element = (type){__VA_ARGS__}; \
-	array_append((array), &_element); \
+	TRY(array_append((array), &_element)); \
+} while (0)
+
+#define ARRAY_APPEND_OR_ELSE(array, type, element, execute) do { \
+	type _element = (type)(element); \
+	TRY_OR_ELSE(array_append((array), &_element), execute); \
+} while (0)
+
+#define ARRAY_APPEND_OR_ERROR(array, type, element, execute) do { \
+	type _element = (type)(element); \
+	TRY_OR_ERROR(array_append((array), &_element), execute); \
 } while (0)
 
 void array_remove(Array* array, usize index);
@@ -103,6 +113,9 @@ void array_remove_range(Array* array, usize start, usize end);
 
 void array_reverse_range(Array* array, usize start, usize end);
 void array_reverse(Array* array);
+
+void array_shift_range(Array* array, isize shift, usize start, usize end);
+void array_shift(Array* array, isize shift);
 
 /* ========================================================================= */
 /* Sorting                                                                   */

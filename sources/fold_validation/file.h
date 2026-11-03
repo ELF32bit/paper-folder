@@ -3,6 +3,7 @@
 
 #include "fold_specification/file.h"
 
-Error fold_file_validate(FoldFile* file, bool* is, String* errors);
+Error fold_file_validate(FoldFile* file, bool* is,
+	String* NULLABLE(errors));
 
 #endif /* FOLD_FILE_VALIDATION */

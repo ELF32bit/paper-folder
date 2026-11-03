@@ -12,7 +12,7 @@ Error _to_map1(const Array2* array2, Set* map1, bool has_null) {
 	ARRAY2_FOR_EACH(array2, array, _, usize*, a) {
 		if (NOT(has_null) || *a != FOLD_GRAPH_NULL) {
 			usize Ia = hash_usize_mix2(array.index, *a);
-			TRY_OR_ELSE(set_add(&set, &Ia, NULL),
+			TRY_OR_ELSE(set_add(&set, &Ia),
 				set_destroy(&set));
 		}
 	}

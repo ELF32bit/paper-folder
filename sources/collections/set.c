@@ -20,23 +20,6 @@ void _set_flag(Array* flags, usize i, u8 value) {
 	*byte = (*byte & ~(3 << shift)) | (value << shift);
 }
 
-static inline
-void _set_array_destroy(Set* set, Array* array) {
-	if (array->is_view) return;
-	if (array->destroy != NULL) {
-		FOR_EACH(index, array->capacity) {
-			if (_get_flag(&set->flags, index) == SET_FLAG_OCCUPIED) {
-				array->destroy(array_get(array, index));
-			}
-		}
-	}
-	free(array->data);
-	array->data = NULL;
-	array->capacity = 0;
-	array->size = 0;
-	array->is_view = false;
-}
-
 /* ========================================================================= */
 /* Creation & Destruction                                                    */
 /* ========================================================================= */
@@ -66,6 +49,23 @@ void set_create_managed(Set* set, usize key_size,
 	set->hash = hash;
 	set->equals = equals;
 	set->is_view = false;
+}
+
+static inline
+void _set_array_destroy(Set* set, Array* array) {
+	if (array->is_view) return;
+	if (array->destroy != NULL) {
+		FOR_EACH(index, array->capacity) {
+			if (_get_flag(&set->flags, index) == SET_FLAG_OCCUPIED) {
+				array->destroy(array_get(array, index));
+			}
+		}
+	}
+	free(array->data);
+	array->data = NULL;
+	array->capacity = 0;
+	array->size = 0;
+	array->is_view = false;
 }
 
 void set_destroy(Set* set) {
@@ -186,9 +186,8 @@ Error set_reserve(Set* set, usize capacity) {
 	return _set_reallocate(set, new_capacity);
 }
 
-Error set_add(Set* set, const void* key, bool* exists) {
+Error set_add(Set* set, const void* key) {
 	ASSERT(NOT(set->is_view));
-	if (exists != NULL) *exists = false;
 
 	TRY_ADD(set->size, set->tombstones);
 	TRY_ADD(set->size + set->tombstones, 1);
@@ -202,7 +201,6 @@ Error set_add(Set* set, const void* key, bool* exists) {
 
 	bool key_exists;
 	usize bucket = _set_find_bucket(set, key, &key_exists);
-	if (exists != NULL) *exists = key_exists;
 	if (key_exists) return OK;
 
 	u8 old_flag = _get_flag(&set->flags, bucket);
@@ -252,11 +250,11 @@ Error set_copy(Set* set, const Set* source_set) {
 		if (set->keys.copy != NULL) {
 			memset(key, 0, set->key_size);
 			TRY(set->keys.copy(key, iterator.key));
-			TRY_OR_ELSE(set_add(set, key, NULL),
+			TRY_OR_ELSE(set_add(set, key),
 				if (set->keys.destroy != NULL)
 					set->keys.destroy(key));
 		} else {
-			TRY(set_add(set, iterator.key, NULL));
+			TRY(set_add(set, iterator.key));
 		}
 	}
 
@@ -283,11 +281,12 @@ bool set_iterator_next(SetIterator* iterator) {
 	for (; iterator->key_index < iterator->set->keys.capacity;
 		iterator->key_index++)
 	{
-		if (_get_flag(&iterator->set->flags, iterator->key_index)
-			== SET_FLAG_OCCUPIED)
+		if (_get_flag(&iterator->set->flags,
+			iterator->key_index) == SET_FLAG_OCCUPIED)
 		{
 			iterator->key = array_get(
-				&iterator->set->keys, iterator->key_index);
+				&iterator->set->keys,
+				iterator->key_index);
 
 			iterator->index++;
 			return true;

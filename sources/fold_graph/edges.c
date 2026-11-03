@@ -6,12 +6,12 @@
 
 #include <stdlib.h>
 
-struct SortPrimitive { usize index; real weight; };
+struct WeightedIndex { usize index; real weight; };
 
 static inline
-int _sort_primitives_ascending(const void* a, const void* b) {
-	real w1 = ((const struct SortPrimitive*)a)->weight;
-	real w2 = ((const struct SortPrimitive*)b)->weight;
+int _weighted_index_sort_ascending(const void* a, const void* b) {
+	real w1 = ((const struct WeightedIndex*)a)->weight;
+	real w2 = ((const struct WeightedIndex*)b)->weight;
 	if (w1 < w2) return -1;
 	if (w1 > w2) return 1;
 	return 0;
@@ -27,11 +27,11 @@ Error fold_graph_get_EV_map(const FoldGraph* graph, Map* map) {
 	EV_map.hash = usize_hash_identity;
 	ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
 		usize ab = hash_usize_mix2(ev->a, ev->b);
-		TRY_OR_ELSE(map_add(&EV_map, &ab, &ei, NULL),
+		TRY_OR_ELSE(map_add(&EV_map, &ab, &ei),
 			map_destroy(&EV_map));
 
 		usize ba = hash_usize_mix2(ev->b, ev->a);
-		TRY_OR_ELSE(map_add(&EV_map, &ba, &ei, NULL),
+		TRY_OR_ELSE(map_add(&EV_map, &ba, &ei),
 			map_destroy(&EV_map));
 	}
 

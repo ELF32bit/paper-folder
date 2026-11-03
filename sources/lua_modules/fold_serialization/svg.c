@@ -13,8 +13,13 @@ int l_fold_file_frame_to_svg_file_meta(lua_State* L) {
 	const char* output_file_path = luaL_optstring(L, 2, NULL);
 	usize frame_index = luaL_optinteger(L, 3, 0);
 
+	struct FoldFileFrameToSVGParameters parameters = {
+		// TODO
+	};
+
 	Error result = fold_file_frame_to_svg(file, frame_index,
-		(void*)output_file_path);
+		(void*)output_file_path, &parameters);
+
 	if IS_ERROR(result) {
 		lua_pushboolean(L, false);
 		lua_pushstring(L, ERROR_STRING_OR(

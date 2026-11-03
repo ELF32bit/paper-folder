@@ -53,7 +53,11 @@ Error fold_file_recreate(FoldFile* file);
 #define FoldFile_copy fold_file_copy
 Error fold_file_copy(FoldFile* file, const FoldFile* source);
 
-FoldFrame* fold_file_get_key_frame(const FoldFile* file);
+static inline
+FoldFrame* fold_file_get_key_frame(const FoldFile* file) {
+	ASSERT(file->frames.size > 0);
+	return array_get(&file->frames, 0);
+}
 
 FoldFrame* fold_file_frame_inherit(FoldFile* file, usize index);
 void fold_file_frames_inherit(FoldFile* file);

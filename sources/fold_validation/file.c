@@ -33,9 +33,9 @@ Error _validate_frame_parents(const FoldFile* file, usize index, bool* is) {
 	}
 
 	SET_CREATE(parents, usize);
-	TRY_OR_ELSE(set_add(&parents, &index, NULL),
+	TRY_OR_ELSE(set_add(&parents, &index),
 		set_destroy(&parents));
-	TRY_OR_ELSE(set_add(&parents, &parent_index, NULL),
+	TRY_OR_ELSE(set_add(&parents, &parent_index),
 		set_destroy(&parents));
 
 	usize max_parents = MAX_FRAME_PARENTS;
@@ -58,7 +58,7 @@ Error _validate_frame_parents(const FoldFile* file, usize index, bool* is) {
 			return OK;
 		}
 
-		TRY_OR_ELSE(set_add(&parents, &parent_index, NULL),
+		TRY_OR_ELSE(set_add(&parents, &parent_index),
 			set_destroy(&parents));
 		max_parents--;
 	}
@@ -67,7 +67,9 @@ Error _validate_frame_parents(const FoldFile* file, usize index, bool* is) {
 	return OK;
 }
 
-Error fold_file_validate(FoldFile* file, bool* is, String* errors) {
+Error fold_file_validate(FoldFile* file, bool* is,
+	String* NULLABLE(errors))
+{
 	*is = false;
 	bool are_frames = true;
 	FOR_EACH(index, file->frames.size) {
@@ -92,9 +94,9 @@ Error fold_file_validate(FoldFile* file, bool* is, String* errors) {
 		STRING_CREATE(frame_errors);
 		bool is_frame = true;
 
-		TRY_OR_ELSE(fold_frame_validate(frame,
-			&is_frame, &frame_errors),
-			string_destroy(&frame_errors));
+		TRY_OR_ELSE(fold_frame_validate(frame, &is_frame,
+			(errors != NULL) ? &frame_errors : NULL),
+				string_destroy(&frame_errors));
 
 		if NOT(is_frame) {
 			if (errors != NULL) {

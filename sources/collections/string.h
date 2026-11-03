@@ -5,7 +5,10 @@
 
 typedef struct String {
 	char* data;
-	usize length;
+	union {
+		usize length;
+		usize size;
+	};
 	bool is_view;
 } String;
 

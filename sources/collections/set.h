@@ -65,8 +65,29 @@ void set_view(Set* set, const Set* source_set);
 
 Error set_reserve(Set* set, usize capacity);
 
-Error set_add(Set* set, const void* key, bool* exists);
+Error set_add(Set* set, const void* key);
+
+#define SET_ADD(set, type, ...) do { \
+	type _key = (type){__VA_ARGS__}; \
+	TRY(set_add((set), &_key)); \
+} while (0)
+
+#define SET_ADD_OR_ELSE(set, type, key, execute) do { \
+	type _key = (type)(key); \
+	TRY_OR_ELSE(set_add((set), &_key), execute); \
+} while (0)
+
+#define SET_ADD_OR_ERROR(set, type, key, execute) do { \
+	type _key = (type)(key); \
+	TRY_OR_ERROR(set_add((set), &_key), execute); \
+} while (0)
+
 bool set_remove(Set* set, const void* key);
+
+#define SET_REMOVE(set, type, ...) do { \
+	type _key = (type){__VA_ARGS__}; \
+	set_remove((set), &_key); \
+} while (0)
 
 bool set_has(const Set* set, const void* key);
 

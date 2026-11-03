@@ -1,5 +1,5 @@
-local command = { name = "validate", group = "Other Commands" }
-local FoldFile = require("fold.file_C")
+local command = { name = "validate", group = "Inspection Commands" }
+local from_fold = require("commands.from.fold")
 
 local COLORS = require("colors")
 local BOLD = COLORS.BOLD
@@ -12,9 +12,9 @@ local RESET = COLORS.RESET
 
 function command.register(parser)
 	local validate = parser:command(command.name)
-		:description("validate a specific FOLD file")
+		:description("validate FOLD file")
 
-	validate:argument("file")
+	validate:argument("input"):args("?")
 		:description("path to the FOLD source")
 
 	return validate
@@ -46,17 +46,21 @@ function command.print_fold_validation_errors(file, is_valid, errors)
 	end
 end
 
-function command.validate_fold_file(file)
-	local fold, fold_error = FoldFile.new()
-	if fold == nil then error(fold_error, 0) end
-	fold, fold_error = fold:from_json_file(file)
-	if fold == nil then error(fold_error, 0) end
+function command.validate_fold_file(fold)
 	return fold:validate()
 end
 
 function command.execute(args)
-	local is_valid, errors = command.validate_fold_file(args.file)
-	command.print_fold_validation_errors(args.file, is_valid, errors)
+	local fold, fold_error =
+		from_fold.fold_from_input_args(args)
+
+	local is_valid, errors =
+		command.validate_fold_file(fold)
+
+	command.print_fold_validation_errors(args.input
+		or "STDIN", is_valid, errors)
+
+	return fold, fold_error
 end
 
 return command

@@ -9,12 +9,16 @@
 	fold_graph_validate_##method(graph, &_is); \
 	if NOT(_is) { \
 		is_still = false; \
-		TRY(string_append_raw(errors, error)); \
+		if (errors != NULL) { \
+			TRY(string_append_raw(errors, error)); \
+		} \
 	} \
 } while(0)
 
 static
-Error fold_graph_extensions_validate(const FoldGraph* graph, bool* is, String* errors) {
+Error fold_graph_extensions_validate(const FoldGraph* graph, bool* is,
+	String* NULLABLE(errors))
+{
 	*is = false;
 	bool is_still = true;
 
@@ -36,7 +40,9 @@ Error fold_graph_extensions_validate(const FoldGraph* graph, bool* is, String* e
 	return OK;
 }
 
-Error fold_graph_validate(const FoldGraph* graph, bool* is, String* errors) {
+Error fold_graph_validate(const FoldGraph* graph, bool* is,
+	String* NULLABLE(errors))
+{
 	*is = false;
 	bool is_still = true;
 	bool are_extensions = true;
@@ -95,7 +101,9 @@ Error fold_graph_validate(const FoldGraph* graph, bool* is, String* errors) {
 	return OK;
 }
 
-Error fold_graph_validate_inherited(FoldGraph* graph, bool* is, String* errors) {
+Error fold_graph_validate_inherited(FoldGraph* graph, bool* is,
+	String* NULLABLE(errors))
+{
 	bool is_VC_view = graph->VC.is_view;
 	bool is_VV_view = graph->VV.is_view;
 	bool is_VE_view = graph->VE.is_view;

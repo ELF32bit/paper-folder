@@ -26,6 +26,50 @@ int l_fold_frame_to_json_file_meta(lua_State* L);
 int l_fold_frame_to_json_string_meta(lua_State* L);
 
 /* ========================================================================= */
+/* Getters                                                                   */
+/* ========================================================================= */
+
+int l_fold_frame_get_author_meta(lua_State* L);
+int l_fold_frame_get_title_meta(lua_State* L);
+int l_fold_frame_get_description_meta(lua_State* L);
+int l_fold_frame_get_classes_meta(lua_State* L);
+int l_fold_frame_get_attributes_meta(lua_State* L);
+int l_fold_frame_get_unit_meta(lua_State* L);
+int l_fold_frame_get_graph_meta(lua_State* L);
+int l_fold_frame_get_parent_meta(lua_State* L);
+int l_fold_frame_get_inherit_meta(lua_State* L);
+
+/* ========================================================================= */
+/* Graph Getters                                                             */
+/* ========================================================================= */
+
+int l_fold_frame_get_graph_VC_size_meta(lua_State* L);
+int l_fold_frame_get_graph_VV_size_meta(lua_State* L);
+int l_fold_frame_get_graph_VE_size_meta(lua_State* L);
+int l_fold_frame_get_graph_VF_size_meta(lua_State* L);
+int l_fold_frame_get_graph_EV_size_meta(lua_State* L);
+int l_fold_frame_get_graph_EF_size_meta(lua_State* L);
+int l_fold_frame_get_graph_EA_size_meta(lua_State* L);
+int l_fold_frame_get_graph_EFA_size_meta(lua_State* L);
+int l_fold_frame_get_graph_EL_size_meta(lua_State* L);
+int l_fold_frame_get_graph_EO_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FV_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FE_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FF_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FO_size_meta(lua_State* L);
+
+int l_fold_frame_get_graph_PC_size_meta(lua_State* L);
+int l_fold_frame_get_graph_TC_size_meta(lua_State* L);
+int l_fold_frame_get_graph_T2C_size_meta(lua_State* L);
+int l_fold_frame_get_graph_NC_size_meta(lua_State* L);
+int l_fold_frame_get_graph_MN_size_meta(lua_State* L);
+int l_fold_frame_get_graph_VP_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FT_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FT2_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FN_size_meta(lua_State* L);
+int l_fold_frame_get_graph_FM_size_meta(lua_State* L);
+
+/* ========================================================================= */
 /* Validation                                                                */
 /* ========================================================================= */
 

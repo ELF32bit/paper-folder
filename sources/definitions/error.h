@@ -30,6 +30,7 @@ typedef int Error;
 #define IS_OK(result) ((result) == OK)
 #define IS_ERROR(result) ((result) != OK)
 
+#define NULLABLE(value) value
 #define TRY_SAFE(action) action
 
 #define TRY(action) do { \
