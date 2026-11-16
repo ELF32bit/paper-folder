@@ -190,11 +190,15 @@ static inline AABB3 aabb3_grow(AABB3 aabb, real amount) {
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define AABB3_hash aabb3_hash
-static inline usize aabb3_hash(AABB3 aabb) {
+static inline usize hash_aabb3(AABB3 aabb) {
 	return hash_usize_mix2(
-		vector3_hash(aabb.min),
-		vector3_hash(aabb.max));
+		hash_vector3(aabb.min),
+		hash_vector3(aabb.max));
+}
+
+#define AABB3_hash aabb3_hash
+static inline usize aabb3_hash(const void* aabb) {
+	return hash_aabb3(*(const AABB3*)aabb);
 }
 
 #endif /* MATH_AABB3_H */

@@ -1,4 +1,4 @@
-local command = { name = "to-svg", group = "Conversion Commands" }
+local command = { name = "to-svg", group = "Conversion To Commands" }
 local from_fold = require("commands.from.fold")
 
 local COLORS = require("colors")

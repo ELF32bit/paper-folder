@@ -180,11 +180,15 @@ static inline AABB2 aabb2_grow(AABB2 aabb, real amount) {
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define AABB2_hash aabb2_hash
-static inline usize aabb2_hash(AABB2 aabb) {
+static inline usize hash_aabb2(AABB2 aabb) {
 	return hash_usize_mix2(
-		vector2_hash(aabb.min),
-		vector2_hash(aabb.max));
+		hash_vector2(aabb.min),
+		hash_vector2(aabb.max));
+}
+
+#define AABB2_hash aabb2_hash
+static inline usize aabb2_hash(const void* aabb) {
+	return hash_aabb2(*(const AABB2*)aabb);
 }
 
 #endif /* MATH_AABB2_H */

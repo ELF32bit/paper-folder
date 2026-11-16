@@ -4,11 +4,18 @@
 #include "fold_specification/file.h"
 
 struct FoldFileToOBJParameters {
-	bool vertex_colors;
-	bool triangulate;
+	bool enable_groups;
+	bool disable_colors;
+	bool enable_weights;
+	bool disable_textures;
+	bool disable_normals;
+	bool disable_materials;
+	bool disable_lines;
+	bool disable_faces;
+	usize abstract_seed;
+	f32 abstract_size;
 };
 
-/* TODO: Track unique vertices to output less data */
 Error fold_file_to_obj(FoldFile* file, void* NULLABLE(OBJ),
 	const struct FoldFileToOBJParameters* parameters);
 

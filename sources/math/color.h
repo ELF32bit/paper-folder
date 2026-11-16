@@ -10,6 +10,9 @@
 
 #define COLOR_EPSILON 1e-3
 
+#define COLOR_HTML_RGB_SIZE 8
+#define COLOR_HTML_RGBA_SIZE 10
+
 typedef struct Color {
 	union {
 		struct { f32 r, g, b, a; };
@@ -273,8 +276,10 @@ static inline void color_to_html(Color c, char* html, bool alpha) {
 	u8 a = color_get_a8(c);
 
 	if (alpha) {
-		snprintf(html, 10, "#%02x%02x%02x%02x", r, g, b, a);
-	} else snprintf(html, 8, "#%02x%02x%02x", r, g, b);
+		snprintf(html, COLOR_HTML_RGBA_SIZE, "#%02x%02x%02x%02x", r, g, b, a);
+	} else {
+		snprintf(html, COLOR_HTML_RGB_SIZE, "#%02x%02x%02x", r, g, b);
+	}
 }
 
 static inline Color color_invert(Color c) {
@@ -324,13 +329,25 @@ static inline Color color_desaturate(Color c, f32 factor) {
 		c.a);
 }
 
+static inline Color color_premultiply_alpha(Color c) {
+	return color_from_components(
+		c.r * c.a,
+		c.g * c.a,
+		c.b * c.a,
+		1.0);
+}
+
 /* ========================================================================= */
 /* Hashing                                                                   */
 /* ========================================================================= */
 
+static inline u32 hash_color(Color c) {
+	return hash_f32_mix4(c.r, c.g, c.b, c.a);
+}
+
 #define Color_hash color_hash
-static inline usize color_hash(Color c) {
-	return USIZE(hash_f32_mix4(c.r, c.g, c.b, c.a));
+static inline usize color_hash(const void* c) {
+	return USIZE(hash_color(*(const Color*)c));
 }
 
 #endif /* MATH_COLOR_H */

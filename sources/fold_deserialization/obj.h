@@ -4,7 +4,16 @@
 #include "fold_specification/file.h"
 
 struct FoldFileFromOBJParameters {
-	bool triangulate;
+	bool sort_objects;
+	bool disable_objects;
+	bool disable_groups;
+	bool disable_colors;
+	bool enable_weights;
+	bool disable_textures;
+	bool disable_normals;
+	bool disable_materials;
+	bool disable_lines;
+	bool disable_faces;
 };
 
 Error fold_file_from_obj(FoldFile* file, void* OBJ,

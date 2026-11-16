@@ -234,9 +234,13 @@ static inline bool vector3_is_zero(Vector3 a, real epsilon) {
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define Vector3_hash vector3_hash
-static inline usize vector3_hash(Vector3 v) {
+static inline usize hash_vector3(Vector3 v) {
 	return hash_real_mix3(v.x, v.y, v.z);
+}
+
+#define Vector3_hash vector3_hash
+static inline usize vector3_hash(const void* v) {
+	return hash_vector3(*(const Vector3*)v);
 }
 
 #endif /* MATH_VECTOR3_H */

@@ -11,24 +11,26 @@ Error _validate_frame_parents(const FoldFile* file, usize index, bool* is) {
 	*is = false;
 	FoldFrame* frame = array_get(&file->frames, index);
 	if (frame->parent == FOLD_FRAME_PARENT_NONE ||
-		frame->parent == index ||
 		NOT(frame->inherit)) {
 		*is = true;
 		return OK;
-	} else if (frame->parent >= file->frames.size) {
+	}
+
+	if (frame->parent == index ||
+		frame->parent >= file->frames.size) {
 		return OK;
 	}
 
 	usize parent_index = frame->parent;
-	if (parent_index >= file->frames.size) return OK;
 	FoldFrame* parent = array_get(&file->frames, parent_index);
 	if (parent->parent == FOLD_FRAME_PARENT_NONE ||
-		parent->parent == parent_index ||
 		NOT(parent->inherit)) {
 		*is = true;
 		return OK;
-	} else if (parent->parent == index) {
-		*is = false;
+	}
+
+	if (parent->parent == parent_index ||
+		parent->parent == index) {
 		return OK;
 	}
 
@@ -48,12 +50,14 @@ Error _validate_frame_parents(const FoldFile* file, usize index, bool* is) {
 
 		parent = array_get(&file->frames, parent_index);
 		if (parent->parent == FOLD_FRAME_PARENT_NONE ||
-			parent->parent == parent_index ||
 			NOT(parent->inherit)) {
 			set_destroy(&parents);
 			*is = true;
 			return OK;
-		} else if (set_has(&parents, &parent_index)) {
+		}
+
+		if (parent->parent == parent_index ||
+			set_has(&parents, &parent_index)) {
 			set_destroy(&parents);
 			return OK;
 		}

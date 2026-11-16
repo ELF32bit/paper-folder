@@ -1,4 +1,4 @@
-local command = { name = "from-obj", group = "Conversion Commands" }
+local command = { name = "from-obj", group = "Conversion From Commands" }
 local to_fold = require("commands.to.fold")
 local FoldFile = require("fold.file_C")
 
@@ -11,8 +11,35 @@ function command.register(parser)
 	convert:option("-o --output")
 		:description("path to the FOLD destination")
 
-	convert:flag("-t --triangulate")
-		:description("triangulate OBJ file")
+	convert:flag("-s --sort_objects")
+		:description("sort frames by title")
+
+	convert:flag("--disable_objects")
+		:description("omit frame objects")
+
+	convert:flag("--disable_groups")
+		:description("omit frame groups")
+
+	convert:flag("--disable_colors")
+		:description("omit vertex R,G,B (72 bit)")
+
+	convert:flag("--enable_weights")
+		:description("read vertex RGB (24 bit)")
+
+	convert:flag("--disable_textures")
+		:description("omit texture coordinates")
+
+	convert:flag("--disable_normals")
+		:description("omit normals")
+
+	convert:flag("--disable_materials")
+		:description("omit materials")
+
+	convert:flag("--disable_lines")
+		:description("omit lines")
+
+	convert:flag("--disable_faces")
+		:description("omit faces")
 
 	return convert
 end
@@ -23,7 +50,16 @@ function command.fold_from_obj_file(args)
 
 	fold, fold_error =
 		fold:from_obj_file(args.input,
-			args.triangulate)
+			args.sort_objects,
+			args.disable_objects,
+			args.disable_groups,
+			args.disable_colors,
+			args.enable_weights,
+			args.disable_textures,
+			args.disable_normals,
+			args.disable_materials,
+			args.disable_lines,
+			args.disable_faces)
 
 	if fold == nil then error(fold_error, 0) end
 	return fold, fold_error

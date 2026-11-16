@@ -144,13 +144,17 @@ static inline bool matrix4x3_equals(Matrix4x3 a, Matrix4x3 b) {
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define Matrix4x3_hash matrix4x3_hash
-static inline usize matrix4x3_hash(Matrix4x3 m) {
+static inline usize hash_matrix4x3(Matrix4x3 m) {
 	return hash_usize_mix4(
-		vector3_hash(m.x),
-		vector3_hash(m.y),
-		vector3_hash(m.z),
-		vector3_hash(m.o));
+		hash_vector3(m.x),
+		hash_vector3(m.y),
+		hash_vector3(m.z),
+		hash_vector3(m.o));
+}
+
+#define Matrix4x3_hash matrix4x3_hash
+static inline usize matrix4x3_hash(const void* m) {
+	return hash_matrix4x3(*(const Matrix4x3*)m);
 }
 
 #endif /* MATH_MATRIX4X3_H */

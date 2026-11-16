@@ -19,10 +19,10 @@ State | Module | Commentary
 -- | ---------------------- | ----------------------------------------------------------- |
 🟨 | collections            | Needs more testing.<br>
 ✅ | definitions            | Modern, Rust-like syntax sugar.<br>
-🟨 | fold_deserialization   | No support for SVG triangulation yet.<br>Math module needs BVH2 and Bezier2.<br>Planning to replace OBJ parsing library.<br>
+🟨 | fold_deserialization   | No support for SVG triangulation yet.<br>Math module needs BVH2 and Bezier2.<br>
 ✅ | fold_generation        | Desperate for clever math optimizations.<br>Set Kawasaki error very high to see results!<br>
 ❌ | fold_graph             | Work in progress! Basic methods only.<br>`fold_graph_VV_from_FV` see 2D example.<br>`fold_graph_VF_from_VV` convoluted walk.<br>`fold_graph_EF_from_FV` nasty projection.<br>`fold_graph_FV_*` family not complete.<br>
-🟨 | fold_serialization     | OBJ writing is dangerously primitive.<br>Unique vertices are not tracked properly.<br>SVG could support more visual modes.<br>
+🟨 | fold_serialization     | SVG needs print-friendly display modes.<br>
 ❌ | fold_simulation        | Considering a different approach.<br>More research is necessary.<br>
 ✅ | fold_specification     | Pretty much complete.<br>Supports generic mesh arrays.<br>
 ✅ | fold_validation        | 100% bullet-proof, very fast.<br>

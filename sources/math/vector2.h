@@ -233,9 +233,13 @@ static inline bool vector2_is_zero(Vector2 a, real epsilon) {
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define Vector2_hash vector2_hash
-static inline usize vector2_hash(Vector2 v) {
+static inline usize hash_vector2(Vector2 v) {
 	return hash_real_mix2(v.x, v.y);
+}
+
+#define Vector2_hash vector2_hash
+static inline usize vector2_hash(const void* v) {
+	return hash_vector2(*(const Vector2*)v);
 }
 
 #endif /* MATH_VECTOR2_H */

@@ -242,9 +242,13 @@ bool plane_intersect_segment(Plane p,
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define Plane_hash plane_hash
-static inline usize plane_hash(Plane p) {
+static inline usize hash_plane(Plane p) {
 	return hash_real_mix4(p.x, p.y, p.z, p.d);
+}
+
+#define Plane_hash plane_hash
+static inline usize plane_hash(const void* p) {
+	return hash_plane(*(const Plane*)p);
 }
 
 #endif /* MATH_PLANE_H */

@@ -213,12 +213,15 @@ Error fold_frame_to_svg(FoldFrame* frame, void* NULLABLE(SVG),
 
 	TRY_OR_ELSE(
 		fold_graph_to_svg(&frame->graph, output_file, parameters),
-			fclose(output_file));
+			if (output_file != stdout)
+				fclose(output_file));
 
 	TRY_OR_ERROR(ferror(output_file),
-		fclose(output_file);
+		if (output_file != stdout)
+			fclose(output_file);
 		return ERROR);
 
+	if (output_file == stdout) return OK;
 	return IS_ERROR(fclose(output_file))
 		? ERROR : OK;
 }

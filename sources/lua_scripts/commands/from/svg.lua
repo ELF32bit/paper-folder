@@ -1,4 +1,4 @@
-local command = { name = "from-svg", group = "Conversion Commands" }
+local command = { name = "from-svg", group = "Conversion From Commands" }
 local from_obj = require("commands.from.obj")
 local to_fold = require("commands.to.fold")
 local FoldFile = require("fold.file_C")

@@ -1,4 +1,4 @@
-local command = { name = "from-json", group = "Conversion Commands" }
+local command = { name = "from-json", group = "Conversion From Commands" }
 local FoldFile = require("fold.file_C")
 
 function command.register(parser)

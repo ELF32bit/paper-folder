@@ -1,4 +1,4 @@
-local command = { name = "to", group = "Conversion Commands" }
+local command = { name = "to", group = "Conversion To Commands" }
 local from_fold = require("commands.from.fold")
 local from_json = require("commands.from.json")
 

@@ -648,13 +648,17 @@ Bezier2Vertices bezier2_tessellate_adaptive(Bezier2 c,
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define Bezier2_hash bezier2_hash
-static inline usize bezier2_hash(Bezier2 c) {
+static inline usize hash_bezier2(Bezier2 c) {
 	return hash_usize_mix4(
-		vector2_hash(c.p0),
-		vector2_hash(c.p1),
-		vector2_hash(c.p2),
-		vector2_hash(c.p3));
+		hash_vector2(c.p0),
+		hash_vector2(c.p1),
+		hash_vector2(c.p2),
+		hash_vector2(c.p3));
+}
+
+#define Bezier2_hash bezier2_hash
+static inline usize bezier2_hash(const void* c) {
+	return hash_bezier2(*(const Bezier2*)c);
 }
 
 #endif /* MATH_BEZIER2_H */

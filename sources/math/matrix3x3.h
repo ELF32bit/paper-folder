@@ -174,12 +174,16 @@ static inline bool matrix3x3_equals(Matrix3x3 a, Matrix3x3 b) {
 /* Hashing                                                                   */
 /* ========================================================================= */
 
-#define Matrix3x3_hash matrix3x3_hash
-static inline usize matrix3x3_hash(Matrix3x3 m) {
+static inline usize hash_matrix3x3(Matrix3x3 m) {
 	return hash_usize_mix3(
-		vector3_hash(m.x),
-		vector3_hash(m.y),
-		vector3_hash(m.z));
+		hash_vector3(m.x),
+		hash_vector3(m.y),
+		hash_vector3(m.z));
+}
+
+#define Matrix3x3_hash matrix3x3_hash
+static inline usize matrix3x3_hash(const void* m) {
+	return hash_matrix3x3(*(const Matrix3x3*)m);
 }
 
 #endif /* MATH_MATRIX3X3_H */

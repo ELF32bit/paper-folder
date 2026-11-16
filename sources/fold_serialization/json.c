@@ -196,8 +196,10 @@ Error _encode_json_array_colors(yyjson_mut_doc* json, yyjson_mut_val* object,
 	TRY_NEW_MEMORY(json_array);
 
 	ARRAY_FOR_EACH(array, _, Color*, color) {
-		u64 code = U64(color_pack(*color));
-		TRY(!yyjson_mut_arr_add_uint(json, json_array, code));
+		char html[COLOR_HTML_RGBA_SIZE];
+		color_to_html(*color, html, true);
+		TRY(!yyjson_mut_arr_add_strncpy(json, json_array, html,
+			BUFFER_SIZE(html) - 1));
 	}
 
 	TRY(!yyjson_mut_obj_add_val(json, object, name, json_array));

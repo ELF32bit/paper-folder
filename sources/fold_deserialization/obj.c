@@ -1,293 +1,390 @@
 #include "obj.h"
 
-#define TINYOBJ_LOADER_C_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+#define TOBJ_USE_DOUBLE
+#include "tiny_obj_c.h"
 
+#include "math/color.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
+#include "collections/map.h"
 
-struct TinyObject {
-	tinyobj_shape_t* shape;
-	tinyobj_attrib_t* attributes;
-	tinyobj_material_t* materials;
-	usize num_materials;
-	usize shape_offset;
+struct TinyObjectStreamingContext {
+	const struct FoldFileFromOBJParameters* parameters;
+	Map* unique_paint_colors;
+	Map* unique_material_names;
+	char active_edge_assignment;
+	usize active_face_material;
+	bool has_vertex_colors;
+	bool has_texcoords;
+	bool has_normals;
+	FoldFile* file;
+	Error error;
 };
 
-static inline
-void _tiny_obj_file_reader(void* ctx, const char* filename, int is_mtl,
-	const char* obj_filename, char** buf, usize* len)
-{
-	(void)ctx; (void)obj_filename; (void)is_mtl;
-	FILE* file = fopen(filename, "rb");
-	TRY_NEW_MEMORY_OR_ERROR(file,
-		*buf = NULL; *len = 0;
-		return);
+static
+void _tiny_obj_object(void* context, const char* name) {
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_objects) return;
+	if IS_ERROR(c->error) return;
 
-	TRY_OR_ERROR(fseek(file, 0, SEEK_END),
-		*buf = NULL; *len = 0;
-		fclose(file);
-		return);
+	FOLD_FRAME_CREATE(frame);
+	frame.inherit = true;
+	frame.parent = 0;
 
-	long file_length = ftell(file);
-	if (file_length < 0) {
-		*buf = NULL; *len = 0;
-		fclose(file);
-		return;
+	if (name != NULL) {
+		c->error = string_copy_raw(&frame.title, name);
+		if IS_ERROR(c->error) return fold_frame_destroy(&frame);
 	}
 
-	*len = USIZE(file_length);
-	TRY_OR_ERROR(fseek(file, 0, SEEK_SET),
-		*buf = NULL; *len = 0;
-		fclose(file);
-		return);
-
-	TRY_ADD_OR_ERROR(*len, 1,
-		*buf = NULL; *len = 0;
-		fclose(file);
-		return);
-
-	*buf = (char*)malloc(*len + 1);
-	TRY_NEW_MEMORY_OR_ERROR(*buf,
-		fclose(file); *len = 0;
-		return);
-
-	usize bytes = fread(*buf, 1, *len, file);
-	if (bytes < *len) {
-		free(*buf); *buf = NULL;
-		fclose(file); *len = 0;
-		return;
-	}
-
-	(*buf)[*len] = '\0';
-	fclose(file);
+	c->error = array_append(&c->file->frames, &frame);
+	if IS_ERROR(c->error) return fold_frame_destroy(&frame);
 }
 
-/* ========================================================================= */
-/* FOLD Graph                                                                */
-/* ========================================================================= */
-
-static inline
-Error fold_graph_from_obj(FoldGraph* graph, void* OBJ, void* Object,
-	const struct FoldFileFromOBJParameters* parameters)
+static
+void _tiny_obj_group(void* context,
+	const char* const* names, int num_names)
 {
-	(void)OBJ;
-	struct TinyObject* object = Object;
-	tinyobj_shape_t* shape = object->shape;
-	tinyobj_attrib_t* attributes = object->attributes;
-	tinyobj_material_t* materials = object->materials;
-	usize num_materials = object->num_materials;
-	usize shape_offset = object->shape_offset;
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_groups) return;
+	if IS_ERROR(c->error) return;
+	if (num_names < 1 || names == NULL) return;
+	_tiny_obj_object(context, names[0]);
+}
 
-	usize EV_size = 0, FV_size = 0;
-	FOR_EACH(fi, shape->length) {
-		usize face_index = USIZE(shape->face_offset) + fi;
-		usize face_vertices = attributes->face_num_verts[face_index];
-		if (face_vertices == 2) { EV_size++; }
-		else { FV_size++; }
-	}
+static
+void _tiny_obj_vertex(void* context,
+	tobj_real x, tobj_real y, tobj_real z, tobj_real w)
+{
+	struct TinyObjectStreamingContext* c = context;
+	if IS_ERROR(c->error) return;
 
-	TRY(array_resize(&graph->EV, EV_size));
-	if (num_materials != 0) {
-		TRY(array_resize(&graph->EA, EV_size)); }
+	Vector3 vc;
+	vc.x = REAL(x);
+	vc.y = REAL(y);
+	vc.z = REAL(z);
 
-	TRY(array_resize(&graph->FV.offsets, FV_size));
-	if (attributes->num_texcoords != 0) {
-		TRY(array_resize(&graph->FT.offsets, FV_size)); }
-	if (attributes->num_normals != 0) {
-		TRY(array_resize(&graph->FN.offsets, FV_size)); }
-	if (num_materials != 0) {
-		TRY(array_resize(&graph->FM, FV_size)); }
+	FoldFrame* key_frame = fold_file_get_key_frame(c->file);
+	c->error = array_append(&key_frame->graph.VC, &vc);
+	if IS_ERROR(c->error) return;
 
-	usize fv_offset = 0;
-	FOR_EACH(fi, shape->length) {
-		usize face_index = USIZE(shape->face_offset) + fi;
-		usize face_vertices = attributes->face_num_verts[face_index];
-		if (face_vertices == 2) continue;
-		TRY_ADD(fv_offset, face_vertices);
-		fv_offset += face_vertices;
+	if (c->parameters->enable_weights) {
+		f64 w24 = F64(CLAMP(w, 0.0, 1.0)) * F64(0xFFFFFF) + 0.5;
+		Color pc24 = color_unpack((U32(w24) << 8) | 0xFF);
+		c->has_vertex_colors = true;
 
-		array_set(&graph->FV.offsets, fi, &fv_offset);
-		if (attributes->num_texcoords != 0) {
-			array_set(&graph->FT.offsets, fi, &fv_offset); }
-		if (attributes->num_normals != 0) {
-			array_set(&graph->FN.offsets, fi, &fv_offset); }
-	}
+		usize hash = USIZE(hash_color(pc24));
+		if NOT(map_has(c->unique_paint_colors, &hash)) {
+			c->error = map_add(c->unique_paint_colors, &hash,
+				&c->unique_paint_colors->size);
+			if IS_ERROR(c->error) return;
 
-	TRY(array_resize(&graph->FV.data, fv_offset));
-	if (attributes->num_texcoords != 0) {
-		TRY(array_resize(&graph->FT.data, fv_offset)); }
-	if (attributes->num_normals != 0) {
-		TRY(array_resize(&graph->FN.data, fv_offset)); }
-
-	fv_offset = 0;
-	usize offset = 0;
-	usize ev_index = 0, fv_index = 0;
-	FOR_EACH(fi, shape->length) {
-		usize face_index = USIZE(shape->face_offset) + fi;
-		usize face_vertices = attributes->face_num_verts[face_index];
-
-		if (face_vertices == 2) {
-			tinyobj_vertex_index_t line_vertex0 =
-				attributes->faces[shape_offset + offset];
-			tinyobj_vertex_index_t line_vertex1 =
-				attributes->faces[shape_offset + offset + 1];
-
-			FoldGraphEdge edge;
-			edge.a = USIZE(line_vertex0.v_idx);
-			edge.b = USIZE(line_vertex1.v_idx);
-			array_set(&graph->EV, ev_index, &edge);
-
-			if (num_materials != 0) {
-				usize material_index = attributes->material_ids[face_index];
-				tinyobj_material_t material = materials[material_index];
-				FoldGraphEdgeAssignment a = (material.name != NULL)
-					? (FOLD_GRAPH_EDGE_ASSIGNMENT_ANY(material.name[0])
-						? (FoldGraphEdgeAssignment)material.name[0]
-						: FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN)
-					: FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
-				array_set(&graph->EA, ev_index, &a);
-			}
-
-			ev_index++;
-		} else {
-			FOR_EACH(vi, face_vertices) {
-				tinyobj_vertex_index_t face_vertex =
-					attributes->faces[shape_offset + offset + vi];
-
-				usize fvi = USIZE(face_vertex.v_idx);
-				array_set(&graph->FV.data, fv_offset + vi, &fvi);
-
-				if (attributes->num_texcoords != 0) {
-					usize fvt = (face_vertex.vt_idx >= 0)
-						? USIZE(face_vertex.vt_idx) : FOLD_GRAPH_NULL;
-					array_set(&graph->FT.data, fv_offset + vi, &fvt);
-				}
-
-				if (attributes->num_normals != 0) {
-					usize fvn = (face_vertex.vn_idx >= 0)
-						? USIZE(face_vertex.vn_idx) : FOLD_GRAPH_NULL;
-					array_set(&graph->FN.data, fv_offset + vi, &fvn);
-				}
-			}
-
-			if (num_materials != 0) {
-				usize material_index = attributes->material_ids[face_index];
-				tinyobj_material_t material = materials[material_index];
-				material_index = (material.name != NULL)
-					? material_index : FOLD_GRAPH_NULL;
-				array_set(&graph->FM, fv_index, &material_index);
-			}
-
-			fv_offset += face_vertices;
-			fv_index++;
+			c->error = array_append(&key_frame->graph.PC, &pc24);
+			if IS_ERROR(c->error) return;
 		}
-		offset += face_vertices;
-	}
 
-	object->shape_offset += offset;
-	return OK;
+		usize* vp = MAP_GET(c->unique_paint_colors, &hash);
+		c->error = array_append(&key_frame->graph.VP, vp);
+	}
 }
 
-/* ========================================================================= */
-/* FOLD Frame                                                                */
-/* ========================================================================= */
-
-static inline
-Error fold_frame_from_obj(FoldFrame* frame, void* OBJ, void* Object,
-	const struct FoldFileFromOBJParameters* parameters)
+static
+void _tiny_obj_vertex_color(void* context,
+	tobj_real x, tobj_real y, tobj_real z,
+	tobj_real r, tobj_real g, tobj_real b, bool has_color)
 {
-	(void)OBJ;
-	struct TinyObject* object = Object;
-	TRY(string_copy_raw(&frame->title, object->shape->name));
-	TRY(fold_graph_from_obj(&frame->graph, NULL, object, parameters));
-	return OK;
+	struct TinyObjectStreamingContext* c = context;
+	if IS_ERROR(c->error) return;
+
+	Vector3 vc;
+	vc.x = REAL(x);
+	vc.y = REAL(y);
+	vc.z = REAL(z);
+
+	if (has_color) c->has_vertex_colors = true;
+	FoldFrame* key_frame = fold_file_get_key_frame(c->file);
+	c->error = array_append(&key_frame->graph.VC, &vc);
+	if IS_ERROR(c->error) return;
+
+	Color pc72 = color_from_components(
+		has_color ? F32(CLAMP(r, 0.0, 1.0)) : 1.0,
+		has_color ? F32(CLAMP(g, 0.0, 1.0)) : 1.0,
+		has_color ? F32(CLAMP(b, 0.0, 1.0)) : 1.0,
+		1.0);
+
+	usize hash = USIZE(hash_color(pc72));
+	if NOT(map_has(c->unique_paint_colors, &hash)) {
+		c->error = map_add(c->unique_paint_colors, &hash,
+			&c->unique_paint_colors->size);
+		if IS_ERROR(c->error) return;
+
+		c->error = array_append(&key_frame->graph.PC, &pc72);
+		if IS_ERROR(c->error) return;
+	}
+
+	usize* vp = MAP_GET(c->unique_paint_colors, &hash);
+	c->error = array_append(&key_frame->graph.VP, vp);
+}
+
+static
+void _tiny_obj_texcoord(void* context,
+	tobj_real x, tobj_real y, tobj_real z)
+{
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_textures) return;
+	if IS_ERROR(c->error) return;
+	c->has_texcoords = true;
+
+	Vector2 vt;
+	vt.x = REAL(x);
+	vt.y = REAL(y);
+	(void)z;
+
+	FoldFrame* key_frame = fold_file_get_key_frame(c->file);
+	c->error = array_append(&key_frame->graph.TC, &vt);
+}
+
+static
+void _tiny_obj_normal(void* context,
+	tobj_real x, tobj_real y, tobj_real z)
+{
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_normals) return;
+	if IS_ERROR(c->error) return;
+	c->has_normals = true;
+
+	Vector3 vn;
+	vn.x = REAL(x);
+	vn.y = REAL(y);
+	vn.z = REAL(z);
+
+	FoldFrame* key_frame = fold_file_get_key_frame(c->file);
+	c->error = array_append(&key_frame->graph.NC, &vn);
+}
+
+static
+void _tiny_obj_usemtl(void* context,
+	const char* name, int material_id)
+{
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_materials) return;
+	if IS_ERROR(c->error) return;
+	(void)material_id;
+
+	if (name == NULL || name[0] == '\0') {
+		c->active_edge_assignment = '\0';
+		c->active_face_material = FOLD_GRAPH_NULL;
+		return;
+	}
+
+	usize hash = hash_string_raw(name);
+	if NOT(map_has(c->unique_material_names, &hash)) {
+		c->error = map_add(c->unique_material_names, &hash,
+			&c->unique_material_names->size);
+		if IS_ERROR(c->error) return;
+
+		FoldFrame* key_frame = fold_file_get_key_frame(c->file);
+		STRING_BUFFER_RAW(name, buffer, key_frame->graph.MN.element_size);
+		c->error = array_append(&key_frame->graph.MN, buffer);
+		if IS_ERROR(c->error) return;
+	}
+
+	usize* index = MAP_GET(c->unique_material_names, &hash);
+	c->active_edge_assignment = name[0];
+	c->active_face_material = *index;
+}
+
+static
+void _tiny_obj_line(void* context,
+	const tobj_index* indices, int num_indices)
+{
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_lines) return;
+	if IS_ERROR(c->error) return;
+	if (num_indices < 2) return;
+	if (indices == NULL) return;
+	FOR_EACH_IN_RANGE(i, 0, USIZE(num_indices)) {
+		if (indices[i].vertex_index < 0) return;
+	}
+
+	FoldGraphEdgeAssignment assignment =
+		FOLD_GRAPH_EDGE_ASSIGNMENT_ANY(c->active_edge_assignment)
+			? (FoldGraphEdgeAssignment)c->active_edge_assignment
+			: FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
+
+	FoldFrame* frame = array_get_end(&c->file->frames);
+	FOR_EACH_IN_RANGE(i, 0, USIZE(num_indices) - 1) {
+		FoldGraphEdge edge;
+		edge.a = USIZE(indices[i + 0].vertex_index);
+		edge.b = USIZE(indices[i + 1].vertex_index);
+
+		c->error = array_append(&frame->graph.EV, &edge);
+		if IS_ERROR(c->error) return;
+
+		if NOT(c->parameters->disable_materials) {
+			c->error = array_append(&frame->graph.EA, &assignment);
+			if IS_ERROR(c->error) return;
+		}
+	}
+}
+
+static
+void _tiny_obj_index(void* context,
+	const tobj_index* indices, int num_indices)
+{
+	struct TinyObjectStreamingContext* c = context;
+	if (c->parameters->disable_faces) return;
+	if IS_ERROR(c->error) return;
+	if (num_indices < 3) return;
+	if (indices == NULL) return;
+	FOR_EACH(i, USIZE(num_indices)) {
+		if (indices[i].vertex_index < 0) return;
+	}
+
+	FoldFrame* frame = array_get_end(&c->file->frames);
+	FoldGraph* graph = &frame->graph;
+
+	FOR_EACH(i, USIZE(num_indices)) {
+		usize fvi = USIZE(indices[i].vertex_index);
+		c->error = array_append(&graph->FV.data, &fvi);
+		if IS_ERROR(c->error) return;
+
+		if NOT(c->parameters->disable_textures) {
+			usize fvt = (indices[i].texcoord_index >= 0)
+				? USIZE(indices[i].texcoord_index) : FOLD_GRAPH_NULL;
+			c->error = array_append(&graph->FT.data, &fvt);
+			if IS_ERROR(c->error) return;
+		}
+
+		if NOT(c->parameters->disable_normals) {
+			usize fvn = (indices[i].normal_index >= 0)
+				? USIZE(indices[i].normal_index) : FOLD_GRAPH_NULL;
+			c->error = array_append(&graph->FN.data, &fvn);
+			if IS_ERROR(c->error) return;
+		}
+	}
+
+	usize offset = graph->FV.data.size;
+	c->error = array_append(&graph->FV.offsets, &offset);
+	if IS_ERROR(c->error) return;
+
+	if NOT(c->parameters->disable_textures) {
+		c->error = array_append(&graph->FT.offsets, &offset);
+		if IS_ERROR(c->error) return;
+	}
+
+	if NOT(c->parameters->disable_normals) {
+		c->error = array_append(&graph->FN.offsets, &offset);
+		if IS_ERROR(c->error) return;
+	}
+
+	if NOT(c->parameters->disable_materials) {
+		c->error = array_append(&graph->FM, &c->active_face_material);
+	}
 }
 
 /* ========================================================================= */
 /* FOLD File                                                                 */
 /* ========================================================================= */
 
+static inline
+int _fold_frame_sort_ascending(const void* a, const void* b) {
+	const String* s1 = &((const FoldFrame*)a)->title;
+	const String* s2 = &((const FoldFrame*)b)->title;
+	return string_sort_ascending(s1, s2);
+}
+
 Error fold_file_from_obj(FoldFile* file, void* OBJ,
 	const struct FoldFileFromOBJParameters* parameters)
 {
 	const char* input_file_path = OBJ;
-
-	tinyobj_attrib_t attributes;
-	tinyobj_shape_t* shapes = NULL;
-	tinyobj_material_t* materials = NULL;
-	usize num_shapes = 0, num_materials = 0;
-	unsigned int flags = NOT(TINYOBJ_FLAG_TRIANGULATE);
-
-	int result = tinyobj_parse_obj(&attributes,
-		&shapes, &num_shapes, &materials, &num_materials,
-		input_file_path, _tiny_obj_file_reader, NULL, flags);
-	if (result != TINYOBJ_SUCCESS) {
-		return ERROR;
-	}
-
-	TRY_ADD(num_shapes, 1);
 	TRY(fold_file_recreate(file));
-	TRY(array_resize(&file->frames, num_shapes + 1));
-	FoldFrame* key_frame = array_get_start(&file->frames);
 
-	TRY(array_resize(&key_frame->graph.VC, attributes.num_vertices));
-	FOR_EACH(index, attributes.num_vertices) {
-		Vector3 vc;
-		vc.x = attributes.vertices[3 * index + 0];
-		vc.y = attributes.vertices[3 * index + 1];
-		vc.z = attributes.vertices[3 * index + 2];
-		array_set(&key_frame->graph.VC, index, &vc);
+	MAP_CREATE(unique_paint_colors, usize, usize);
+	unique_paint_colors.hash = usize_hash_identity;
+
+	MAP_CREATE(unique_material_names, usize, usize);
+	unique_material_names.hash = usize_hash_identity;
+
+	struct TinyObjectStreamingContext context;
+	context.parameters = parameters;
+	context.unique_paint_colors = &unique_paint_colors;
+	context.unique_material_names = &unique_material_names;
+	context.active_edge_assignment = '\0';
+	context.active_face_material = FOLD_GRAPH_NULL;
+	context.has_vertex_colors = false;
+	context.has_texcoords = false;
+	context.has_normals = false;
+	context.file = file;
+	context.error = OK;
+
+	tobj_load_config configuration = tobj_default_config();
+	configuration.triangulate = false;
+
+	tobj_callbacks callbacks;
+	callbacks.user_data = &context;
+	callbacks.object_cb = _tiny_obj_object;
+	callbacks.group_cb = _tiny_obj_group;
+
+	if (parameters->disable_colors || parameters->enable_weights) {
+		callbacks.vertex_cb = _tiny_obj_vertex;
+		callbacks.vertex_color_cb = NULL;
+	} else {
+		callbacks.vertex_cb = NULL;
+		callbacks.vertex_color_cb = _tiny_obj_vertex_color;
 	}
 
-	TRY(array_resize(&key_frame->graph.TC, attributes.num_texcoords));
-	FOR_EACH(index, attributes.num_texcoords) {
-		Vector2 vt;
-		vt.x = attributes.texcoords[2 * index + 0];
-		vt.y = attributes.texcoords[2 * index + 1];
-		array_set(&key_frame->graph.TC, index, &vt);
+	callbacks.texcoord_cb = _tiny_obj_texcoord;
+	callbacks.normal_cb = _tiny_obj_normal;
+	callbacks.index_cb = _tiny_obj_index;
+	callbacks.usemtl_cb = _tiny_obj_usemtl;
+	callbacks.line_cb = _tiny_obj_line;
+	callbacks.mtllib_cb = NULL;
+	callbacks.point_cb = NULL;
+
+	STRING_CREATE_FROM_FILE_OR_ELSE(input_file, input_file_path,
+		map_destroy(context.unique_material_names);
+		map_destroy(context.unique_paint_colors));
+
+	tobj_result result = tobj_load_obj_with_callbacks((const u8*)
+		input_file.data, TRY_SAFE(input_file.length + 1),
+			&callbacks, &configuration, NULL);
+	string_destroy(&input_file);
+
+	map_destroy(context.unique_paint_colors);
+	map_destroy(context.unique_material_names);
+	if IS_ERROR(context.error) return context.error;
+	if (result != TOBJ_OK) return ERROR;
+
+	FoldFrame* key_frame = fold_file_get_key_frame(file);
+	if NOT(context.has_vertex_colors) {
+		array_recreate(&key_frame->graph.PC);
+		ARRAY_FOR_EACH(&file->frames, _, FoldFrame*, frame) {
+			array_recreate(&frame->graph.VP);
+		}
+	}
+	if NOT(context.has_texcoords) {
+		array_recreate(&key_frame->graph.TC);
+		ARRAY_FOR_EACH(&file->frames, _, FoldFrame*, frame) {
+			array2_recreate(&frame->graph.FT);
+		}
+	}
+	if NOT(context.has_normals) {
+		array_recreate(&key_frame->graph.NC);
+		ARRAY_FOR_EACH(&file->frames, _, FoldFrame*, frame) {
+			array2_recreate(&frame->graph.FN);
+		}
 	}
 
-	TRY(array_resize(&key_frame->graph.NC, attributes.num_normals));
-	FOR_EACH(index, attributes.num_normals) {
-		Vector3 vn;
-		vn.x = attributes.normals[3 * index + 0];
-		vn.y = attributes.normals[3 * index + 1];
-		vn.z = attributes.normals[3 * index + 2];
-		array_set(&key_frame->graph.NC, index, &vn);
+	if (parameters->sort_objects) {
+		if (file->frames.size > 1) {
+			array_sort_range(&file->frames, 1, file->frames.size,
+				_fold_frame_sort_ascending);
+		}
 	}
 
-	TRY(array_resize(&key_frame->graph.MN, num_materials));
-	FOR_EACH(index, num_materials) {
-		const char* string = (materials[index].name != NULL)
-			? materials[index].name : "";
-		STRING_BUFFER_RAW(string, buffer,
-			key_frame->graph.MN.element_size);
-		array_set(&key_frame->graph.MN, index, buffer);
+	FOR_EACH_IN_RANGE(index, 1, file->frames.size) {
+		fold_file_frame_inherit(file, index);
 	}
 
-	struct TinyObject object;
-	object.shape = NULL;
-	object.attributes = &attributes;
-	object.materials = materials;
-	object.num_materials = num_materials;
-	object.shape_offset = 0;
-
-	ARRAY_FOR_EACH_IN_RANGE(&file->frames,
-		shape, FoldFrame*, frame, 1, num_shapes + 1)
-	{
-		object.shape = &shapes[shape - 1];
-
-		fold_frame_create(frame);
-		frame->inherit = true;
-		frame->parent = 0;
-
-		TRY(fold_frame_from_obj(frame, NULL, &object, parameters));
-		fold_file_frame_inherit(file, shape);
-	}
-
-	tinyobj_attrib_free(&attributes);
-	tinyobj_shapes_free(shapes, num_shapes);
-	tinyobj_materials_free(materials, num_materials);
 	return OK;
 }

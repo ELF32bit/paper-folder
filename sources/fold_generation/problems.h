@@ -15,7 +15,7 @@ struct LFFParameters {
 	usize seed;
 };
 
-/* TODO: This method is a gold mine for mathemathical optimizations */
+/* TODO: This method is a gold mine for mathematical optimizations */
 Error fold_generate_locally_flat_foldable(FoldFile* file,
 	const struct LFFParameters* parameters);
 

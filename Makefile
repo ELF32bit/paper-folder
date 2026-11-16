@@ -10,7 +10,7 @@ CFLAGS = -std=c11 \
 	-I$(THIRDPARTY_DIRECTORY)/yyjson \
 	-I$(THIRDPARTY_DIRECTORY)/nanosvg \
 	-I$(THIRDPARTY_DIRECTORY)/triangle \
-	-I$(THIRDPARTY_DIRECTORY)/tinyobjloader \
+	-I$(THIRDPARTY_DIRECTORY)/tiny_obj \
 	-I$(THIRDPARTY_DIRECTORY)/xoshiro
 CFLAGS += -DREAL_TYPE=double
 CFLAGS += -Wall -Wextra
@@ -19,6 +19,13 @@ CFLAGS += -O2
 
 LDFLAGS =
 LDLIBS = -lm
+
+# WARNING: Triangle library is designed for double precision
+$(THIRDPARTY_DIRECTORY)/triangle/triangle.o: \
+	CFLAGS += -DTRILIBRARY -DREAL=double -DANSI_DECLARATORS -DNO_TIMER -w
+
+$(THIRDPARTY_DIRECTORY)/tiny_obj/%.o: \
+	CFLAGS += -std=c11 -w
 
 LUA_MODULES_DIRECTORY = $(SOURCES_DIRECTORY)/lua_modules
 LUA_MODULES_HEADER = $(SOURCES_DIRECTORY)/lua_modules.h
@@ -84,10 +91,6 @@ lua_compile:
 		'$(LUA_SCRIPTS_HEADER)' \
 		'$(LUA_SCRIPTS_CODE)' \
 		'$(LUA_SCRIPTS)'
-
-# WARNING: Triangle library is designed for double precision
-$(THIRDPARTY_DIRECTORY)/triangle/triangle.o: \
-	CFLAGS += -DTRILIBRARY -DREAL=double -DANSI_DECLARATORS -DNO_TIMER -w
 
 $(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 	@$(CC) $(CFLAGS) $(LDFLAGS) $(C_OBJECTS) \

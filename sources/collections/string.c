@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "definitions/cpu.h"
 
@@ -99,6 +100,48 @@ Error string_copy_raw(String* string, const char* source) {
 
 	string->data = new_data;
 	string->length = new_length;
+	return OK;
+}
+
+Error string_from_file(String* string, const char* filename) {
+	string_recreate(string);
+
+	FILE* file = fopen(filename, "rb");
+	TRY_NEW_MEMORY_OR_ERROR(file,
+		return ERROR);
+
+	TRY_OR_ERROR(fseek(file, 0, SEEK_END),
+		fclose(file);
+		return ERROR);
+
+	long file_length = ftell(file);
+	if (file_length < 0) {
+		fclose(file);
+		return ERROR;
+	}
+
+	TRY_OR_ERROR(fseek(file, 0, SEEK_SET),
+		fclose(file);
+		return ERROR);
+
+	usize length = USIZE(file_length);
+	TRY_ADD_OR_ELSE(length, 1,
+		fclose(file));
+
+	string->data = malloc(length + 1);
+	TRY_NEW_MEMORY_OR_ELSE(string->data,
+		fclose(file));
+
+	usize bytes = fread(string->data, 1, length, file);
+	if (bytes < length) {
+		string_destroy(string);
+		fclose(file);
+		return ERROR;
+	}
+
+	string->data[length] = '\0';
+	string->length = length;
+	fclose(file);
 	return OK;
 }
 

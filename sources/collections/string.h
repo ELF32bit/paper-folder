@@ -49,6 +49,20 @@ Error string_copy_raw(String* string, const char* source);
 	STRING_CREATE(string); \
 	TRY_OR_ERROR(string_copy_raw(&string, (source)), execute)
 
+Error string_from_file(String* string, const char* filename);
+
+#define STRING_CREATE_FROM_FILE(string, filename) \
+	STRING_CREATE(string); \
+	TRY(string_from_file(&string, (filename)))
+
+#define STRING_CREATE_FROM_FILE_OR_ELSE(string, filename, execute) \
+	STRING_CREATE(string); \
+	TRY_OR_ELSE(string_from_file(&string, (filename)), execute)
+
+#define STRING_CREATE_FROM_FILE_OR_ERROR(string, filename, execute) \
+	STRING_CREATE(string); \
+	TRY_OR_ERROR(string_from_file(&string, (filename)), execute)
+
 char* string_buffer(const String* string, char* buffer, usize size);
 char* string_buffer_raw(const char* string, char* buffer, usize size);
 usize string_buffer_length(const char* buffer, usize size);
@@ -72,8 +86,8 @@ usize hash_string(const String* string);
 usize hash_string_raw(const char* string);
 
 #define String_hash string_hash
-static inline usize string_hash(const void* a) {
-	return USIZE(hash_string((const String*)a));
+static inline usize string_hash(const void* s) {
+	return hash_string((const String*)s);
 }
 
 #define String_equals string_equals

@@ -1,4 +1,4 @@
-local command = { name = "from", group = "Conversion Commands" }
+local command = { name = "from", group = "Conversion From Commands" }
 local from_json = require("commands.from.json")
 
 function command.register(parser)

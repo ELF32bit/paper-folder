@@ -281,17 +281,14 @@ Error _parse_json_array_colors(yyjson_val* object,
 	usize i, _;
 	yyjson_val *element;
 	yyjson_arr_foreach(json_array, i, _, element) {
-		if NOT(yyjson_is_uint(element)) return ERROR;
-		if (yyjson_get_uint(element) > USIZE_MAX) {
-			return ERROR_INTEGER_OVERFLOW;
-		}
+		if NOT(yyjson_is_str(element)) return ERROR;
 	}
 
 	array_recreate(array);
 	TRY(array_resize(array, size));
 	yyjson_arr_foreach(json_array, i, _, element) {
-		u32 number = U32(yyjson_get_uint(element));
-		Color color = color_unpack(number);
+		const char* string = yyjson_get_str(element);
+		Color color = color_from_html(string);
 		array_set(array, i, &color);
 	}
 
