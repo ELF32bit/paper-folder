@@ -7,7 +7,7 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the FOLD source")
-	convert:option("-o --output")
+	convert:option("-o --output"):argname("<file>")
 		:description("path to the FOLD destination")
 
 	convert:flag("-p --pretty")
@@ -22,6 +22,10 @@ end
 
 function command.fold_from_fold_string(json, args)
 	return from_json.fold_from_json_string(json, args)
+end
+
+function command.read_stdin_stream()
+	return from_json.read_stdin_stream()
 end
 
 function command.fold_from_input_args(args)

@@ -273,12 +273,14 @@ static inline void color_to_html(Color c, char* html, bool alpha) {
 	u8 r = color_get_r8(c);
 	u8 g = color_get_g8(c);
 	u8 b = color_get_b8(c);
-	u8 a = color_get_a8(c);
 
 	if (alpha) {
-		snprintf(html, COLOR_HTML_RGBA_SIZE, "#%02x%02x%02x%02x", r, g, b, a);
+		u8 a = color_get_a8(c);
+		snprintf(html, COLOR_HTML_RGBA_SIZE,
+			"#%02x%02x%02x%02x", r, g, b, a);
 	} else {
-		snprintf(html, COLOR_HTML_RGB_SIZE, "#%02x%02x%02x", r, g, b);
+		snprintf(html, COLOR_HTML_RGB_SIZE,
+			"#%02x%02x%02x", r, g, b);
 	}
 }
 

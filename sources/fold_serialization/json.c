@@ -197,9 +197,11 @@ Error _encode_json_array_colors(yyjson_mut_doc* json, yyjson_mut_val* object,
 
 	ARRAY_FOR_EACH(array, _, Color*, color) {
 		char html[COLOR_HTML_RGBA_SIZE];
-		color_to_html(*color, html, true);
+		bool has_alpha = BOOL(color->a != 1.0);
+		color_to_html(*color, html, has_alpha);
 		TRY(!yyjson_mut_arr_add_strncpy(json, json_array, html,
-			BUFFER_SIZE(html) - 1));
+			has_alpha ? (COLOR_HTML_RGBA_SIZE - 1)
+				: (COLOR_HTML_RGB_SIZE - 1)));
 	}
 
 	TRY(!yyjson_mut_obj_add_val(json, object, name, json_array));

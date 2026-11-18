@@ -80,16 +80,16 @@ void set_recreate(Set* set) {
 	set_destroy(set);
 }
 
-void set_view(Set* set, const Set* source_set) {
-	if (set == source_set) return;
+void set_view(Set* set, const Set* source) {
+	if (set == source) return;
 	set_destroy(set);
-	array_view(&set->keys, &source_set->keys);
-	array_view(&set->flags, &source_set->flags);
-	set->size = source_set->size;
-	set->tombstones = source_set->tombstones;
-	set->key_size = source_set->key_size;
-	set->hash = source_set->hash;
-	set->equals = source_set->equals;
+	array_view(&set->keys, &source->keys);
+	array_view(&set->flags, &source->flags);
+	set->size = source->size;
+	set->tombstones = source->tombstones;
+	set->key_size = source->key_size;
+	set->hash = source->hash;
+	set->equals = source->equals;
 	set->is_view = true;
 }
 
@@ -234,18 +234,18 @@ bool set_has(const Set* set, const void* key) {
 	return exists;
 }
 
-Error set_copy(Set* set, const Set* source_set) {
-	ASSERT(set->key_size == source_set->key_size);
-	ASSERT(set->equals == source_set->equals);
-	ASSERT(set->keys.destroy == source_set->keys.destroy);
-	ASSERT(set->keys.copy == source_set->keys.copy);
+Error set_copy(Set* set, const Set* source) {
+	ASSERT(set->key_size == source->key_size);
+	ASSERT(set->equals == source->equals);
+	ASSERT(set->keys.destroy == source->keys.destroy);
+	ASSERT(set->keys.copy == source->keys.copy);
 	ASSERT(NOT(set->is_view));
 
 	set_recreate(set);
-	TRY(set_reserve(set, source_set->size));
+	TRY(set_reserve(set, source->size));
 
 	u8 key[set->key_size];
-	SetIterator iterator = set_iterator(source_set);
+	SetIterator iterator = set_iterator(source);
 	while (set_iterator_next(&iterator)) {
 		if (set->keys.copy != NULL) {
 			memset(key, 0, set->key_size);
@@ -259,6 +259,13 @@ Error set_copy(Set* set, const Set* source_set) {
 	}
 
 	return OK;
+}
+
+Error set_copy_view(Set* set) {
+	if NOT(set->is_view) return OK;
+	Set view = *set;
+	set_recreate(set);
+	return set_copy(set, &view);
 }
 
 /* ========================================================================= */

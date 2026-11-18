@@ -4,6 +4,7 @@
 #include "fold_specification/file.h"
 
 struct FoldFileFromOBJParameters {
+	real scale;
 	bool sort_objects;
 	bool disable_objects;
 	bool disable_groups;

@@ -104,7 +104,6 @@ Error fold_graph_FF_from_FV(FoldGraph* graph) {
 Error fold_graph_FV_triangulate(FoldGraph* graph) {
 	ASSERT(NOT(graph->FV.is_view) || graph->FV.size == 0);
 	ASSERT(NOT(graph->FO.is_view) || graph->FO.size == 0);
-	ASSERT(NOT(graph->FO.is_view) || graph->FO.size == 0);
 	ASSERT(NOT(graph->FT.is_view) || graph->FT.size == 0);
 	ASSERT(NOT(graph->FT2.is_view) || graph->FT2.size == 0);
 	ASSERT(NOT(graph->FN.is_view) || graph->FN.size == 0);
@@ -314,39 +313,29 @@ todo_centroids:
 	return OK;
 }
 
-void fold_graph_FV_flip(FoldGraph* graph) {
-	ASSERT(NOT(graph->VV.is_view) || graph->VV.size == 0);
-	ASSERT(NOT(graph->VE.is_view) || graph->VE.size == 0);
-	ASSERT(NOT(graph->VF.is_view) || graph->VF.size == 0);
-	ASSERT(NOT(graph->EV.is_view) || graph->EV.size == 0);
-	ASSERT(NOT(graph->EA.is_view) || graph->EA.size == 0);
-	ASSERT(NOT(graph->EFA.is_view) || graph->EFA.size == 0);
-	ASSERT(NOT(graph->FV.is_view) || graph->FV.size == 0);
-	ASSERT(NOT(graph->FE.is_view) || graph->FE.size == 0);
-	ASSERT(NOT(graph->FF.is_view) || graph->FF.size == 0);
-	ASSERT(NOT(graph->FO.is_view) || graph->FO.size == 0);
-	ASSERT(NOT(graph->NC.is_view) || graph->NC.size == 0);
-	ASSERT(NOT(graph->FT.is_view) || graph->FT.size == 0);
-	ASSERT(NOT(graph->FT2.is_view) || graph->FT2.size == 0);
-	ASSERT(NOT(graph->FN.is_view) || graph->FN.size == 0);
-
+Error fold_graph_FV_flip(FoldGraph* graph) {
+	TRY(array2_copy_view(&graph->VV));
 	ARRAY2_ITERATE(&graph->VV, vv) {
 		array_reverse_range(&graph->VV.data, vv.start, vv.end);
 	}
 
+	TRY(array2_copy_view(&graph->VE));
 	ARRAY2_ITERATE(&graph->VE, ve) {
 		array_reverse_range(&graph->VE.data, ve.start, ve.end);
 	}
 
+	TRY(array2_copy_view(&graph->VF));
 	ARRAY2_ITERATE(&graph->VF, vf) {
 		array_reverse_range(&graph->VF.data, vf.start, vf.end);
 		array_shift_range(&graph->VF.data, -1, vf.start, vf.end);
 	}
 
+	TRY(array_copy_view(&graph->EV));
 	ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
 		SWAP(ev->a, ev->b);
 	}
 
+	TRY(array_copy_view(&graph->EA));
 	ARRAY_FOR_EACH(&graph->EA, ei, FoldGraphEdgeAssignment*, ea) {
 		if (*ea == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN) {
 			ARRAY_SET(&graph->EA, ei,
@@ -359,43 +348,52 @@ void fold_graph_FV_flip(FoldGraph* graph) {
 		}
 	}
 
+	TRY(array_copy_view(&graph->EFA));
 	ARRAY_FOR_EACH(&graph->EFA, ei, real*, efa) {
 		ARRAY_SET(&graph->EFA, ei, real, (-1.0) * (*efa));
 	}
 
+	TRY(array2_copy_view(&graph->FV));
 	ARRAY2_ITERATE(&graph->FV, fv) {
 		array_reverse_range(&graph->FV.data, fv.start, fv.end);
 	}
 
+	TRY(array2_copy_view(&graph->FE));
 	ARRAY2_ITERATE(&graph->FE, fe) {
 		array_reverse_range(&graph->FE.data, fe.start, fe.end);
 		array_shift_range(&graph->FE.data, -1, fe.start, fe.end);
 	}
 
+	TRY(array2_copy_view(&graph->FF));
 	ARRAY2_ITERATE(&graph->FF, ff) {
 		array_reverse_range(&graph->FF.data, ff.start, ff.end);
 		array_shift_range(&graph->FF.data, -1, ff.start, ff.end);
 	}
 
+	TRY(array_copy_view(&graph->FO));
 	ARRAY_FOR_EACH(&graph->FO, oi, FoldGraphOrder*, fo) {
 		FoldGraphOrder order = *fo;
 		order.o = FOLD_GRAPH_ORDER_INVERT(fo->o);
 		array_set(&graph->FO, oi, &order);
 	}
 
+	TRY(array_copy_view(&graph->NC));
 	ARRAY_FOR_EACH(&graph->NC, ni, Vector3*, nc) {
 		Vector3 normal = vector3_scale(*nc, -1.0);
 		array_set(&graph->NC, ni, &normal);
 	}
 
+	TRY(array2_copy_view(&graph->FT));
 	ARRAY2_ITERATE(&graph->FT, ft) {
 		array_reverse_range(&graph->FT.data, ft.start, ft.end);
 	}
 
+	TRY(array2_copy_view(&graph->FT2));
 	ARRAY2_ITERATE(&graph->FT2, ft2) {
 		array_reverse_range(&graph->FT2.data, ft2.start, ft2.end);
 	}
 
+	TRY(array2_copy_view(&graph->FN));
 	ARRAY2_ITERATE(&graph->FN, fn) {
 		array_reverse_range(&graph->FN.data, fn.start, fn.end);
 	}

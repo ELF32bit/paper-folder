@@ -20,16 +20,19 @@ function command.register(parser)
 	return validate
 end
 
-function command.print_fold_validation_errors(file, is_valid, errors)
-	if is_valid then
-		print(('%s%sVALID%s: %s%s"%s"%s'):format(
-			BOLD, GREEN, RESET, BOLD, WHITE, file, RESET))
-		return
-	end
+function command.print_fold_validation_success(file)
+	print(('%s%sVALID%s: %s%s"%s"%s'):format(
+		BOLD, GREEN, RESET, BOLD,
+		WHITE, file or "STDIN", RESET))
+end
 
+function command.print_fold_validation_failure(file)
 	print(('%s%sINVALID%s: %s%s"%s"%s'):format(
-		BOLD, RED, RESET, BOLD, WHITE, file, RESET))
+		BOLD, RED, RESET, BOLD,
+		WHITE, file or "STDIN", RESET))
+end
 
+function command.print_fold_validation_errors(errors)
 	local frame = 0
 	for line in errors:gmatch("[^\n]+") do
 		if line:sub(1, 7) == "FRAME: " then
@@ -57,8 +60,12 @@ function command.execute(args)
 	local is_valid, errors =
 		command.validate_fold_file(fold, false)
 
-	command.print_fold_validation_errors(args.input
-		or "STDIN", is_valid, errors)
+	if is_valid then
+		command.print_fold_validation_success(args.input)
+	else
+		command.print_fold_validation_failure(args.input)
+		command.print_fold_validation_errors(errors)
+	end
 
 	return fold, fold_error
 end

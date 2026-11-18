@@ -17,8 +17,7 @@ static inline
 Error fold_graph_from_svg(FoldGraph* graph, void* SVG,
 	const struct FoldFileFrameFromSVGParameters* parameters)
 {
-	NSVGimage* image = nsvgParseFromFile((const char*)SVG, "px", 96.0f);
-	TRY_NEW_MEMORY_OR_ERROR(image, return ERROR);
+	const NSVGimage* image = SVG;
 
 	/* ABGR format */
 	const Color B = color_from_rgba8(255, 0, 0, 0);
@@ -88,31 +87,16 @@ Error fold_graph_from_svg(FoldGraph* graph, void* SVG,
 						.b = graph->VC.size + 1
 					};
 
-					TRY_OR_ELSE(
-						array_append(&graph->VC, &A),
-							nsvgDelete(image));
-
-					TRY_OR_ELSE(
-						array_append(&graph->VC, &B),
-							nsvgDelete(image));
-
-					TRY_OR_ELSE(
-						array_append(&graph->EV, &edge),
-							nsvgDelete(image));
-
-					TRY_OR_ELSE(
-						array_append(&graph->EA, &assignment),
-							nsvgDelete(image));
-
-					TRY_OR_ELSE(
-						array_append(&graph->EFA, &fold_angle),
-							nsvgDelete(image));
+					TRY(array_append(&graph->VC, &A));
+					TRY(array_append(&graph->VC, &B));
+					TRY(array_append(&graph->EV, &edge));
+					TRY(array_append(&graph->EA, &assignment));
+					TRY(array_append(&graph->EFA, &fold_angle));
 				}
 			}
 		}
 	}
 
-	nsvgDelete(image);
 	return OK;
 }
 

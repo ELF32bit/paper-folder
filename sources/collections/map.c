@@ -86,18 +86,18 @@ void map_recreate(Map* map) {
 	map_destroy(map);
 }
 
-void map_view(Map* map, const Map* source_map) {
-	if (map == source_map) return;
+void map_view(Map* map, const Map* source) {
+	if (map == source) return;
 	map_destroy(map);
-	array_view(&map->keys, &source_map->keys);
-	array_view(&map->values, &source_map->values);
-	array_view(&map->flags, &source_map->flags);
-	map->size = source_map->size;
-	map->tombstones = source_map->tombstones;
-	map->key_size = source_map->key_size;
-	map->value_size = source_map->value_size;
-	map->hash = source_map->hash;
-	map->equals = source_map->equals;
+	array_view(&map->keys, &source->keys);
+	array_view(&map->values, &source->values);
+	array_view(&map->flags, &source->flags);
+	map->size = source->size;
+	map->tombstones = source->tombstones;
+	map->key_size = source->key_size;
+	map->value_size = source->value_size;
+	map->hash = source->hash;
+	map->equals = source->equals;
 	map->is_view = true;
 }
 
@@ -266,22 +266,22 @@ void* map_get(const Map* map, const void* key,
 	return (void*)default_value;
 }
 
-Error map_copy(Map* map, const Map* source_map) {
-	ASSERT(map->key_size == source_map->key_size);
-	ASSERT(map->value_size == source_map->value_size);
-	ASSERT(map->equals == source_map->equals);
-	ASSERT(map->keys.destroy == source_map->keys.destroy);
-	ASSERT(map->keys.copy == source_map->keys.copy);
-	ASSERT(map->values.destroy == source_map->values.destroy);
-	ASSERT(map->values.copy == source_map->values.copy);
+Error map_copy(Map* map, const Map* source) {
+	ASSERT(map->key_size == source->key_size);
+	ASSERT(map->value_size == source->value_size);
+	ASSERT(map->equals == source->equals);
+	ASSERT(map->keys.destroy == source->keys.destroy);
+	ASSERT(map->keys.copy == source->keys.copy);
+	ASSERT(map->values.destroy == source->values.destroy);
+	ASSERT(map->values.copy == source->values.copy);
 	ASSERT(NOT(map->is_view));
 
 	map_recreate(map);
-	TRY(map_reserve(map, source_map->size));
+	TRY(map_reserve(map, source->size));
 
 	u8 key[map->key_size];
 	u8 value[map->value_size];
-	MapIterator iterator = map_iterator(source_map);
+	MapIterator iterator = map_iterator(source);
 	while (map_iterator_next(&iterator)) {
 		bool key_copied = false;
 		bool value_copied = false;
@@ -310,6 +310,13 @@ Error map_copy(Map* map, const Map* source_map) {
 	}
 
 	return OK;
+}
+
+Error map_copy_view(Map* map) {
+	if NOT(map->is_view) return OK;
+	Map view = *map;
+	map_recreate(map);
+	return map_copy(map, &view);
 }
 
 /* ========================================================================= */

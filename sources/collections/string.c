@@ -103,6 +103,13 @@ Error string_copy_raw(String* string, const char* source) {
 	return OK;
 }
 
+Error string_copy_view(String* string) {
+	if NOT(string->is_view) return OK;
+	String view = *string;
+	string_recreate(string);
+	return string_copy(string, &view);
+}
+
 Error string_from_file(String* string, const char* filename) {
 	string_recreate(string);
 

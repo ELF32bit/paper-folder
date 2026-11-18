@@ -9,22 +9,22 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the SVG source")
-	convert:option("-o --output")
+	convert:option("-o --output"):argname("<file>")
 		:description("path to the FOLD destination")
 
-	convert:option("-f"):argname("UNITS")
-		:target("flatness")
+	convert:option("-f"):argname("<float>")
 		:description("curve flatness")
 		:convert(tonumber)
 		:default("0.5")
 		:show_default(true)
+		:target("flatness")
 
-	convert:option("-l"):argname("UNITS")
-		:target("min_segment_length")
+	convert:option("-l"):argname("<float>")
 		:description("min segment length")
 		:convert(tonumber)
 		:default("1.0")
 		:show_default(true)
+		:target("min_segment_length")
 
 	return convert
 end
@@ -35,45 +35,56 @@ function command.fold_from_svg_file(args)
 
 	fold, fold_error =
 		fold:frame_from_svg_file(args.input, args.frame,
-			args.flatness, args.min_segment_length)
+			args.flatness,
+			args.min_segment_length)
 
 	if fold == nil then error(fold_error, 0) end
 	return fold, fold_error
 end
 
-function command.__create_stdin_file(stdin)
-	return from_obj.__create_stdin_file(stdin)
-end
+function command.fold_from_svg_string(svg, args)
+	local fold, fold_error = FoldFile.new()
+	if fold == nil then error(fold_error, 0) end
 
-function command.fold_from_input_args(args)
-	local fold, fold_error
-	if args.input == nil then
-		local io_svg, io_error = io.read("*a")
-		if io_svg == nil then error(io_error, 0) end
-		local io_path = command.__create_stdin_file(io_svg)
+	fold, fold_error =
+		fold:frame_from_svg_string(svg, args.frame,
+			args.flatness,
+			args.min_segment_length)
 
-		local success
-		args.input = io_path
-		success, fold, fold_error = pcall(
-			command.fold_from_svg_file, args)
-		os.remove(io_path)
-		args.input = nil
-
-		if success == false then error(fold, 0) end
-	else
-		fold, fold_error =
-			command.fold_from_svg_file(args)
-	end
+	if fold == nil then error(fold_error, 0) end
 	return fold, fold_error
 end
 
-local function prepare_arguments(args)
-	args.flatness = math.max(args.flatness, 0.0)
-	args.min_segment_length = math.max(args.min_segment_length, 0.0)
+function command.read_stdin_stream()
+	return from_obj.read_stdin_stream()
+end
+
+function command.__create_stdin_file(io_file)
+	return from_obj.__create_stdin_file(io_file)
+end
+
+function command.__fold_from_svg_stdin_file(io_file, args)
+	args.input = command.__create_stdin_file(io_file)
+
+	local success, fold, fold_error =
+		pcall(command.fold_from_svg_file, args)
+	os.remove(args.input)
+	args.input = nil
+
+	if success == false then error(fold, 0) end
+	return fold, fold_error
+end
+
+function command.fold_from_input_args(args)
+	if args.input == nil then
+		local io_file, _ = command.read_stdin_stream()
+		return command.fold_from_svg_string(io_file, args)
+	else
+		return command.fold_from_svg_file(args)
+	end
 end
 
 function command.execute(args)
-	prepare_arguments(args)
 	local fold, fold_error =
 		command.fold_from_input_args(args)
 	to_fold.fold_to_fold_file(fold, args)

@@ -1,4 +1,13 @@
+-- requires linking Lua statically
 EMBED_LUA_SCRIPTS_AS_BYTECODE = true
+
+local modules_directory = arg[1]
+local modules_header = arg[2]
+local modules_code = arg[3]
+
+local scripts_directory = arg[5]
+local scripts_header = arg[6]
+local scripts_code = arg[7]
 
 local function parse_arguments(string)
 	local arguments = {}
@@ -8,14 +17,7 @@ local function parse_arguments(string)
 	return arguments
 end
 
-local modules_directory = arg[1]
-local modules_header = arg[2]
-local modules_code = arg[3]
 local modules = parse_arguments(arg[4])
-
-local scripts_directory = arg[5]
-local scripts_header = arg[6]
-local scripts_code = arg[7]
 local scripts = parse_arguments(arg[8])
 
 local function parse_lua_module_c_function_name(line)

@@ -24,53 +24,54 @@ struct FoldFrameObjectContext {
 	RNG* rng;
 };
 
-static inline
-void _get_abstract_coordinates(const FoldGraph* graph, f32* x, f32* y, f32* z,
-	const struct FoldFrameObjectContext* object)
-{
-	*x = 0.0; *y = 0.0; *z = 0.0;
-	if (object->parameters->abstract_seed != 0) {
-		f32 size = object->parameters->abstract_size;
-		*x = random_f32_in_range(object->rng, 0.0, size);
-		*y = random_f32_in_range(object->rng, 0.0, size);
-		if (fold_graph_is_3D(graph)) {
-			*z = random_f32_in_range(object->rng, 0.0, size);
-		}
-	}
-}
-
 /* ========================================================================= */
 /* FOLD Graph                                                                */
 /* ========================================================================= */
+
+static inline
+void _get_abstract_coordinates(const FoldGraph* graph,
+	const struct FoldFrameObjectContext* object,
+	real* x, real* y, real* z)
+{
+	*x = 0.0; *y = 0.0; *z = 0.0;
+	if (object->parameters->abstract_seed != 0) {
+		*x = REAL(random_real_in_range(object->rng, 0.0, 1.0));
+		*y = REAL(random_real_in_range(object->rng, 0.0, 1.0));
+		if (fold_graph_is_3D(graph)) {
+			*z = REAL(random_real_in_range(object->rng, 0.0, 1.0));
+		}
+	}
+}
 
 static inline
 Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 	const struct FoldFrameObjectContext* object)
 {
 	FILE* output_file = OBJ;
-	f32 x, y, z;
+	real s = object->parameters->scale;
 
+	real x, y, z;
 	if NOT(object->VC_inherit) {
 		if (fold_graph_is_abstract(graph)) {
 			if (object->parameters->disable_colors &&
 				NOT(object->parameters->enable_weights))
 			{
 				FOR_EACH(_, fold_graph_get_abstract_size(graph)) {
-					_get_abstract_coordinates(graph, &x, &y, &z, object);
+					_get_abstract_coordinates(graph, object, &x, &y, &z);
 					fprintf(output_file, "v "_F" "_F" "_F"\n",
-						(_FF)x, (_FF)y, (_FF)z);
+						(_FF)(x*s), (_FF)(y*s), (_FF)(z*s));
 				}
 			} else if (object->parameters->enable_weights) {
 				FOR_EACH(_, fold_graph_get_abstract_size(graph)) {
-					_get_abstract_coordinates(graph, &x, &y, &z, object);
+					_get_abstract_coordinates(graph, object, &x, &y, &z);
 					fprintf(output_file, "v "_F" "_F" "_F" 1.0\n",
-						(_FF)x, (_FF)y, (_FF)z);
+						(_FF)(x*s), (_FF)(y*s), (_FF)(z*s));
 				}
 			} else {
 				FOR_EACH(_, fold_graph_get_abstract_size(graph)) {
-					_get_abstract_coordinates(graph, &x, &y, &z, object);
+					_get_abstract_coordinates(graph, object, &x, &y, &z);
 					fprintf(output_file, "v "_F" "_F" "_F" 1.0 1.0 1.0\n",
-						(_FF)x, (_FF)y, (_FF)z);
+						(_FF)(x*s), (_FF)(y*s), (_FF)(z*s));
 				}
 			}
 		} else if (fold_graph_is_2D(graph)) {
@@ -80,14 +81,14 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 			{
 				ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
 					fprintf(output_file, "v "_F" "_F" 0.0\n",
-						(_FF)vc->x, (_FF)vc->y);
+						(_FF)(vc->x*s), (_FF)(vc->y*s));
 				}
 			} else if (graph->VP.size == 0 &&
 				object->parameters->enable_weights)
 			{
 				ARRAY_FOR_EACH(&graph->VC, vi, Vector2*, vc) {
 					fprintf(output_file, "v "_F" "_F" 0.0 1.0\n",
-						(_FF)vc->x, (_FF)vc->y);
+						(_FF)(vc->x*s), (_FF)(vc->y*s));
 				}
 			} else if (graph->VP.size != 0 &&
 				object->parameters->enable_weights)
@@ -105,7 +106,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 
 					fprintf(output_file,
 						"v "_F" "_F" 0.0 "_W"\n",
-						(_FF)vc->x, (_FF)vc->y,
+						(_FF)(vc->x*s), (_FF)(vc->y*s),
 						(_WW)w);
 				}
 			} else {
@@ -115,7 +116,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 					Color rgb = color_premultiply_alpha(*vpc);
 					fprintf(output_file,
 						"v "_F" "_F" 0.0 "_W" "_W" "_W"\n",
-						(_FF)vc->x, (_FF)vc->y,
+						(_FF)(vc->x*s), (_FF)(vc->y*s),
 						(_WW)rgb.r, (_WW)rgb.g, (_WW)rgb.b);
 				}
 			}
@@ -126,14 +127,14 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 			{
 				ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
 					fprintf(output_file, "v "_F" "_F" "_F"\n",
-						(_FF)vc->x, (_FF)vc->y, (_FF)vc->z);
+						(_FF)(vc->x*s), (_FF)(vc->y*s), (_FF)(vc->z*s));
 				}
 			} else if (graph->VP.size == 0 &&
 				object->parameters->enable_weights)
 			{
 				ARRAY_FOR_EACH(&graph->VC, vi, Vector3*, vc) {
 					fprintf(output_file, "v "_F" "_F" "_F" 1.0\n",
-						(_FF)vc->x, (_FF)vc->y, (_FF)vc->z);
+						(_FF)(vc->x*s), (_FF)(vc->y*s), (_FF)(vc->z*s));
 				}
 			} else if (graph->VP.size != 0 &&
 				object->parameters->enable_weights)
@@ -151,7 +152,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 
 					fprintf(output_file,
 						"v "_F" "_F" "_F" "_W"\n",
-						(_FF)vc->x, (_FF)vc->y, (_FF)vc->z,
+						(_FF)(vc->x*s), (_FF)(vc->y*s), (_FF)(vc->z*s),
 						(_WW)w);
 				}
 			} else {
@@ -161,7 +162,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 					Color rgb = color_premultiply_alpha(*vpc);
 					fprintf(output_file,
 						"v "_F" "_F" "_F" "_W" "_W" "_W"\n",
-						(_FF)vc->x, (_FF)vc->y, (_FF)vc->z,
+						(_FF)(vc->x*s), (_FF)(vc->y*s), (_FF)(vc->z*s),
 						(_WW)rgb.r, (_WW)rgb.g, (_WW)rgb.b);
 				}
 			}
@@ -203,6 +204,7 @@ Error fold_graph_to_obj(const FoldGraph* graph, void* OBJ,
 						(int)graph->EA.element_size, material);
 				}
 			}
+
 			TRY_ADD(object->VC_offset, ev->a);
 			TRY_ADD(object->VC_offset, ev->b);
 			fprintf(output_file, "l %zu %zu\n",

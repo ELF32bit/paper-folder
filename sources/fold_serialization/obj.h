@@ -4,6 +4,8 @@
 #include "fold_specification/file.h"
 
 struct FoldFileToOBJParameters {
+	real scale;
+	usize abstract_seed;
 	bool enable_groups;
 	bool disable_colors;
 	bool enable_weights;
@@ -12,8 +14,6 @@ struct FoldFileToOBJParameters {
 	bool disable_materials;
 	bool disable_lines;
 	bool disable_faces;
-	usize abstract_seed;
-	f32 abstract_size;
 };
 
 Error fold_file_to_obj(FoldFile* file, void* NULLABLE(OBJ),

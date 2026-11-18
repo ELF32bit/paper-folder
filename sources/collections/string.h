@@ -36,6 +36,7 @@ void string_view(String* string, const String* source);
 #define String_copy string_copy
 Error string_copy(String* string, const String* source);
 Error string_copy_raw(String* string, const char* source);
+Error string_copy_view(String* string);
 
 #define STRING_CREATE_FROM_RAW(string, source) \
 	STRING_CREATE(string); \

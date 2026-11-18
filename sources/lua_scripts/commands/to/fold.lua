@@ -8,7 +8,7 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the FOLD source")
-	convert:option("-o --output")
+	convert:option("-o --output"):argname("<file>")
 		:description("path to the FOLD destination")
 
 	convert:flag("-p --pretty")

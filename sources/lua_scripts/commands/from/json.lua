@@ -7,7 +7,7 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the JSON source")
-	convert:option("-o --output")
+	convert:option("-o --output"):argname("<file>")
 		:description("path to the FOLD destination")
 
 	convert:flag("-p --pretty")
@@ -32,18 +32,19 @@ function command.fold_from_json_string(json, args)
 	return fold, fold_error
 end
 
+function command.read_stdin_stream()
+	local io_file, io_error = io.read("*a")
+	if io_file == nil then error(io_error, 0) end
+	return io_file, io_error
+end
+
 function command.fold_from_input_args(args)
-	local fold, fold_error
 	if args.input == nil then
-		local io_json, io_error = io.read("*a")
-		if io_json == nil then error(io_error, 0) end
-		fold, fold_error =
-			command.fold_from_json_string(io_json, args)
+		local io_file, _ = command.read_stdin_stream()
+		return command.fold_from_json_string(io_file, args)
 	else
-		fold, fold_error =
-			command.fold_from_json_file(args)
+		return command.fold_from_json_file(args)
 	end
-	return fold, fold_error
 end
 
 function command._fold_to_json_file(fold, args)

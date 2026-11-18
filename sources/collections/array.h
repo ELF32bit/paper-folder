@@ -84,6 +84,7 @@ Error array_resize(Array* array, usize size);
 
 #define Array_copy array_copy
 Error array_copy(Array* array, const Array* source);
+Error array_copy_view(Array* array);
 
 Error array_align_capacity(Array* array);
 Error array_shrink_capacity(Array* array);
@@ -111,18 +112,17 @@ Error array_append_array(Array* array, const Array* another);
 void array_remove(Array* array, usize index);
 void array_remove_range(Array* array, usize start, usize end);
 
-void array_reverse_range(Array* array, usize start, usize end);
 void array_reverse(Array* array);
+void array_reverse_range(Array* array, usize start, usize end);
 
-void array_shift_range(Array* array, isize shift, usize start, usize end);
 void array_shift(Array* array, isize shift);
+void array_shift_range(Array* array, isize shift, usize start, usize end);
 
 /* ========================================================================= */
 /* Sorting                                                                   */
 /* ========================================================================= */
 
 void array_sort(Array* array, ArraySortFunction compare);
-
 void array_sort_range(Array* array, usize start, usize end,
 	ArraySortFunction compare);
 

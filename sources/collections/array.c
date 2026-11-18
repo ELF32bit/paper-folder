@@ -188,6 +188,13 @@ Error array_copy(Array* array, const Array* source) {
 	return OK;
 }
 
+Error array_copy_view(Array* array) {
+	if NOT(array->is_view) return OK;
+	Array view = *array;
+	array_recreate(array);
+	return array_copy(array, &view);
+}
+
 Error array_align_capacity(Array* array) {
 	ASSERT(NOT(array->is_view));
 
@@ -350,6 +357,10 @@ void array_remove_range(Array* array, usize start, usize end) {
 	array->size -= (end - start);
 }
 
+void array_reverse(Array* array) {
+	return array_reverse_range(array, 0, array->size);
+}
+
 void array_reverse_range(Array* array, usize start, usize end) {
 	ASSERT(NOT(array->is_view));
 	ASSERT(end <= array->size);
@@ -369,8 +380,8 @@ void array_reverse_range(Array* array, usize start, usize end) {
 	}
 }
 
-void array_reverse(Array* array) {
-	return array_reverse_range(array, 0, array->size);
+void array_shift(Array* array, isize shift) {
+	return array_shift_range(array, shift, 0, array->size);
 }
 
 void array_shift_range(Array* array, isize shift, usize start, usize end) {
@@ -419,10 +430,6 @@ void array_shift_range(Array* array, isize shift, usize start, usize end) {
 	array_reverse_range(array, start, end);
 	array_reverse_range(array, start, start + shift_size);
 	array_reverse_range(array, start + shift_size, end);
-}
-
-void array_shift(Array* array, isize shift) {
-	return array_shift_range(array, shift, 0, array->size);
 }
 
 /* ========================================================================= */

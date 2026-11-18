@@ -55,6 +55,7 @@ usize array2_size_at(const Array2* array2, usize index);
 
 #define Array2_copy array2_copy
 Error array2_copy(Array2* array2, const Array2* source);
+Error array2_copy_view(Array2* array2);
 
 Error array2_append(Array2* array2, const Array* array);
 

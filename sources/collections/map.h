@@ -78,7 +78,7 @@ void map_destroy(Map* map);
 
 void map_recreate(Map* map);
 
-void map_view(Map* map, const Map* source_map);
+void map_view(Map* map, const Map* source);
 
 /* ========================================================================= */
 /* Methods                                                                   */
@@ -121,7 +121,8 @@ void* map_get(const Map* map, const void* key,
 	map_get(map, key, NULL)
 
 #define Map_copy map_copy
-Error map_copy(Map* map, const Map* source_map);
+Error map_copy(Map* map, const Map* source);
+Error map_copy_view(Map* map);
 
 /* ========================================================================= */
 /* Iterators & Traversal                                                     */

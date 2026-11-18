@@ -18,7 +18,7 @@ function command.register(parser)
 	describe:argument("input"):args("?")
 		:description("path to the FOLD source")
 
-	describe:option("-f --frame"):argname("INDEX")
+	describe:option("-f --frame"):argname("<int>")
 		:description("FOLD frame index")
 		:convert(tonumber)
 		:count("*")
@@ -37,8 +37,8 @@ end
 
 function command.print_fold_description(fold, args)
 	print(('%s%sFOLD%s: %s%s"%s"%s'):format(
-		BOLD, BLUE, RESET, BOLD, WHITE,
-		args.input or "STDIN", RESET))
+		BOLD, BLUE, RESET, BOLD,
+		WHITE, args.input or "STDIN", RESET))
 
 	local fold_version = fold:get_version()
 	print(("%sfile_version%s: %s%s%s"):format(
@@ -165,6 +165,7 @@ function command.print_fold_frame_description(fold, frame, index, args)
 	local FE = frame_graph:get_FE_size(frame_graph)
 	local FF = frame_graph:get_FF_size(frame_graph)
 	local FO = frame_graph:get_FO_size(frame_graph)
+
 	local PC = frame_graph:get_PC_size(frame_graph)
 	local TC = frame_graph:get_TC_size(frame_graph)
 	local T2C = frame_graph:get_T2C_size(frame_graph)
@@ -191,6 +192,7 @@ function command.print_fold_frame_description(fold, frame, index, args)
 	if FE ~= 0 then __ = __ .. ("%sFE%s, "):format(BOLD, RESET) end
 	if FF ~= 0 then __ = __ .. ("%sFF%s, "):format(BOLD, RESET) end
 	if FO ~= 0 then __ = __ .. ("%sFO%s, "):format(BOLD, RESET) end
+
 	if PC ~= 0 then __ = __ .. ("%sPC%s, "):format(BOLD, RESET) end
 	if TC ~= 0 then __ = __ .. ("%sTC%s, "):format(BOLD, RESET) end
 	if T2C ~= 0 then __ = __ .. ("%sT2C%s, "):format(BOLD, RESET) end

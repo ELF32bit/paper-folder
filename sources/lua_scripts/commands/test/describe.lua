@@ -5,7 +5,7 @@ function command.register(parser)
 	local test = parser:command(command.name)
 		:description("run describe tests")
 
-	test:option("-f --frame"):argname("INDEX")
+	test:option("-f --frame"):argname("<int>")
 		:description("FOLD frame index")
 		:convert(tonumber)
 		:count("*")
@@ -23,7 +23,7 @@ function command.register(parser)
 end
 
 function command.execute(args)
-	local assets = require("assets")
+	local assets = require("commands.test.assets")
 	for _, file in ipairs(assets.FOLD_FILES) do
 		args.input = file
 		describe.execute(args)

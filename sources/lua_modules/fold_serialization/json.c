@@ -36,7 +36,8 @@ int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
 	} \
 \
 	yyjson_mut_doc_set_root(json, object); \
-	Error result = fold_##fold##_to_json(wrapper_property, json, object); \
+	Error result = fold_##fold##_to_json( \
+		wrapper_property, json, object); \
 \
 	if IS_ERROR(result) { \
 		yyjson_mut_doc_free(json); \
@@ -47,8 +48,8 @@ int l_fold_##fold##_to_json_file_meta(lua_State* L) { \
 	} \
 \
 	yyjson_write_err json_error; \
-	bool success = yyjson_mut_write_file(output_file_path, json, \
-		flags, NULL, &json_error); \
+	bool success = yyjson_mut_write_file(output_file_path, \
+		json, flags, NULL, &json_error); \
 	yyjson_mut_doc_free(json); \
 \
 	if NOT(success) { \
@@ -84,7 +85,8 @@ int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
 	} \
 \
 	yyjson_mut_doc_set_root(json, object); \
-	Error result = fold_##fold##_to_json(wrapper_property, json, object); \
+	Error result = fold_##fold##_to_json( \
+		wrapper_property, json, object); \
 \
 	if IS_ERROR(result) { \
 		yyjson_mut_doc_free(json); \
@@ -94,7 +96,7 @@ int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
 		return 2; \
 	} \
 \
-	size_t string_length; \
+	usize string_length; \
 	yyjson_write_err json_error; \
 	char* string = yyjson_mut_write_opts(json, \
 		flags, NULL, &string_length, &json_error); \
@@ -108,10 +110,16 @@ int l_fold_##fold##_to_json_string_meta(lua_State* L) { \
 \
 	lua_pushlstring(L, string, string_length); \
 	lua_pushnil(L); \
+\
 	free(string); \
 	return 2; \
 }
 
-GENERATE_FUNCTIONS(FoldFile, file, file, file, FOLD_FILE_METATABLE)
-GENERATE_FUNCTIONS(LuaFoldFrame, frame, wrapper, wrapper->frame, FOLD_FRAME_METATABLE)
-GENERATE_FUNCTIONS(LuaFoldGraph, graph, wrapper, wrapper->graph, FOLD_GRAPH_METATABLE)
+GENERATE_FUNCTIONS(FoldFile, file,
+	file, file, FOLD_FILE_METATABLE)
+
+GENERATE_FUNCTIONS(LuaFoldFrame, frame,
+	wrapper, wrapper->frame, FOLD_FRAME_METATABLE)
+
+GENERATE_FUNCTIONS(LuaFoldGraph, graph,
+	wrapper, wrapper->graph, FOLD_GRAPH_METATABLE)

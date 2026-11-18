@@ -128,6 +128,13 @@ Error array2_copy(Array2* array2, const Array2* source) {
 	return OK;
 }
 
+Error array2_copy_view(Array2* array2) {
+	if NOT(array2->is_view) return OK;
+	Array2 view = *array2;
+	array2_recreate(array2);
+	return array2_copy(array2, &view);
+}
+
 Error array2_append(Array2* array2, const Array* array) {
 	ASSERT(array2->data.element_size == array->element_size);
 	ASSERT(array2->data.destroy == array->destroy);

@@ -13,16 +13,16 @@ int l_fold_file_to_obj_file_meta(lua_State* L) {
 	const char* output_file_path = luaL_optstring(L, 2, NULL);
 
 	struct FoldFileToOBJParameters parameters;
-	parameters.enable_groups = lua_toboolean(L, 3);
-	parameters.disable_colors = lua_toboolean(L, 4);
-	parameters.enable_weights = lua_toboolean(L, 5);
-	parameters.disable_textures = lua_toboolean(L, 6);
-	parameters.disable_normals = lua_toboolean(L, 7);
-	parameters.disable_materials = lua_toboolean(L, 8);
-	parameters.disable_lines = lua_toboolean(L, 9);
-	parameters.disable_faces = lua_toboolean(L, 10);
-	parameters.abstract_seed = USIZE(luaL_optinteger(L, 11, 0));
-	parameters.abstract_size = F32(luaL_optnumber(L, 12, 100.0));
+	parameters.scale = luaL_optnumber(L, 3, 1.0);
+	parameters.abstract_seed = luaL_optinteger(L, 4, 0);
+	parameters.enable_groups = lua_toboolean(L, 5);
+	parameters.disable_colors = lua_toboolean(L, 6);
+	parameters.enable_weights = lua_toboolean(L, 7);
+	parameters.disable_textures = lua_toboolean(L, 8);
+	parameters.disable_normals = lua_toboolean(L, 9);
+	parameters.disable_materials = lua_toboolean(L, 10);
+	parameters.disable_lines = lua_toboolean(L, 11);
+	parameters.disable_faces = lua_toboolean(L, 12);
 
 	Error result = fold_file_to_obj(file,
 		(void*)output_file_path, &parameters);

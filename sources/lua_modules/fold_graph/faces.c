@@ -49,6 +49,15 @@ int l_fold_graph_FV_triangulate_meta(lua_State* L) {
 
 int l_fold_graph_FV_flip_meta(lua_State* L) {
 	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE);
-	fold_graph_FV_flip(wrapper->graph);
-	return 0;
+
+	Error result = fold_graph_FV_flip(wrapper->graph);
+	if IS_ERROR(result) {
+		lua_pushboolean(L, false);
+		lua_pushstring(L, ERROR_STRING(result));
+		return 2;
+	}
+
+	lua_pushboolean(L, true);
+	lua_pushnil(L);
+	return 2;
 }

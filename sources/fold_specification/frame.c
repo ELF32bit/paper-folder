@@ -50,49 +50,63 @@ void fold_frame_recreate(FoldFrame* frame) {
 /* ========================================================================= */
 
 static
-Error fold_frame_metadata_copy(
-	FoldFrameMetadata* metadata, const FoldFrameMetadata* source)
+Error fold_frame_metadata_copy(FoldFrameMetadata* metadata,
+	const FoldFrameMetadata* source)
 {
 	metadata->is_simulated = source->is_simulated;
 	return OK;
 }
 
 Error fold_frame_copy(FoldFrame* frame, const FoldFrame* source) {
-	TRY(string_copy(&frame->author, &source->author));
-	TRY(string_copy(&frame->title, &source->title));
-	TRY(string_copy(&frame->description, &source->description));
-	TRY(array_copy(&frame->classes, &source->classes));
-	TRY(array_copy(&frame->attributes, &source->attributes));
-	TRY(string_copy(&frame->unit, &source->unit));
-	TRY(fold_graph_copy(&frame->graph, &source->graph));
+#define _GENERATE(P, type) \
+	TRY(type##_copy(&frame->P, &source->P));
+
+	_GENERATE(author, string)
+	_GENERATE(title, string)
+	_GENERATE(description, string)
+	_GENERATE(classes, array)
+	_GENERATE(attributes, array)
+	_GENERATE(unit, string)
+
+	TRY(fold_graph_copy(
+		&frame->graph, &source->graph));
+
 	frame->parent = source->parent;
 	frame->inherit = source->inherit;
-	TRY(fold_frame_metadata_copy(&frame->metadata, &source->metadata));
+
+#undef _GENERATE
+	TRY(fold_frame_metadata_copy(
+		&frame->metadata, &source->metadata));
+
 	return OK;
 }
 
 static
-void fold_frame_metadata_inherit(
-	FoldFrameMetadata* metadata, const FoldFrameMetadata* source)
+void fold_frame_metadata_inherit(FoldFrameMetadata* metadata,
+	const FoldFrameMetadata* source)
 {
 	metadata->is_simulated = source->is_simulated;
 }
 
 void fold_frame_inherit(FoldFrame* frame, const FoldFrame* source) {
-	if (frame->author.is_view || frame->author.length == 0)
-		string_view(&frame->author, &source->author);
-	if (frame->title.is_view || frame->title.length == 0)
-		string_view(&frame->title, &source->title);
-	if (frame->description.is_view || frame->description.length == 0)
-		string_view(&frame->description, &source->description);
-	if (frame->classes.is_view || frame->classes.size == 0)
-		array_view(&frame->classes, &source->classes);
-	if (frame->attributes.is_view || frame->attributes.size == 0)
-		array_view(&frame->attributes, &source->attributes);
-	if (frame->unit.is_view || frame->unit.length == 0)
-		string_view(&frame->unit, &source->unit);
-	fold_graph_inherit(&frame->graph, &source->graph);
-	fold_frame_metadata_inherit(&frame->metadata, &source->metadata);
+#define _GENERATE(P, type, s) \
+	if (frame->P.is_view || frame->P.s == 0) { \
+		type##_view(&frame->P, &source->P); \
+	}
+
+	_GENERATE(author, string, length)
+	_GENERATE(title, string, length)
+	_GENERATE(description, string, length)
+	_GENERATE(classes, array, size)
+	_GENERATE(attributes, array, size)
+	_GENERATE(unit, string, length)
+
+	fold_graph_inherit(
+		&frame->graph, &source->graph);
+
+#undef _GENERATE
+	fold_frame_metadata_inherit(
+		&frame->metadata, &source->metadata);
 }
 
 static
@@ -108,8 +122,12 @@ bool fold_frame_is_inherited(const FoldFrame* frame) {
 	if (frame->classes.is_view) return true;
 	if (frame->attributes.is_view) return true;
 	if (frame->unit.is_view) return true;
+
 	if (fold_graph_is_inherited(&frame->graph)) return true;
-	if (fold_frame_metadata_is_inherited(&frame->metadata)) return true;
+	if (fold_frame_metadata_is_inherited(&frame->metadata)) {
+		return true;
+	}
+
 	return false;
 }
 

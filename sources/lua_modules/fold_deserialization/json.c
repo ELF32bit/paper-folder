@@ -30,7 +30,8 @@ int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
 	} \
 \
 	yyjson_val* object = yyjson_doc_get_root(json); \
-	Error result = fold_##fold##_from_json(wrapper_property, json, object); \
+	Error result = fold_##fold##_from_json( \
+		wrapper_property, json, object); \
 	yyjson_doc_free(json); \
 \
 	if IS_ERROR(result) { \
@@ -46,13 +47,16 @@ int l_fold_##fold##_from_json_file_meta(lua_State* L) { \
 } \
 \
 int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
-	size_t string_length; \
 	Fold* wrapper = luaL_checkudata(L, 1, METATABLE); \
-	const char* string = luaL_checklstring(L, 2, &string_length); \
+\
+	String input_string; \
+	input_string.data = TRY_SAFE((char*) \
+		luaL_checklstring(L, 2, &input_string.length)); \
 \
 	yyjson_read_err json_errors; \
-	yyjson_doc* json = yyjson_read_opts((char*)string, string_length, \
-		JSON_READ_FLAGS, NULL, &json_errors); \
+	yyjson_doc* json = yyjson_read_opts( \
+		TRY_SAFE(input_string.data), input_string.length, \
+			JSON_READ_FLAGS, NULL, &json_errors); \
 \
 	if (json == NULL) { \
 		lua_pushnil(L); \
@@ -61,7 +65,8 @@ int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 	} \
 \
 	yyjson_val* object = yyjson_doc_get_root(json); \
-	Error result = fold_##fold##_from_json(wrapper_property, json, object); \
+	Error result = fold_##fold##_from_json( \
+		wrapper_property, json, object); \
 	yyjson_doc_free(json); \
 \
 	if IS_ERROR(result) { \
@@ -76,6 +81,11 @@ int l_fold_##fold##_from_json_string_meta(lua_State* L) { \
 	return 2; \
 }
 
-GENERATE_FUNCTIONS(FoldFile, file, file, file, FOLD_FILE_METATABLE)
-GENERATE_FUNCTIONS(LuaFoldFrame, frame, wrapper, wrapper->frame, FOLD_FRAME_METATABLE)
-GENERATE_FUNCTIONS(LuaFoldGraph, graph, wrapper, wrapper->graph, FOLD_GRAPH_METATABLE)
+GENERATE_FUNCTIONS(FoldFile, file,
+	file, file, FOLD_FILE_METATABLE)
+
+GENERATE_FUNCTIONS(LuaFoldFrame, frame,
+	wrapper, wrapper->frame, FOLD_FRAME_METATABLE)
+
+GENERATE_FUNCTIONS(LuaFoldGraph, graph,
+	wrapper, wrapper->graph, FOLD_GRAPH_METATABLE)

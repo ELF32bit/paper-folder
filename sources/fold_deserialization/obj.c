@@ -59,9 +59,9 @@ void _tiny_obj_vertex(void* context,
 	if IS_ERROR(c->error) return;
 
 	Vector3 vc;
-	vc.x = REAL(x);
-	vc.y = REAL(y);
-	vc.z = REAL(z);
+	vc.x = REAL(x) * c->parameters->scale;
+	vc.y = REAL(y) * c->parameters->scale;
+	vc.z = REAL(z) * c->parameters->scale;
 
 	FoldFrame* key_frame = fold_file_get_key_frame(c->file);
 	c->error = array_append(&key_frame->graph.VC, &vc);
@@ -96,9 +96,9 @@ void _tiny_obj_vertex_color(void* context,
 	if IS_ERROR(c->error) return;
 
 	Vector3 vc;
-	vc.x = REAL(x);
-	vc.y = REAL(y);
-	vc.z = REAL(z);
+	vc.x = REAL(x) * c->parameters->scale;
+	vc.y = REAL(y) * c->parameters->scale;
+	vc.z = REAL(z) * c->parameters->scale;
 
 	if (has_color) c->has_vertex_colors = true;
 	FoldFrame* key_frame = fold_file_get_key_frame(c->file);
@@ -296,7 +296,7 @@ int _fold_frame_sort_ascending(const void* a, const void* b) {
 Error fold_file_from_obj(FoldFile* file, void* OBJ,
 	const struct FoldFileFromOBJParameters* parameters)
 {
-	const char* input_file_path = OBJ;
+	String* input_string = OBJ;
 	TRY(fold_file_recreate(file));
 
 	MAP_CREATE(unique_paint_colors, usize, usize);
@@ -341,14 +341,9 @@ Error fold_file_from_obj(FoldFile* file, void* OBJ,
 	callbacks.mtllib_cb = NULL;
 	callbacks.point_cb = NULL;
 
-	STRING_CREATE_FROM_FILE_OR_ELSE(input_file, input_file_path,
-		map_destroy(context.unique_material_names);
-		map_destroy(context.unique_paint_colors));
-
-	tobj_result result = tobj_load_obj_with_callbacks((const u8*)
-		input_file.data, TRY_SAFE(input_file.length + 1),
+	tobj_result result = tobj_load_obj_with_callbacks(
+		(const u8*)input_string->data, input_string->length,
 			&callbacks, &configuration, NULL);
-	string_destroy(&input_file);
 
 	map_destroy(context.unique_paint_colors);
 	map_destroy(context.unique_material_names);

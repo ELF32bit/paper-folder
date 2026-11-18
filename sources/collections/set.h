@@ -57,7 +57,7 @@ void set_destroy(Set* set);
 
 void set_recreate(Set* set);
 
-void set_view(Set* set, const Set* source_set);
+void set_view(Set* set, const Set* source);
 
 /* ========================================================================= */
 /* Methods                                                                   */
@@ -92,7 +92,8 @@ bool set_remove(Set* set, const void* key);
 bool set_has(const Set* set, const void* key);
 
 #define Set_copy set_copy
-Error set_copy(Set* set, const Set* source_set);
+Error set_copy(Set* set, const Set* source);
+Error set_copy_view(Set* set);
 
 /* ========================================================================= */
 /* Iterators & Traversal                                                     */

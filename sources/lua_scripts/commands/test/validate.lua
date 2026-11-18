@@ -9,7 +9,7 @@ function command.register(parser)
 end
 
 function command.execute(args)
-	local assets = require("assets")
+	local assets = require("commands.test.assets")
 	for _, file in ipairs(assets.FOLD_FILES) do
 		args.input = file
 		validate.execute(args)
