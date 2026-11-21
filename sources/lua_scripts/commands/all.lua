@@ -1,5 +1,6 @@
 local module = {}
 local argparse = require("argparse")
+local argformat = require("argformat")
 
 local commands = {
 	(require("commands.generate")),
@@ -13,6 +14,7 @@ local commands = {
 	(require("commands.to.obj")),
 	(require("commands.describe")),
 	(require("commands.validate")),
+	(require("commands.annotate")),
 	(require("commands.test.describe")),
 	(require("commands.test.validate")),
 }
@@ -20,9 +22,10 @@ local commands = {
 local function create_parser()
 	local parser = argparse("paper-folder")
 		:description("powerful origami toolkit")
+		:require_command(true)
 
-	parser:require_command(true)
-
+	argformat.enable_custom_usage_message(parser)
+	argformat.enable_custom_help_message(parser)
 	return parser
 end
 
@@ -30,6 +33,9 @@ local function register_commands(parser)
 	local groups, order = {}, {}
 	for _, command in ipairs(commands) do
 		local object = command.register(parser)
+		argformat.enable_custom_usage_message(object)
+		argformat.enable_custom_help_message(object)
+
 		local group_name = command.group or "Other Commands"
 		if groups[group_name] == nil then
 			groups[group_name] = { object }

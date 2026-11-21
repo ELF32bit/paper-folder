@@ -40,11 +40,6 @@ void fold_frame_destroy(FoldFrame* frame) {
 	fold_frame_metadata_destroy(&frame->metadata);
 }
 
-void fold_frame_recreate(FoldFrame* frame) {
-	fold_frame_destroy(frame);
-	fold_frame_create(frame);
-}
-
 /* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */

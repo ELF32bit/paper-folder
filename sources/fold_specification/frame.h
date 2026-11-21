@@ -72,7 +72,11 @@ void fold_frame_create(FoldFrame* frame);
 #define FoldFrame_destroy fold_frame_destroy
 void fold_frame_destroy(FoldFrame* frame);
 
-void fold_frame_recreate(FoldFrame* frame);
+static inline
+void fold_frame_recreate(FoldFrame* frame) {
+	fold_frame_destroy(frame);
+	fold_frame_create(frame);
+}
 
 /* ========================================================================= */
 /* Methods                                                                   */

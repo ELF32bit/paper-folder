@@ -44,6 +44,7 @@ int l_fold_file_from_obj_file_meta(lua_State* L) {
 
 	struct FoldFileFromOBJParameters parameters;
 	_fold_file_from_obj_parameters_create(L, &parameters);
+
 	result = fold_file_from_obj(file, (void*)
 		(&input_string), &parameters);
 	string_destroy(&input_string);
@@ -69,6 +70,7 @@ int l_fold_file_from_obj_string_meta(lua_State* L) {
 
 	struct FoldFileFromOBJParameters parameters;
 	_fold_file_from_obj_parameters_create(L, &parameters);
+
 	Error result = fold_file_from_obj(file, (void*)
 		(&input_string), &parameters);
 

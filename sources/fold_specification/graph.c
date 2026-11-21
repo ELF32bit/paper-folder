@@ -82,11 +82,6 @@ void fold_graph_destroy(FoldGraph* graph) {
 	fold_graph_extensions_destroy(&graph->extensions);
 }
 
-void fold_graph_recreate(FoldGraph* graph) {
-	fold_graph_destroy(graph);
-	fold_graph_create(graph);
-}
-
 /* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */

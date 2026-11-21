@@ -5,19 +5,22 @@ function command.register(parser)
 	local test = parser:command(command.name)
 		:description("run describe tests")
 
-	test:option("-f --frame"):argname("<int>")
-		:description("FOLD frame index")
+	test:group("Options",
+		test:option("-f --frame"):argname("<int>")
+		:description("FOLD frames (multiple)")
 		:convert(tonumber)
 		:count("*")
+		:target("frames"),
 
-	test:flag("-i --inherit")
-		:description("inherit frames")
+		test:flag("-i --inherit")
+		:description("inherit frames"),
 
-	test:flag("-a --all")
-		:description("describe all frames")
+		test:flag("-a --all")
+		:description("describe all frames"),
 
-	test:flag("-r --reverse")
+		test:flag("-r --reverse")
 		:description("reverse frames description")
+	)
 
 	return test
 end

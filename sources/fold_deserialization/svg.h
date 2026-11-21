@@ -4,7 +4,10 @@
 #include "fold_specification/file.h"
 
 struct FoldFileFrameFromSVGParameters {
-	real flatness, min_segment_length;
+	const char* image_units;
+	f32 image_dpi;
+	real flatness;
+	real min_segment_length;
 };
 
 /* TODO: Need very complex, BVH2 accelerated, Bezier curve intersector */

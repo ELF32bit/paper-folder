@@ -11,7 +11,12 @@
 int l_fold_file_frame_to_svg_file_meta(lua_State* L) {
 	FoldFile* file = luaL_checkudata(L, 1, FOLD_FILE_METATABLE);
 	const char* output_file_path = luaL_optstring(L, 2, NULL);
-	usize frame_index = luaL_optinteger(L, 3, 0);
+	usize frame_index = USIZE(luaL_optinteger(L, 3, 0));
+	if NOT(frame_index < file->frames.size) {
+		lua_pushboolean(L, false);
+		lua_pushnil(L);
+		return 2;
+	}
 
 	struct FoldFileFrameToSVGParameters parameters;
 	fold_file_frame_to_svg_parameters_default(&parameters);

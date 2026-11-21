@@ -4,8 +4,6 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-int l_definitions_colors_all(lua_State* L);
-
 int l_definitions_colors_RESET(lua_State* L);
 int l_definitions_colors_BOLD(lua_State* L);
 int l_definitions_colors_FAINT(lua_State* L);

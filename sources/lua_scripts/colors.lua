@@ -1,3 +1,25 @@
 local COLORS = require("definitions.colors_C")
-local colors = COLORS.all()
-return colors
+
+return {
+	["RESET"] = COLORS.RESET(),
+	["BOLD"] = COLORS.BOLD(),
+	["FAINT"] = COLORS.FAINT(),
+
+	["BLACK"] = COLORS.BLACK(),
+	["MAROON"] = COLORS.MAROON(),
+	["GREEN"] = COLORS.GREEN(),
+	["OLIVE"] = COLORS.OLIVE(),
+	["NAVY"] = COLORS.NAVY(),
+	["PURPLE"] = COLORS.PURPLE(),
+	["TEAL"] = COLORS.TEAL(),
+	["SILVER"] = COLORS.SILVER(),
+
+	["GRAY"] = COLORS.GRAY(),
+	["RED"] = COLORS.RED(),
+	["LIME"] = COLORS.LIME(),
+	["YELLOW"] = COLORS.YELLOW(),
+	["BLUE"] = COLORS.BLUE(),
+	["FUCHSIA"] = COLORS.FUCHSIA(),
+	["AQUA"] = COLORS.AQUA(),
+	["WHITE"] = COLORS.WHITE(),
+}

@@ -99,6 +99,63 @@ int l_fold_frame_get_inherit_meta(lua_State* L) {
 }
 
 /* ========================================================================= */
+/* Setters                                                                   */
+/* ========================================================================= */
+
+#define GENERATE_SET_STRING(property) \
+int l_fold_frame_set_##property##_meta(lua_State* L) { \
+	LuaFoldFrame* wrapper = luaL_checkudata(L, 1, FOLD_FRAME_METATABLE); \
+	const char* property = luaL_checkstring(L, 2); \
+\
+	Error result = string_copy_raw(&wrapper->frame->property, property); \
+	if IS_ERROR(result) { \
+		lua_pushboolean(L, false); \
+		lua_pushstring(L, ERROR_STRING(result)); \
+		return 2; \
+	} \
+\
+	lua_pushboolean(L, true); \
+	lua_pushnil(L); \
+	return 2; \
+}
+
+#define GENERATE_SET_STRING_ARRAY(property) \
+int l_fold_frame_set_##property##_meta(lua_State* L) { \
+	LuaFoldFrame* wrapper = luaL_checkudata(L, 1, FOLD_FRAME_METATABLE); \
+	luaL_checktype(L, 2, LUA_TTABLE); \
+\
+	array_recreate(&wrapper->frame->property); \
+	FOR_EACH(index, lua_rawlen(L, 2)) { \
+		lua_rawgeti(L, 2, TRY_SAFE(index + 1)); \
+		const char* property = luaL_checkstring(L, -1); \
+\
+		STRING_BUFFER_RAW(property, buffer, \
+			wrapper->frame->property.element_size); \
+\
+		Error result = array_append(&wrapper->frame->property, &buffer); \
+		if IS_ERROR(result) { \
+			lua_pop(L, 1); \
+			lua_pushboolean(L, false); \
+			lua_pushstring(L, ERROR_STRING(result)); \
+			return 2; \
+		} \
+\
+		lua_pop(L, 1); \
+	} \
+\
+	lua_pushboolean(L, true); \
+	lua_pushnil(L); \
+	return 2; \
+}
+
+GENERATE_SET_STRING(author)
+GENERATE_SET_STRING(title)
+GENERATE_SET_STRING(description)
+GENERATE_SET_STRING_ARRAY(classes)
+GENERATE_SET_STRING_ARRAY(attributes)
+GENERATE_SET_STRING(unit)
+
+/* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */
 

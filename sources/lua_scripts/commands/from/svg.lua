@@ -9,22 +9,37 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the SVG source")
-	convert:option("-o --output"):argname("<file>")
-		:description("path to the FOLD destination")
 
-	convert:option("-f"):argname("<float>")
+	convert:group("Options",
+		convert:option("-o --output"):argname("<file>")
+		:description("path to the FOLD destination"),
+
+		convert:option("-u --units"):argname("<string>")
+		:description("SVG pt|pc|mm|cm|in units")
+		:default("px")
+		:show_default(true)
+		:target("image_units"),
+
+		convert:option("-d --dpi"):argname("<float>")
+		:description("SVG dots per inch")
+		:default("96.0")
+		:show_default(true)
+		:target("image_dpi"),
+
+		convert:option("-f"):argname("<float>")
 		:description("curve flatness")
 		:convert(tonumber)
 		:default("0.5")
 		:show_default(true)
-		:target("flatness")
+		:target("flatness"),
 
-	convert:option("-l"):argname("<float>")
+		convert:option("-l"):argname("<float>")
 		:description("min segment length")
 		:convert(tonumber)
 		:default("1.0")
 		:show_default(true)
 		:target("min_segment_length")
+	)
 
 	return convert
 end
@@ -35,6 +50,7 @@ function command.fold_from_svg_file(args)
 
 	fold, fold_error =
 		fold:frame_from_svg_file(args.input, args.frame,
+			args.image_units, args.image_dpi,
 			args.flatness,
 			args.min_segment_length)
 
@@ -48,6 +64,7 @@ function command.fold_from_svg_string(svg, args)
 
 	fold, fold_error =
 		fold:frame_from_svg_string(svg, args.frame,
+			args.image_units, args.image_dpi,
 			args.flatness,
 			args.min_segment_length)
 

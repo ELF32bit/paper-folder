@@ -44,7 +44,12 @@ Error fold_file_create(FoldFile* file);
 #define FoldFile_destroy fold_file_destroy
 void fold_file_destroy(FoldFile* file);
 
-Error fold_file_recreate(FoldFile* file);
+static inline
+Error fold_file_recreate(FoldFile* file) {
+	fold_file_destroy(file);
+	TRY(fold_file_create(file));
+	return OK;
+}
 
 /* ========================================================================= */
 /* Methods                                                                   */

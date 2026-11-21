@@ -7,11 +7,14 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the FOLD source")
-	convert:option("-o --output"):argname("<file>")
-		:description("path to the JSON destination")
 
-	convert:flag("-p --pretty")
+	convert:group("Options",
+		convert:option("-o --output"):argname("<file>")
+		:description("path to the JSON destination"),
+
+		convert:flag("-p --pretty")
 		:description("beautify the JSON output")
+	)
 
 	return convert
 end

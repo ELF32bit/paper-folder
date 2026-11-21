@@ -43,9 +43,22 @@ int l_fold_file_get_author_meta(lua_State* L);
 int l_fold_file_get_title_meta(lua_State* L);
 int l_fold_file_get_description_meta(lua_State* L);
 int l_fold_file_get_classes_meta(lua_State* L);
+
+int l_fold_file_get_frame_meta(lua_State* L);
 int l_fold_file_get_frames_meta(lua_State* L);
 int l_fold_file_get_frames_size_meta(lua_State* L);
 int l_fold_file_get_key_frame_meta(lua_State* L);
+
+/* ========================================================================= */
+/* Setters                                                                   */
+/* ========================================================================= */
+
+int l_fold_file_set_version_meta(lua_State* L);
+int l_fold_file_set_creator_meta(lua_State* L);
+int l_fold_file_set_author_meta(lua_State* L);
+int l_fold_file_set_title_meta(lua_State* L);
+int l_fold_file_set_description_meta(lua_State* L);
+int l_fold_file_set_classes_meta(lua_State* L);
 
 /* ========================================================================= */
 /* Methods                                                                   */

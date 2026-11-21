@@ -28,12 +28,6 @@ void fold_file_destroy(FoldFile* file) {
 	array_destroy(&file->frames);
 }
 
-Error fold_file_recreate(FoldFile* file) {
-	fold_file_destroy(file);
-	TRY(fold_file_create(file));
-	return OK;
-}
-
 /* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */

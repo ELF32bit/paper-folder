@@ -278,13 +278,27 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 				"stroke=\"%s\" "
 				"stroke-width=\""_F"\" "
 				"stroke-opacity=\""_F"\" "
-				"stroke-linecap=\"round\""
+				"stroke-linecap=\"round\" "
+				"stroke-dasharray=\"%s\""
 				"/>\n",
 					(_FF)x1, (_FF)y1,
 					(_FF)x2, (_FF)y2,
 					color,
 					(_FF)(width / svg_scale),
-					(_FF)opacity);
+					(_FF)opacity,
+						(assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY)
+							? "none"
+						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN)
+							? "none"
+						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY)
+							? "none"
+						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_FLAT)
+							? "none"
+						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_CUT)
+							? "none"
+						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN)
+							? "none"
+						: "none");
 		}
 	}
 

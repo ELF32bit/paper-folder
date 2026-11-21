@@ -18,19 +18,22 @@ function command.register(parser)
 	describe:argument("input"):args("?")
 		:description("path to the FOLD source")
 
-	describe:option("-f --frame"):argname("<int>")
-		:description("FOLD frame index")
+	describe:group("Options",
+		describe:option("-f --frame"):argname("<int>")
+		:description("FOLD frames (multiple)")
 		:convert(tonumber)
 		:count("*")
+		:target("frames"),
 
-	describe:flag("-i --inherit")
-		:description("inherit frames")
+		describe:flag("-i --inherit")
+		:description("inherit frames"),
 
-	describe:flag("-a --all")
-		:description("describe all frames")
+		describe:flag("-a --all")
+		:description("describe all frames"),
 
-	describe:flag("-r --reverse")
+		describe:flag("-r --reverse")
 		:description("reverse frames description")
+	)
 
 	return describe
 end
@@ -83,18 +86,21 @@ function command.print_fold_description(fold, args)
 		io.write("\n")
 	end
 
-	local fold_frames = fold:get_frames()
-	if #fold_frames > 1 then
+	local fold_frames_size = fold:get_frames_size()
+	if fold_frames_size > 1 then
 		print(("%sfile_frames%s: %s%s%s"):format(
-			BLUE, RESET, BOLD, #fold_frames, RESET))
+			BLUE, RESET, BOLD, fold_frames_size, RESET))
 	end
+end
 
-	return fold_frames
+function command.print_fold_frame_range_error(index, size)
+	print(("%s%sERROR%s: %sframe %s is not within 0-%s range%s")
+		:format(BOLD, RED, RESET, RED, index, (size - 1), RESET))
 end
 
 function command.print_fold_frame_description(fold, frame, index, args)
 	print(("%s%sframe:%d%s"):format(
-		BOLD, GRAY, index - 1, RESET))
+		BOLD, GRAY, index, RESET))
 
 	local frame_author = frame:get_author(frame)
 	if frame_author ~= "" then
@@ -227,10 +233,10 @@ end
 function command.execute(args)
 	local fold, fold_error =
 		from_fold.fold_from_input_args(args)
+	local fold_frames_size = fold:get_frames_size()
 
 	if not args.reverse then
-		local fold_frames =
-			command.print_fold_description(fold, args)
+		command.print_fold_description(fold, args)
 
 		if args.inherit then
 			args["_is_valid"] =
@@ -238,20 +244,18 @@ function command.execute(args)
 		end
 
 		if args.all then
-			for index, frame in ipairs(fold_frames) do
-				command.print_fold_frame_description(
-					fold, frame, index, args)
+			for index = 0, (fold_frames_size - 1) do
+				command.print_fold_frame_description(fold,
+					fold:get_frame(index), index, args)
 			end
-		elseif args.frame and #args.frame ~= 0 then
-			for _, index in ipairs(args.frame) do
-				local frame = fold_frames[index + 1]
-				if frame ~= nil then
-					command.print_fold_frame_description(
-						fold, frame, index + 1, args)
+		elseif type(args.frames) == "table" then
+			for _, index in ipairs(args.frames) do
+				if index < 0 or index >= fold_frames_size then
+					command.print_fold_frame_range_error(
+						index, fold_frames_size)
 				else
-					print(("%s%sERROR%s: %sframe %s is not within 0-%s range%s")
-						:format(BOLD, RED, RESET, RED, index,
-							#fold_frames - 1, RESET))
+					command.print_fold_frame_description(fold,
+						fold:get_frame(index), index, args)
 				end
 			end
 		end
@@ -261,24 +265,20 @@ function command.execute(args)
 				(fold:validate_inherit(false))
 		end
 
-		local fold_frames = fold:get_frames()
 		if args.all then
-			for index = #fold_frames, 1, -1 do
-				local frame = fold_frames[index]
-				command.print_fold_frame_description(
-					fold, frame, index, args)
+			for index = (fold_frames_size - 1), 0, -1 do
+				command.print_fold_frame_description(fold,
+					fold:get_frame(index), index, args)
 			end
-		elseif args.frame and #args.frame ~= 0 then
-			for i = #args.frame, 1, -1 do
-				local index = args.frame[i]
-				local frame = fold_frames[index + 1]
-				if frame ~= nil then
-					command.print_fold_frame_description(
-						fold, frame, index + 1, args)
+		elseif type(args.frames) == "table" then
+			for i = #args.frames, 1, -1 do
+				local index = args.frames[i]
+				if index < 0 or index >= fold_frames_size then
+					command.print_fold_frame_range_error(
+						index, fold_frames_size)
 				else
-					print(("%s%sERROR%s: %sframe %s is not within 0-%s range%s")
-						:format(BOLD, RED, RESET, RED, index,
-							#fold_frames - 1, RESET))
+					command.print_fold_frame_description(fold,
+						fold:get_frame(index), index, args)
 				end
 			end
 		end

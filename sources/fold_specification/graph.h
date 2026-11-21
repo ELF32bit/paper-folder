@@ -144,7 +144,11 @@ void fold_graph_create(FoldGraph* graph);
 #define FoldGraph_destroy fold_graph_destroy
 void fold_graph_destroy(FoldGraph* graph);
 
-void fold_graph_recreate(FoldGraph* graph);
+static inline
+void fold_graph_recreate(FoldGraph* graph) {
+	fold_graph_destroy(graph);
+	fold_graph_create(graph);
+}
 
 /* ========================================================================= */
 /* Methods                                                                   */

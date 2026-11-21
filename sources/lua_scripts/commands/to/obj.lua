@@ -8,45 +8,50 @@ function command.register(parser)
 
 	convert:argument("input"):args("?")
 		:description("path to the FOLD source")
-	convert:option("-o --output"):argname("<file>")
-		:description("path to the OBJ destination")
 
-	convert:option("-s --scale"):argname("<float>")
+	convert:group("Options",
+		convert:option("-o --output"):argname("<file>")
+		:description("path to the OBJ destination"),
+
+		convert:option("-s --scale"):argname("<float>")
 		:description("scale coordinates")
 		:convert(tonumber)
 		:default("1.0")
-		:show_default(true)
+		:show_default(true),
 
-	convert:option("-S --seed"):argname("<int>")
+		convert:option("-S --seed"):argname("<int>")
 		:description("seed for abstract graphs")
 		:convert(tonumber)
 		:default("0")
 		:show_default(true)
 		:target("abstract_seed")
+	)
 
-	convert:flag("--enable_groups")
-		:description("write frame groups")
+	convert:group("Compatibility Options",
+		convert:flag("--enable_groups")
+		:description("write frame groups"),
 
-	convert:flag("--disable_colors")
-		:description("omit vertex R,G,B (72 bit)")
+		convert:flag("--disable_colors")
+		:description("omit vertex R|G|B (72 bit)"),
 
-	convert:flag("--enable_weights")
-		:description("write vertex RGB (24 bit)")
+		convert:flag("--enable_weights")
+		:description("write vertex RGB (24 bit)"),
 
-	convert:flag("--disable_textures")
-		:description("omit texture coordinates")
+		convert:flag("--disable_textures")
+		:description("omit texture coordinates"),
 
-	convert:flag("--disable_normals")
-		:description("omit normals")
+		convert:flag("--disable_normals")
+		:description("omit normals"),
 
-	convert:flag("--disable_materials")
-		:description("omit materials")
+		convert:flag("--disable_materials")
+		:description("omit materials"),
 
-	convert:flag("--disable_lines")
-		:description("omit lines")
+		convert:flag("--disable_lines")
+		:description("omit lines"),
 
-	convert:flag("--disable_faces")
+		convert:flag("--disable_faces")
 		:description("omit faces")
+	)
 
 	return convert
 end
