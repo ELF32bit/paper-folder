@@ -6,7 +6,7 @@ function command.register(parser)
 		:description("run describe tests")
 
 	test:option("-f --frame"):argname("<int>")
-		:description("FOLD frame index")
+		:description("FOLD frames (multiple)")
 		:convert(tonumber)
 		:count("*")
 

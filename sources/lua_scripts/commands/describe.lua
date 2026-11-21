@@ -19,9 +19,10 @@ function command.register(parser)
 		:description("path to the FOLD source")
 
 	describe:option("-f --frame"):argname("<int>")
-		:description("FOLD frame index")
+		:description("FOLD frames (multiple)")
 		:convert(tonumber)
 		:count("*")
+		:target("frames")
 
 	describe:flag("-i --inherit")
 		:description("inherit frames")
@@ -242,8 +243,8 @@ function command.execute(args)
 				command.print_fold_frame_description(
 					fold, frame, index, args)
 			end
-		elseif args.frame and #args.frame ~= 0 then
-			for _, index in ipairs(args.frame) do
+		elseif args.frames and #args.frames ~= 0 then
+			for _, index in ipairs(args.frames) do
 				local frame = fold_frames[index + 1]
 				if frame ~= nil then
 					command.print_fold_frame_description(
@@ -268,9 +269,9 @@ function command.execute(args)
 				command.print_fold_frame_description(
 					fold, frame, index, args)
 			end
-		elseif args.frame and #args.frame ~= 0 then
-			for i = #args.frame, 1, -1 do
-				local index = args.frame[i]
+		elseif args.frames and #args.frames ~= 0 then
+			for i = #args.frames, 1, -1 do
+				local index = args.frames[i]
 				local frame = fold_frames[index + 1]
 				if frame ~= nil then
 					command.print_fold_frame_description(

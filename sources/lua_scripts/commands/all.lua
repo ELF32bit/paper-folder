@@ -13,6 +13,7 @@ local commands = {
 	(require("commands.to.obj")),
 	(require("commands.describe")),
 	(require("commands.validate")),
+	(require("commands.annotate")),
 	(require("commands.test.describe")),
 	(require("commands.test.validate")),
 }
@@ -20,8 +21,7 @@ local commands = {
 local function create_parser()
 	local parser = argparse("paper-folder")
 		:description("powerful origami toolkit")
-
-	parser:require_command(true)
+		:require_command(true)
 
 	return parser
 end

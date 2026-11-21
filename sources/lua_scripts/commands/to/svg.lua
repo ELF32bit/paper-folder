@@ -17,7 +17,7 @@ function command.register(parser)
 		:description("path to the SVG destination")
 
 	convert:option("-f --frame"):argname("<int>")
-		:description("FOLD frame index")
+		:description("FOLD frame")
 		:convert(tonumber)
 		:default("0")
 		:show_default(true)
