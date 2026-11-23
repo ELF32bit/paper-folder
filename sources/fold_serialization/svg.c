@@ -156,6 +156,9 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 	size.x += svg_grow_size / svg_scale;
 	size.y += svg_grow_size / svg_scale;
 
+	real dash_size = vector2_max_axis(aabb2_size(aabb2)) / 100.0;
+	dash_size /= MAX(parameters->stroke_dash_scale, REAL_EPSILON);
+
 	Vector2 svg_size = vector2_scale(size, svg_scale);
 	svg_size.x = MAX(ROUND(svg_size.x), 1.0);
 	svg_size.y = MAX(ROUND(svg_size.y), 1.0);
@@ -278,27 +281,57 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 				"stroke=\"%s\" "
 				"stroke-width=\""_F"\" "
 				"stroke-opacity=\""_F"\" "
-				"stroke-linecap=\"round\" "
-				"stroke-dasharray=\"%s\""
-				"/>\n",
+				"stroke-linecap=\"round\"",
 					(_FF)x1, (_FF)y1,
 					(_FF)x2, (_FF)y2,
 					color,
 					(_FF)(width / svg_scale),
-					(_FF)opacity,
-						(assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY)
-							? "none"
-						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN)
-							? "none"
-						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY)
-							? "none"
-						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_FLAT)
-							? "none"
-						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_CUT)
-							? "none"
-						: (assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN)
-							? "none"
-						: "none");
+					(_FF)opacity);
+
+			if (parameters->stroke_dash_enabled) {
+				switch (assignment) {
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY:
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_FLAT:
+						fprintf(output_file,
+							" stroke-dasharray=\"none\"");
+						break;
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN:
+						fprintf(output_file,
+							" stroke-dasharray=\""_F","_F","_F","_F"\"",
+								(_FF)(dash_size * 3.0),
+								(_FF)(dash_size * 0.9),
+								(_FF)(dash_size * 0.2),
+								(_FF)(dash_size * 0.9));
+						break;
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY:
+						fprintf(output_file,
+							" stroke-dasharray=\""_F","_F"\"",
+								(_FF)(dash_size * 3.0),
+								(_FF)(dash_size * 2.0));
+						break;
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_CUT:
+						fprintf(output_file,
+							" stroke-dasharray=\""_F","_F"\"",
+								(_FF)(dash_size * 1.0),
+								(_FF)(dash_size * 1.0));
+						break;
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN:
+						fprintf(output_file,
+							" stroke-dasharray=\""_F","_F"\"",
+								(_FF)(dash_size * 0.0),
+								(_FF)(dash_size * 2.5));
+						break;
+					case FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN:
+					default:
+						fprintf(output_file,
+							" stroke-dasharray=\""_F","_F"\"",
+								(_FF)(dash_size * 0.0),
+								(_FF)(dash_size * 1.0));
+						break;
+				}
+			}
+
+			fprintf(output_file, "/>\n");
 		}
 	}
 

@@ -95,7 +95,7 @@ function command.execute(args)
 			args.kawasaki_error,
 			args.seed)
 	if fold == nil then
-		error(fold_error, 0)
+		command.ERROR(fold_error)
 	end
 
 	args.output =

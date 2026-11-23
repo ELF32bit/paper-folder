@@ -21,23 +21,23 @@ end
 
 function command.fold_from_json_file(args)
 	local fold, fold_error = FoldFile.new()
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 	fold, fold_error = fold:from_json_file(args.input)
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 	return fold, fold_error
 end
 
 function command.fold_from_json_string(json, args)
 	local fold, fold_error = FoldFile.new()
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 	fold, fold_error = fold:from_json_string(json)
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 	return fold, fold_error
 end
 
 function command.read_stdin_stream()
 	local io_file, io_error = io.read("*a")
-	if io_file == nil then error(io_error, 0) end
+	if io_file == nil then command.ERROR(io_error) end
 	return io_file, io_error
 end
 
@@ -54,11 +54,11 @@ function command._fold_to_json_file(fold, args)
 	local json, json_error
 	if args.output == nil then
 		json, json_error = fold:to_json_string(args.pretty)
-		if json == nil then error(json_error, 0) end
+		if json == nil then command.ERROR(json_error) end
 		print(json)
 	else
 		json, json_error = fold:to_json_file(args.output, args.pretty)
-		if json == false then error(json_error, 0) end
+		if json == false then command.ERROR(json_error) end
 	end
 end
 

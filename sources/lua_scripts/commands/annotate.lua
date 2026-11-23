@@ -87,27 +87,27 @@ function command.annotate_fold(fold, args)
 
 	if type(args.file_creator) == "string" then
 		local set, set_error = fold:set_creator(args.file_creator)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.file_author) == "string" then
 		local set, set_error = fold:set_author(args.file_author)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.file_title) == "string" then
 		local set, set_error = fold:set_title(args.file_title)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.file_description) == "string" then
 		local set, set_error = fold:set_description(args.file_description)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.file_classes) == "table" then
 		local set, set_error = fold:set_classes(args.file_classes)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 end
 
@@ -118,32 +118,32 @@ end
 function command.annotate_fold_frame(fold, frame, index, args)
 	if type(args.frame_author) == "string" then
 		local set, set_error = frame:set_author(args.frame_author)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.frame_title) == "string" then
 		local set, set_error = frame:set_title(args.frame_title)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.frame_description) == "string" then
 		local set, set_error = frame:set_description(args.frame_description)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.frame_classes) == "table" then
 		local set, set_error = frame:set_classes(args.frame_classes)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.frame_attributes) == "table" then
 		local set, set_error = frame:set_attributes(args.frame_attributes)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 
 	if type(args.frame_unit) == "string" then
 		local set, set_error = frame:set_unit(args.frame_unit)
-		if set == false then error(set_error, 0) end
+		if set == false then command.ERROR(set_error) end
 	end
 end
 

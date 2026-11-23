@@ -60,6 +60,9 @@ int l_fold_file_frame_to_svg_file_meta(lua_State* L) {
 	parameters.image_grow_size = luaL_optnumber(L, 28, parameters.image_grow_size);
 	parameters.stroke_width = luaL_optnumber(L, 29, parameters.stroke_width);
 
+	parameters.stroke_dash_scale = luaL_optnumber(L, 30, parameters.stroke_dash_scale);
+	parameters.stroke_dash_enabled = lua_toboolean(L, 31);
+
 	Error result = fold_file_frame_to_svg(file, frame_index,
 		(void*)output_file_path, &parameters);
 

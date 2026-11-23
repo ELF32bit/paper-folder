@@ -2,6 +2,7 @@ local module = {}
 
 local COLORS = require("colors")
 local BOLD = COLORS.BOLD
+local FUCHSIA = COLORS.FUCHSIA
 local RESET = COLORS.RESET
 
 local function format_custom_usage_message(message)
@@ -51,6 +52,17 @@ function module.enable_custom_help_message(parser)
 			print(format_custom_help_message(parser))
 			os.exit(0, true)
 		end)
+end
+
+local function throw_custom_error(message)
+	print(("%s%sERROR%s: %s%s%s"):format(
+		BOLD, FUCHSIA, RESET,
+		FUCHSIA, message, RESET))
+	os.exit(1, true)
+end
+
+function module.enable_custom_error(command)
+	command.ERROR = throw_custom_error
 end
 
 return module

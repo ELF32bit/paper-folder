@@ -205,7 +205,19 @@ function command.register(parser)
 		:description("SVG stroke width pixels")
 		:convert(tonumber)
 		:default("1.0")
-		:show_default(true))
+		:show_default(true),
+
+		convert:option("-d --dash_scale"):argname("<float>")
+		:description("SVG dash-array scale")
+		:convert(tonumber)
+		:default("1.0")
+		:show_default(true)
+		:target("stroke_dash_scale"),
+
+		convert:flag("-p --printable")
+		:description("SVG dash-array enable")
+		:target("stroke_dash_enabled")
+	)
 
 	return convert
 end
@@ -246,9 +258,12 @@ function command.fold_to_svg_file(fold, args)
 
 			args.image_min_size,
 			args.image_grow_size,
-			args.stroke_width)
+			args.stroke_width,
 
-	if svg == false then error(svg_error, 0) end
+			args.stroke_dash_scale,
+			args.stroke_dash_enabled)
+
+	if svg == false then command.ERROR(svg_error) end
 	return svg, svg_error
 end
 

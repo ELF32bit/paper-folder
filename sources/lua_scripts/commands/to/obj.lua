@@ -70,7 +70,7 @@ function command.fold_to_obj_file(fold, args)
 			args.disable_lines,
 			args.disable_faces)
 
-	if obj == false then error(obj_error, 0) end
+	if obj == false then command.ERROR(obj_error) end
 	return obj, obj_error
 end
 

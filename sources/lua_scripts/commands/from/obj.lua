@@ -58,7 +58,7 @@ end
 
 function command.fold_from_obj_file(args)
 	local fold, fold_error = FoldFile.new()
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 
 	fold, fold_error =
 		fold:from_obj_file(args.input,
@@ -74,13 +74,13 @@ function command.fold_from_obj_file(args)
 			args.disable_lines,
 			args.disable_faces)
 
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 	return fold, fold_error
 end
 
 function command.fold_from_obj_string(obj, args)
 	local fold, fold_error = FoldFile.new()
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 
 	fold, fold_error =
 		fold:from_obj_string(obj,
@@ -96,7 +96,7 @@ function command.fold_from_obj_string(obj, args)
 			args.disable_lines,
 			args.disable_faces)
 
-	if fold == nil then error(fold_error, 0) end
+	if fold == nil then command.ERROR(fold_error) end
 	return fold, fold_error
 end
 
@@ -107,14 +107,14 @@ end
 function command.__create_stdin_file(io_file)
 	local tmp_path = os.tmpname()
 	local tmp_file, tmp_error = io.open(tmp_path, "wb")
-	if tmp_file == nil then error(tmp_error, 0) end
+	if tmp_file == nil then command.ERROR(tmp_error) end
 
 	local written, write_error = tmp_file:write(io_file)
 	if not written then tmp_file:close() end
-	if not written then error(write_error, 0) end
+	if not written then command.ERROR(write_error) end
 
 	local closed, close_error = tmp_file:close()
-	if not closed then error(close_error, 0) end
+	if not closed then command.ERROR(close_error) end
 	return tmp_path
 end
 
@@ -126,7 +126,7 @@ function command.__fold_from_obj_stdin_file(io_file, args)
 	os.remove(args.input)
 	args.input = nil
 
-	if success == false then error(fold, 0) end
+	if success == false then command.ERROR(fold) end
 	return fold, fold_error
 end
 

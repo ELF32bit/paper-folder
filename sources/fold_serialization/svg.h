@@ -15,6 +15,9 @@ struct FoldFileFrameToSVGParameters {
 	f32 image_min_size;
 	f32 image_grow_size;
 	f32 stroke_width;
+
+	f32 stroke_dash_scale;
+	bool stroke_dash_enabled;
 };
 
 static inline
@@ -64,6 +67,9 @@ void fold_file_frame_to_svg_parameters_default(
 	parameters->image_min_size = 512.0;
 	parameters->image_grow_size = 64.0;
 	parameters->stroke_width = 1.0;
+
+	parameters->stroke_dash_scale = 1.0;
+	parameters->stroke_dash_enabled = false;
 }
 
 Error fold_file_frame_to_svg(FoldFile* file, usize index, void* NULLABLE(SVG),

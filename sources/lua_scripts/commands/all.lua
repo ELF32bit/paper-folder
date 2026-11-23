@@ -35,6 +35,7 @@ local function register_commands(parser)
 		local object = command.register(parser)
 		argformat.enable_custom_usage_message(object)
 		argformat.enable_custom_help_message(object)
+		argformat.enable_custom_error(command)
 
 		local group_name = command.group or "Other Commands"
 		if groups[group_name] == nil then

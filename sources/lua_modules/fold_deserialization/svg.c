@@ -14,8 +14,10 @@ static inline
 void _fold_file_frame_from_svg_parameters_create(lua_State* L,
 	struct FoldFileFrameFromSVGParameters* parameters)
 {
-	parameters->image_units = luaL_optstring(L, 4, "px");
-	parameters->image_dpi = luaL_optnumber(L, 5, 96.0);
+	parameters->image_units =
+		TRY_SAFE((char*)luaL_optstring(L, 4, parameters->image_units));
+	parameters->image_dpi = luaL_optnumber(L, 5, parameters->image_dpi);
+
 	parameters->flatness = luaL_checknumber(L, 6);
 	parameters->min_segment_length = luaL_checknumber(L, 7);
 }
@@ -31,6 +33,7 @@ int l_fold_file_frame_from_svg_file_meta(lua_State* L) {
 	}
 
 	struct FoldFileFrameFromSVGParameters parameters;
+	fold_file_frame_from_svg_parameters_default(&parameters);
 	_fold_file_frame_from_svg_parameters_create(L, &parameters);
 
 	NSVGimage* image =
@@ -86,6 +89,7 @@ int l_fold_file_frame_from_svg_string_meta(lua_State* L) {
 	}
 
 	struct FoldFileFrameFromSVGParameters parameters;
+	fold_file_frame_from_svg_parameters_default(&parameters);
 	_fold_file_frame_from_svg_parameters_create(L, &parameters);
 
 	NSVGimage* image =

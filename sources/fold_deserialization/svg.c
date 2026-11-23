@@ -5,7 +5,6 @@
 
 #include "math/vector2.h"
 #include "math/bezier2.h"
-#include "math/color.h"
 
 #define SVG_COLOR_EPSILON 0.1
 
@@ -19,14 +18,22 @@ Error fold_graph_from_svg(FoldGraph* graph, void* SVG,
 {
 	const NSVGimage* image = SVG;
 
-	/* ABGR format */
-	const Color B = color_from_rgba8(255, 0, 0, 0);
-	const Color M = color_from_rgba8(255, 0, 0, 255);
-	const Color V = color_from_rgba8(255, 255, 0, 0);
-	const Color F = color_from_rgba8(255, 128, 128, 128);
-	const Color U = color_from_rgba8(255, 0, 255, 255);
-	const Color C = color_from_rgba8(255, 0, 255, 0);
-	const Color J = color_from_rgba8(255, 0, 255, 255);
+#define _COLOR_TO_ABGR(name, color) \
+	Color name = color_from_components( \
+		color.a, color.b, color.g, color.r)
+
+	_COLOR_TO_ABGR(B_color, parameters->B_color);
+	_COLOR_TO_ABGR(M_color, parameters->M_color);
+	_COLOR_TO_ABGR(V_color, parameters->V_color);
+	_COLOR_TO_ABGR(F_color, parameters->F_color);
+	_COLOR_TO_ABGR(U_color, parameters->U_color);
+	_COLOR_TO_ABGR(C_color, parameters->C_color);
+	_COLOR_TO_ABGR(J_color, parameters->J_color);
+
+#undef _COLOR_TO_ABGR
+	real min_segment_length =
+		CLAMP(parameters->min_segment_length, 0.0, REAL_INFINITY);
+	real flatness = CLAMP(parameters->flatness, 0.0, REAL_INFINITY);
 
 	for (NSVGshape* shape = image->shapes; shape != NULL; shape = shape->next) {
 		Color color = color_unpack(shape->stroke.color);
@@ -36,19 +43,19 @@ Error fold_graph_from_svg(FoldGraph* graph, void* SVG,
 		FoldGraphEdgeAssignment assignment =
 			FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
 
-		if (color_is_equal(color, B, SVG_COLOR_EPSILON)) {
+		if (color_is_equal(color, B_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY;
-		} else if (color_is_equal(color, M, SVG_COLOR_EPSILON)) {
+		} else if (color_is_equal(color, M_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN;
-		} else if (color_is_equal(color, V, SVG_COLOR_EPSILON)) {
+		} else if (color_is_equal(color, V_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY;
-		} else if (color_is_equal(color, F, SVG_COLOR_EPSILON)) {
+		} else if (color_is_equal(color, F_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_FLAT;
-		} else if (color_is_equal(color, U, SVG_COLOR_EPSILON)) {
+		} else if (color_is_equal(color, U_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
-		} else if (color_is_equal(color, C, SVG_COLOR_EPSILON)) {
+		} else if (color_is_equal(color, C_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_CUT;
-		} else if (color_is_equal(color, J, SVG_COLOR_EPSILON)) {
+		} else if (color_is_equal(color, J_color, SVG_COLOR_EPSILON)) {
 			assignment = FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN;
 		}
 
@@ -75,8 +82,7 @@ Error fold_graph_from_svg(FoldGraph* graph, void* SVG,
 
 				Bezier2Vertices vertices =
 					bezier2_tessellate_adaptive(curve,
-						CLAMP(parameters->flatness, 0.0, REAL_INFINITY),
-						CLAMP(parameters->min_segment_length, 0.0, REAL_INFINITY));
+						flatness, min_segment_length);
 
 				if (vertices.count <= 1) continue;
 				FOR_EACH(index, vertices.count - 1) {
