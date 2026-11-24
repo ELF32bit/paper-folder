@@ -15,4 +15,5 @@ sources/lua_scripts.h
 paper-folder
 paper-folder.exe
 
+test-output/
 .vscode/

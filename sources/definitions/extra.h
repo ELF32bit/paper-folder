@@ -14,7 +14,8 @@
 #define SIZEOF(type, count) (sizeof(type) * USIZE((count)))
 #define BUFFER_SIZE(buffer) (sizeof((buffer)) / sizeof((buffer)[0]))
 
-static inline usize usize_align_base2(usize value, usize min) {
+static inline
+usize usize_align_base2(usize value, usize min) {
 	value = MAX(value, min);
 	value--;
 	value |= value >> 1;

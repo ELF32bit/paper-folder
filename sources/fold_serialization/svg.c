@@ -312,7 +312,7 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 					case FOLD_GRAPH_EDGE_ASSIGNMENT_CUT:
 						fprintf(output_file,
 							" stroke-dasharray=\""_F","_F"\"",
-								(_FF)(dash_size * 1.0),
+								(_FF)(dash_size * 0.0),
 								(_FF)(dash_size * 1.0));
 						break;
 					case FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN:
@@ -325,7 +325,7 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 					default:
 						fprintf(output_file,
 							" stroke-dasharray=\""_F","_F"\"",
-								(_FF)(dash_size * 0.0),
+								(_FF)(dash_size * 1.0),
 								(_FF)(dash_size * 1.0));
 						break;
 				}

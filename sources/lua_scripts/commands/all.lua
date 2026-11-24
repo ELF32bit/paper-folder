@@ -15,8 +15,6 @@ local commands = {
 	(require("commands.describe")),
 	(require("commands.validate")),
 	(require("commands.annotate")),
-	(require("commands.test.describe")),
-	(require("commands.test.validate")),
 }
 
 local function create_parser()

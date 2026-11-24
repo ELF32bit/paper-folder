@@ -73,11 +73,15 @@ Error fold_graph_validate_##A##_##B##_reflexive( \
 	if ((graph->A.is_view && graph->B.is_view) || \
 		(graph->A.size == 0 || graph->B.size == 0)) return OK; \
 	*is = false; \
+\
 	Set B##_map; \
 	TRY(_to_map1(&graph->B, &B##_map, NOT(has_null))); \
 	if (_validate_reflexive(&graph->A, &B##_map, has_null)) { \
-		if (is_same) { *is = true; \
-			set_destroy(&B##_map); return OK; } \
+		if (is_same) { \
+			*is = true; \
+			set_destroy(&B##_map); \
+			return OK; \
+		} \
 		Set A##_map; \
 		TRY_OR_ELSE(_to_map1(&graph->A, &A##_map, has_null), \
 			set_destroy(&B##_map)); \

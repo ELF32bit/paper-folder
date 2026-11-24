@@ -145,3 +145,4 @@ $(TARGET)$(EXE): $(C_OBJECTS) $(LUA_MODULES_CODE) $(LUA_SCRIPTS_CODE)
 clean:
 	@$(MAKE) -C $(THIRDPARTY_DIRECTORY)/lua clean --silent
 	@rm -f $(C_OBJECTS) $(LUA_GENERATED) $(TARGET)$(EXE)
+	@rm -rf "test-output"
