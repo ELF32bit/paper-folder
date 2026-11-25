@@ -51,7 +51,12 @@ void array2_view(Array2* array2, const Array2* source);
 
 usize array2_start_offset_at(const Array2* array2, usize index);
 usize array2_end_offset_at(const Array2* array2, usize index);
-usize array2_size_at(const Array2* array2, usize index);
+
+static inline
+usize array2_size_at(const Array2* array2, usize index) {
+	return array2_end_offset_at(array2, index) -
+		array2_start_offset_at(array2, index);
+}
 
 #define Array2_copy array2_copy
 Error array2_copy(Array2* array2, const Array2* source);

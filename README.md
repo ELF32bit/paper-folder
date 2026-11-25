@@ -9,7 +9,8 @@ One example is a [hyperbolic paraboloid origami](https://github.com/ELF32bit/ori
 
 ## Current features
 * FOLD specification (version 1.2) validation.
-* Convert from and to FOLD, SVG, OBJ files.
+* Convert from and to FOLD, JSON, SVG, OBJ files.
+* Abstract graphs support with advanced coloring.
 * Generate locally flat-foldable SVG crease patterns.
 
 > Such crease patterns satisfy [Maekawa's](https://en.wikipedia.org/wiki/Maekawa%27s_theorem) and [Kawasaki's](https://en.wikipedia.org/wiki/Kawasaki%27s_theorem) theorems.<br>

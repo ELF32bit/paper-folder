@@ -11,7 +11,7 @@ local RESET = COLORS.RESET
 function command.register(parser)
 	local convert = parser:command(command.name)
 		:description("from FOLD file to SVG file")
-		:help_description_margin(30)
+		:help_description_margin(40)
 
 	convert:argument("input"):args("?")
 		:description("path to the FOLD source")
@@ -38,6 +38,49 @@ function command.register(parser)
 		:default("0")
 		:show_default(true)
 		:target("abstract_seed")
+	)
+
+	convert:group("Vertices Options",
+		convert:flag("--enable_vertices")
+		:description("draw vertices circles"),
+
+		convert:flag("--enable_vertices_indices")
+		:description("write vertices array indices")
+		:target("enable_vertices_index"),
+
+		convert:flag("--disable_vertices_colors")
+		:description("omit custom vertices colors")
+		:target("disable_vertices_color"),
+
+		convert:option("--vertices_scale"):argname("<float>")
+		:description("vertices scale")
+		:convert(tonumber)
+		:default("1.0")
+		:show_default(true)
+	)
+
+	convert:group("Edges Options",
+		convert:flag("--disable_edges")
+		:description("omit creases lines"),
+
+		convert:flag("--enable_edges_indices")
+		:description("write edges array indices")
+		:target("enable_edges_index"),
+
+		convert:flag("--enable_edges_fold_angles")
+		:description("write edges fold angles")
+		:target("enable_edges_fold_angle"),
+
+		convert:flag("--enable_edges_lengths")
+		:description("write edges lengths")
+		:target("enable_edges_length"),
+
+		convert:option("--edges_scale"):argname("<float>")
+		:description("edges annotations scale")
+		:convert(tonumber)
+		:default("1.0")
+		:show_default(true)
+		:target("edges_annotations_scale")
 	)
 
 	convert:group("Crease Colors",
@@ -186,6 +229,26 @@ function command.register(parser)
 		:target("J_order")
 	)
 
+	convert:group("Faces Options",
+		convert:flag("--disable_faces")
+		:description("omit faces polygons"),
+
+		convert:flag("--enable_faces_indices")
+		:description("write faces array indices")
+		:target("enable_faces_index"),
+
+		convert:flag("--enable_faces_materials")
+		:description("write custom faces materials (HTML)")
+		:target("enable_faces_material"),
+
+		convert:option("--faces_scale"):argname("<float>")
+		:description("faces annotations scale")
+		:convert(tonumber)
+		:default("1.0")
+		:show_default(true)
+		:target("faces_annotations_scale")
+	)
+
 	convert:group("Image Options",
 		convert:option("-m --min_size"):argname("<px>")
 		:description("min SVG size in pixels")
@@ -216,7 +279,7 @@ function command.register(parser)
 
 		convert:flag("-p --printable")
 		:description("SVG dash-array enable")
-		:target("stroke_dash_enabled")
+		:target("enable_stroke_dash")
 	)
 
 	return convert
@@ -260,8 +323,24 @@ function command.fold_to_svg_file(fold, args)
 			args.image_grow_size,
 			args.stroke_width,
 
+			args.enable_stroke_dash,
 			args.stroke_dash_scale,
-			args.stroke_dash_enabled)
+
+			args.enable_vertices,
+			args.enable_vertices_index,
+			args.disable_vertices_color,
+			args.vertices_scale,
+
+			args.disable_edges,
+			args.enable_edges_index,
+			args.enable_edges_fold_angle,
+			args.enable_edges_length,
+			args.edges_annotations_scale,
+
+			args.disable_faces,
+			args.enable_faces_index,
+			args.enable_faces_material,
+			args.faces_annotations_scale)
 
 	if svg == false then command.ERROR(svg_error) end
 	return svg, svg_error

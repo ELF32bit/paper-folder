@@ -3,13 +3,19 @@
 #include "fold_graph/attributes.h"
 #include "fold_graph/properties.h"
 
+#include "definitions/constants.h"
 #include "definitions/random.h"
+#include "definitions/math.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #define _F "%g"
 #define _FF float
+
+#define SVG_FONT "sans-serif"
+#define SVG_COLOR_WHITE "#ffffff"
+#define SVG_COLOR_BLACK "#000000"
 
 #define SVG_XMLNS "http://www.w3.org/2000/svg"
 
@@ -159,6 +165,21 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 	real dash_size = vector2_max_axis(aabb2_size(aabb2)) / 100.0;
 	dash_size /= MAX(parameters->stroke_dash_scale, REAL_EPSILON);
 
+	real circle_shrink_factor = 2.5;
+	real circle_radius = (8.0 * parameters->vertices_scale)
+		* ((parameters->stroke_width * 0.5) / svg_scale);
+	real circle_stroke_radius = circle_radius * 0.1;
+
+	real circle2_edge_offset_factor = 1.5;
+	real circle2_edge_offset_diagonal_factor = 1.5 / 6.0;
+	real circle2_radius = (8.0 * parameters->edges_annotations_scale)
+		* ((parameters->stroke_width * 0.5) / svg_scale);
+	real circle2_stroke_radius = circle2_radius * 0.1;
+
+	real circle3_radius = (8.0 * parameters->faces_annotations_scale)
+		* ((parameters->stroke_width * 0.5) / svg_scale);
+	real circle3_stroke_radius = circle3_radius * 0.1;
+
 	Vector2 svg_size = vector2_scale(size, svg_scale);
 	svg_size.x = MAX(ROUND(svg_size.x), 1.0);
 	svg_size.y = MAX(ROUND(svg_size.y), 1.0);
@@ -177,8 +198,10 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 		"height=\""_F"\" "
 		"fill=\"none\""
 		">\n",
-			(_FF)min.x, (_FF)min.y, (_FF)size.x, (_FF)size.y,
-			(_FF)svg_size.x, (_FF)svg_size.y);
+			(_FF)min.x, (_FF)min.y,
+			(_FF)size.x, (_FF)size.y,
+			(_FF)svg_size.x,
+			(_FF)svg_size.y);
 
 	if (fold_graph_is_abstract(graph)) {
 		if (parameters->abstract_seed == 0) {
@@ -186,156 +209,436 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 		}
 	}
 
-	fprintf(output_file,
-		"<g "
-		"id=\"faces\""
-		">\n");
-
-	ARRAY2_ITERATE(&graph->FV, fv) {
+	if NOT(parameters->disable_faces) {
 		fprintf(output_file,
-			"<polyline points=\"");
+			"<g id=\"faces\">\n");
 
-		real x0 = 0.0, y0 = 0.0;
-		ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
-			i, usize*, fvi, fv.start, fv.end)
-		{
-			real x = 0.0, y = 0.0;
-			if (fold_graph_is_2D(graph)) {
-				Vector2* p = array_get(&VC, *fvi);
-				x = p->x * scale; y = p->y * scale;
-				if (i == fv.start) { x0 = x; y0 = y; }
-			} else if (fold_graph_is_3D(graph)) {
-				Vector3* p = array_get(&VC, *fvi);
-				x = p->x * scale; y = p->y * scale;
-				if (i == fv.start) { x0 = x; y0 = y; }
-			}
-			fprintf(output_file, ""_F","_F" ",
-				(_FF)x, (_FF)y);
-		}
-		fprintf(output_file, ""_F","_F"\" ",
-			(_FF)x0, (_FF)y0);
-
-		fprintf(output_file,
-			"fill=\"#ffffffff\" "
-			"stroke=\"none\" "
-			"stroke-width=\""_F"\" "
-			"stroke-opacity=\""_F"\" "
-			"stroke-linecap=\"round\""
-			"/>\n",
-				(_FF)(__width / svg_scale),
-				(_FF)1.0);
-	}
-
-	fprintf(output_file, "</g>\n");
-
-	fprintf(output_file,
-		"<g "
-		"id=\"edges\""
-		">\n");
-
-	FOR_EACH(index, BUFFER_SIZE(svg_edges)) {
-		FoldGraphEdgeAssignment assignment = svg_edges[index].assignment;
-		const char* color = svg_edges[index].color;
-		f32 width = svg_edges[index].width;
-		if (width <= 0.0) continue;
-
-		ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
-			FoldGraphEdgeAssignment ea = (graph->EA.size != 0)
-				? *(FoldGraphEdgeAssignment*)array_get(&graph->EA, ei)
-				: FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
-
-			if NOT(FOLD_GRAPH_EDGE_ASSIGNMENT_ANY(ea)) {
-				ea = FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
-			}
-
-			if (ea != assignment) {
-				continue;
-			}
-
-			real x1 = 0.0, y1 = 0.0;
-			real x2 = 0.0, y2 = 0.0;
-			if (fold_graph_is_2D(graph)) {
-				Vector2* A = array_get(&VC, ev->a);
-				Vector2* B = array_get(&VC, ev->b);
-				x1 = A->x * scale; y1 = A->y * scale;
-				x2 = B->x * scale; y2 = B->y * scale;
-			} else if (fold_graph_is_3D(graph)) {
-				Vector3* A = array_get(&VC, ev->a);
-				Vector3* B = array_get(&VC, ev->b);
-				x1 = A->x * scale; y1 = A->y * scale;
-				x2 = B->x * scale; y2 = B->y * scale;
-			}
-
-			real opacity = 1.0;
-			if (graph->EFA.size != 0 &&
-				(assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN ||
-				assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY)) {
-				real* efa = array_get(&graph->EFA, ei);
-				opacity = (ABS(*efa) / 180.0);
+		ARRAY2_ITERATE(&graph->FV, fv) {
+			if (parameters->enable_faces_index ||
+				parameters->enable_faces_material) {
+				fprintf(output_file, "<g>\n");
 			}
 
 			fprintf(output_file,
-				"<line "
-				"x1=\""_F"\" y1=\""_F"\" "
-				"x2=\""_F"\" y2=\""_F"\" "
-				"stroke=\"%s\" "
-				"stroke-width=\""_F"\" "
-				"stroke-opacity=\""_F"\" "
-				"stroke-linecap=\"round\"",
-					(_FF)x1, (_FF)y1,
-					(_FF)x2, (_FF)y2,
-					color,
-					(_FF)(width / svg_scale),
-					(_FF)opacity);
+				"<polygon points=\"");
 
-			if (parameters->stroke_dash_enabled) {
-				switch (assignment) {
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY:
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_FLAT:
-						fprintf(output_file,
-							" stroke-dasharray=\"none\"");
-						break;
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN:
-						fprintf(output_file,
-							" stroke-dasharray=\""_F","_F","_F","_F"\"",
-								(_FF)(dash_size * 3.0),
-								(_FF)(dash_size * 0.9),
-								(_FF)(dash_size * 0.2),
-								(_FF)(dash_size * 0.9));
-						break;
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY:
-						fprintf(output_file,
-							" stroke-dasharray=\""_F","_F"\"",
-								(_FF)(dash_size * 3.0),
-								(_FF)(dash_size * 2.0));
-						break;
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_CUT:
-						fprintf(output_file,
-							" stroke-dasharray=\""_F","_F"\"",
-								(_FF)(dash_size * 0.0),
-								(_FF)(dash_size * 1.0));
-						break;
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN:
-						fprintf(output_file,
-							" stroke-dasharray=\""_F","_F"\"",
-								(_FF)(dash_size * 0.0),
-								(_FF)(dash_size * 2.5));
-						break;
-					case FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN:
-					default:
-						fprintf(output_file,
-							" stroke-dasharray=\""_F","_F"\"",
-								(_FF)(dash_size * 1.0),
-								(_FF)(dash_size * 1.0));
-						break;
+			real cx = 0.0, cy = 0.0;
+			ARRAY_FOR_EACH_IN_RANGE(&graph->FV.data,
+				i, usize*, fvi, fv.start, fv.end)
+			{
+				real x = 0.0, y = 0.0;
+				if (fold_graph_is_2D(graph)) {
+					Vector2* p = array_get(&VC, *fvi);
+					x = p->x * scale; y = p->y * scale;
+				} else if (fold_graph_is_3D(graph)) {
+					Vector3* p = array_get(&VC, *fvi);
+					x = p->x * scale; y = p->y * scale;
+				}
+
+				cx += x; cy += y;
+				fprintf(output_file, ""_F","_F"%s",
+					(_FF)x, (_FF)y, (i != (fv.end - 1))
+						? " " : "");
+			}
+			cx /= fv.size; cy /= fv.size;
+			fprintf(output_file, "\" ");
+
+			char material[COLOR_HTML_RGBA_SIZE];
+			color_to_html(color_white(), material, false);
+			if (parameters->enable_faces_material) {
+				if (graph->FM.size != 0) {
+					usize* fmi = array_get(&graph->FM, fv.index);
+					char* fmn = array_get(&graph->MN, *fmi);
+					Color color = color_from_html(fmn);
+					bool has_alpha = BOOL(color.a != 1.0);
+					color_to_html(color, material, has_alpha);
 				}
 			}
 
-			fprintf(output_file, "/>\n");
+			fprintf(output_file,
+				"fill=\"%s\" "
+				"stroke=\"none\" "
+				"stroke-width=\""_F"\""
+				"/>\n",
+					material,
+					(_FF)(__width / svg_scale));
+
+			if (parameters->enable_faces_index) {
+				fprintf(output_file, "<g>\n");
+
+				fprintf(output_file,
+					"<polygon points=\""
+					_F","_F","_F","_F","_F","_F"\" "
+					"fill=\"%s\" "
+					"stroke=\"%s\" "
+					"stroke-width=\""_F"\""
+					"/>\n",
+						(_FF)cx,
+						(_FF)(cy - 2.0 * circle3_radius),
+						(_FF)(cx - circle3_radius * REAL_SQRT3),
+						(_FF)(cy + circle3_radius),
+						(_FF)(cx + circle3_radius * REAL_SQRT3),
+						(_FF)(cy + circle3_radius),
+							SVG_COLOR_WHITE, SVG_COLOR_BLACK,
+							(_FF)(circle3_stroke_radius));
+
+				fprintf(output_file,
+					"<text "
+					"x=\""_F"\" y=\""_F"\" "
+					"font-size=\""_F"\" "
+					"font-family=\"%s\" "
+					"font-weight=\"bold\" "
+					"fill=\"%s\" "
+					"text-anchor=\"middle\" "
+					"dominant-baseline=\"central\""
+					">%zu</text>\n",
+						(_FF)cx, (_FF)cy,
+						(_FF)((fv.index < 100) ? circle3_radius
+							: (circle3_radius * circle_shrink_factor)
+								/ F64(1 + U8(LOG10(F64(fv.index))))),
+						SVG_FONT,
+						SVG_COLOR_BLACK,
+						fv.index);
+
+				fprintf(output_file, "</g>\n");
+			}
+
+			if (parameters->enable_faces_index ||
+				parameters->enable_faces_material) {
+				fprintf(output_file, "</g>\n");
+			}
 		}
+
+		fprintf(output_file, "</g>\n");
 	}
 
-	fprintf(output_file, "</g>\n");
+	if NOT(parameters->disable_edges) {
+		fprintf(output_file,
+			"<g id=\"edges\">\n");
+
+		FOR_EACH(index, BUFFER_SIZE(svg_edges)) {
+			FoldGraphEdgeAssignment assignment = svg_edges[index].assignment;
+			char* color = svg_edges[index].color;
+			f32 width = svg_edges[index].width;
+			if (width <= 0.0) continue;
+
+			ARRAY_FOR_EACH(&graph->EV, ei, FoldGraphEdge*, ev) {
+				FoldGraphEdgeAssignment ea = (graph->EA.size != 0)
+					? *(FoldGraphEdgeAssignment*)array_get(&graph->EA, ei)
+					: FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
+
+				if NOT(FOLD_GRAPH_EDGE_ASSIGNMENT_ANY(ea)) {
+					ea = FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN;
+				}
+
+				if (ea != assignment) {
+					continue;
+				}
+
+				real x1 = 0.0, y1 = 0.0;
+				real x2 = 0.0, y2 = 0.0;
+				if (fold_graph_is_2D(graph)) {
+					Vector2* A = array_get(&VC, ev->a);
+					Vector2* B = array_get(&VC, ev->b);
+					x1 = A->x * scale; y1 = A->y * scale;
+					x2 = B->x * scale; y2 = B->y * scale;
+				} else if (fold_graph_is_3D(graph)) {
+					Vector3* A = array_get(&VC, ev->a);
+					Vector3* B = array_get(&VC, ev->b);
+					x1 = A->x * scale; y1 = A->y * scale;
+					x2 = B->x * scale; y2 = B->y * scale;
+				}
+
+				Vector2 v1 = vector2_from_components(x1, y1);
+				Vector2 v2 = vector2_from_components(x2, y2);
+				Vector2 v12 = vector2_subtract(v2, v1);
+
+				real angle = REAL_DEGREES(ATAN2(v12.y, v12.x));
+				angle = (angle > 90.0) ? (angle - 180.0)
+					: (angle < -90.0) ? (angle + 180.0)
+					: angle;
+
+				Vector2 n12 = vector2_orthogonal(v12);
+				n12 = vector2_normalize(n12);
+
+				real d = MAX((ABS(n12.x) + ABS(n12.y)) - 1.0, 0.0);
+				d = 1.0 + d * (circle2_edge_offset_diagonal_factor
+					/ (REAL_SQRT2 - 1.0));
+
+				real opacity = 1.0;
+				real fold_angle = 0.0;
+				if (graph->EFA.size != 0 &&
+					(assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN ||
+					assignment == FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY)) {
+						real* efa = array_get(&graph->EFA, ei);
+						opacity = (ABS(*efa) / 180.0);
+						fold_angle = *efa;
+				}
+
+				if (parameters->enable_edges_index ||
+					parameters->enable_edges_length) {
+					fprintf(output_file, "<g>\n");
+				}
+
+				fprintf(output_file,
+					"<line "
+					"x1=\""_F"\" y1=\""_F"\" "
+					"x2=\""_F"\" y2=\""_F"\" "
+					"stroke=\"%s\" "
+					"stroke-width=\""_F"\" "
+					"stroke-opacity=\""_F"\" "
+					"stroke-linecap=\"round\"",
+						(_FF)x1, (_FF)y1,
+						(_FF)x2, (_FF)y2,
+						color,
+						(_FF)(width / svg_scale),
+						(_FF)opacity);
+
+				if (parameters->enable_stroke_dash) {
+					switch (assignment) {
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_BOUNDARY:
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_FLAT:
+							fprintf(output_file,
+								" stroke-dasharray=\"none\"");
+							break;
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_MOUNTAIN:
+							fprintf(output_file,
+								" stroke-dasharray=\""_F","_F","_F","_F"\"",
+									(_FF)(dash_size * 3.0),
+									(_FF)(dash_size * 0.9),
+									(_FF)(dash_size * 0.2),
+									(_FF)(dash_size * 0.9));
+							break;
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_VALLEY:
+							fprintf(output_file,
+								" stroke-dasharray=\""_F","_F"\"",
+									(_FF)(dash_size * 3.0),
+									(_FF)(dash_size * 2.0));
+							break;
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_CUT:
+							fprintf(output_file,
+								" stroke-dasharray=\""_F","_F"\"",
+									(_FF)(dash_size * 0.0),
+									(_FF)(dash_size * 1.0));
+							break;
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_JOIN:
+							fprintf(output_file,
+								" stroke-dasharray=\""_F","_F"\"",
+									(_FF)(dash_size * 0.0),
+									(_FF)(dash_size * 2.5));
+							break;
+						case FOLD_GRAPH_EDGE_ASSIGNMENT_UNKNOWN:
+						default:
+							fprintf(output_file,
+								" stroke-dasharray=\""_F","_F"\"",
+									(_FF)(dash_size * 1.0),
+									(_FF)(dash_size * 1.0));
+							break;
+					}
+				}
+				fprintf(output_file, "/>\n");
+
+				if (parameters->enable_edges_index) {
+					fprintf(output_file, "<g>\n");
+
+					Vector2 o12 = vector2_add(
+						vector2_add(v1, vector2_scale(v12, 0.5)),
+						vector2_scale(n12, d * circle2_radius *
+							circle2_edge_offset_factor));
+
+					fprintf(output_file,
+						"<rect "
+						"x=\""_F"\" y=\""_F"\" "
+						"width=\""_F"\" height=\""_F"\" "
+						"fill=\"%s\" "
+						"stroke=\"%s\" "
+						"stroke-width=\""_F"\""
+						"/>\n",
+							(_FF)(o12.x - circle2_radius),
+							(_FF)(o12.y - circle2_radius),
+							(_FF)(2.0 * circle2_radius),
+							(_FF)(2.0 * circle2_radius),
+								SVG_COLOR_WHITE, SVG_COLOR_BLACK,
+								(_FF)(circle2_stroke_radius));
+
+					fprintf(output_file,
+						"<text "
+						"x=\""_F"\" y=\""_F"\" "
+						"font-size=\""_F"\" "
+						"font-family=\"%s\" "
+						"font-weight=\"bold\" "
+						"fill=\"%s\" "
+						"text-anchor=\"middle\" "
+						"dominant-baseline=\"central\""
+						">%zu</text>\n",
+							(_FF)o12.x, (_FF)o12.y,
+							(_FF)((ei < 100) ? circle2_radius
+								: (circle2_radius * circle_shrink_factor)
+									/ F64(1 + U8(LOG10(F64(ei))))),
+							SVG_FONT,
+							SVG_COLOR_BLACK,
+							ei);
+
+					fprintf(output_file, "</g>\n");
+				}
+
+				if (parameters->enable_edges_fold_angle) {
+					if (fold_angle != 0.0) {
+						real _sign = (parameters->enable_edges_index
+							&& (NOT(parameters->enable_edges_length)
+							|| graph->EL.size == 0))
+								? -1.0 : 1.0;
+
+						Vector2 o12 = vector2_add(
+							vector2_add(v1, vector2_scale(v12, 0.5)),
+							vector2_scale(n12, _sign * circle2_radius *
+								circle2_edge_offset_factor));
+
+						fprintf(output_file,
+							"<text "
+							"x=\""_F"\" y=\""_F"\" "
+							"font-size=\""_F"\" "
+							"font-family=\"%s\" "
+							"font-weight=\"bold\" "
+							"fill=\"%s\" "
+							"stroke=\"%s\" "
+							"stroke-width=\""_F"\" "
+							"stroke-linejoin=\"round\" "
+							"paint-order=\"stroke\" "
+							"text-anchor=\"middle\" "
+							"dominant-baseline=\"central\" "
+							"transform=\"rotate("_F" "_F" "_F")\""
+							">"_F"</text>\n",
+								(_FF)o12.x, (_FF)o12.y,
+								(_FF)circle2_radius,
+								SVG_FONT,
+								SVG_COLOR_BLACK,
+								SVG_COLOR_WHITE,
+								(_FF)circle2_stroke_radius,
+								(_FF)angle, (_FF)o12.x, (_FF)o12.y,
+								(_FF)fold_angle);
+					}
+				}
+
+				if (parameters->enable_edges_length) {
+					if (graph->EL.size != 0) {
+						real* el = array_get(&graph->EL, ei);
+
+						Vector2 o21 = vector2_subtract(
+							vector2_add(v1, vector2_scale(v12, 0.5)),
+							vector2_scale(n12, circle2_radius *
+								circle2_edge_offset_factor));
+
+						fprintf(output_file,
+							"<text "
+							"x=\""_F"\" y=\""_F"\" "
+							"font-size=\""_F"\" "
+							"font-family=\"%s\" "
+							"font-weight=\"bold\" "
+							"fill=\"%s\" "
+							"stroke=\"%s\" "
+							"stroke-width=\""_F"\" "
+							"stroke-linejoin=\"round\" "
+							"paint-order=\"stroke\" "
+							"text-anchor=\"middle\" "
+							"dominant-baseline=\"central\" "
+							"transform=\"rotate("_F" "_F" "_F")\""
+							">"_F"</text>\n",
+								(_FF)o21.x, (_FF)o21.y,
+								(_FF)circle2_radius,
+								SVG_FONT,
+								SVG_COLOR_WHITE,
+								SVG_COLOR_BLACK,
+								(_FF)circle2_stroke_radius,
+								(_FF)angle, (_FF)o21.x, (_FF)o21.y,
+								(_FF)*el);
+					}
+				}
+
+				if (parameters->enable_edges_index ||
+					parameters->enable_edges_length) {
+					fprintf(output_file, "</g>\n");
+				}
+			}
+		}
+
+		fprintf(output_file, "</g>\n");
+	}
+
+	if (parameters->enable_vertices) {
+		fprintf(output_file,
+			"<g id=\"vertices\">\n");
+
+		FOR_EACH(vi, graph->VC.size) {
+			real x = 0.0, y = 0.0;
+			if (fold_graph_is_2D(graph)) {
+				Vector2* vc = array_get(&VC, vi);
+				x = vc->x * scale; y = vc->y * scale;
+			} else if (fold_graph_is_3D(graph)) {
+				Vector3* vc = array_get(&VC, vi);
+				x = vc->x * scale; y = vc->y * scale;
+			}
+
+			Color vpc = color_white();
+			if NOT(parameters->disable_vertices_color) {
+				if (graph->VP.size != 0) {
+					usize* vpi = array_get(&graph->VP, vi);
+					vpc = *(Color*)array_get(&graph->PC, *vpi);
+				}
+			}
+
+			Color ivpc = color_invert(vpc);
+			bool has_alpha = BOOL(vpc.a != 1.0);
+
+			char VPC[COLOR_HTML_RGBA_SIZE];
+			color_to_html(vpc, VPC, has_alpha);
+
+			char IVPC[COLOR_HTML_RGBA_SIZE];
+			color_to_html(ivpc, IVPC, has_alpha);
+
+			if (parameters->enable_vertices_index) {
+				fprintf(output_file, "<g>\n");
+			}
+
+			fprintf(output_file,
+				"<circle "
+				"cx=\""_F"\" cy=\""_F"\" "
+				"r=\""_F"\" "
+				"stroke=\"%s\" "
+				"stroke-width=\""_F"\" "
+				"fill=\"%s\" "
+				"/>\n",
+					(_FF)x, (_FF)y,
+					(_FF)circle_radius,
+					IVPC,
+					(_FF)(circle_stroke_radius),
+					VPC);
+
+			if (parameters->enable_vertices_index) {
+				fprintf(output_file,
+					"<text "
+					"x=\""_F"\" y=\""_F"\" "
+					"font-size=\""_F"\" "
+					"font-family=\"%s\" "
+					"font-weight=\"bold\" "
+					"fill=\"%s\" "
+					"text-anchor=\"middle\" "
+					"dominant-baseline=\"central\""
+					">%zu</text>\n",
+						(_FF)x, (_FF)y,
+						(_FF)((vi < 100) ? circle_radius
+							: (circle_radius * circle_shrink_factor)
+								/ F64(1 + U8(LOG10(F64(vi))))),
+						SVG_FONT,
+						IVPC,
+						vi);
+
+				fprintf(output_file, "</g>\n");
+			}
+		}
+
+		fprintf(output_file, "</g>\n");
+	}
 
 svg_finish:
 	fprintf(output_file, "</svg>\n");

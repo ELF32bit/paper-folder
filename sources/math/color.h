@@ -97,7 +97,7 @@ static inline Color color_from_hsv(f32 h, f32 s, f32 v, f32 a) {
 }
 
 static inline Color color_from_html(const char* html) {
-	if (html[0] == '\0') return color_from_rgba8(0, 0, 0, 255);
+	if (html[0] == '\0') return color_white();
 	if (html[0] == '#') html++;
 
 	size_t length = strlen(html);
@@ -117,7 +117,7 @@ static inline Color color_from_html(const char* html) {
 			? "%2x%2x%2x"
 			: "%2x%2x%2x%2x",
 			&r, &g, &b, &a);
-	} else return color_from_rgba8(0, 0, 0, 255);
+	} else return color_white();
 
 	return color_from_rgba8(r, g, b, a);
 }

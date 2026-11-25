@@ -54,22 +54,37 @@ void array_view(Array* array, const Array* source);
 /* ========================================================================= */
 
 void* array_get(const Array* array, usize index);
-void* array_get_start(const Array* array);
-void* array_get_end(const Array* array);
-
 void array_set(Array* array, usize index, const void* element);
-void array_set_start(Array* array, const void* element);
-void array_set_end(Array* array, const void* element);
 
 #define ARRAY_SET(array, index, type, ...) do { \
 	type _element = (type){__VA_ARGS__}; \
 	array_set((array), (index), &_element); \
 } while (0)
 
+static inline
+void* array_get_start(const Array* array) {
+	return array_get(array, 0);
+}
+
+static inline
+void array_set_start(Array* array, const void* element) {
+	array_set(array, 0, element);
+}
+
 #define ARRAY_SET_START(array, index, type, ...) do { \
 	type _element = (type){__VA_ARGS__}; \
 	array_set_start((array), (index), &_element); \
 } while (0)
+
+static inline
+void* array_get_end(const Array* array) {
+	return array_get(array, array->size - 1);
+}
+
+static inline
+void array_set_end(Array* array, const void* element) {
+	array_set(array, array->size - 1, element);
+}
 
 #define ARRAY_SET_END(array, index, type, ...) do { \
 	type _element = (type){__VA_ARGS__}; \
@@ -112,11 +127,18 @@ Error array_append_array(Array* array, const Array* another);
 void array_remove(Array* array, usize index);
 void array_remove_range(Array* array, usize start, usize end);
 
-void array_reverse(Array* array);
 void array_reverse_range(Array* array, usize start, usize end);
-
-void array_shift(Array* array, isize shift);
 void array_shift_range(Array* array, isize shift, usize start, usize end);
+
+static inline
+void array_reverse(Array* array) {
+	return array_reverse_range(array, 0, array->size);
+}
+
+static inline
+void array_shift(Array* array, isize shift) {
+	return array_shift_range(array, shift, 0, array->size);
+}
 
 /* ========================================================================= */
 /* Sorting                                                                   */

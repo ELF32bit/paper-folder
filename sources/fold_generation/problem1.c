@@ -328,6 +328,7 @@ Error fold_generate_locally_flat_foldable(FoldFile* file,
 	p.max_interior_vertices = MAX(p.min_interior_vertices, p.max_interior_vertices);
 	p.boundary_offset = CLAMP(p.boundary_offset, 0.0, 0.5);
 	p.cell_size = CLAMP(p.cell_size, 1.0 / 1024.0, 0.25);
+
 	p.kawasaki_error = REAL_RADIANS(p.kawasaki_error);
 	p.kawasaki_error = CLAMP(p.kawasaki_error, VECTOR2_EPSILON, REAL_MAX);
 

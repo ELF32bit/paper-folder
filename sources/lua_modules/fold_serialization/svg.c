@@ -60,8 +60,28 @@ int l_fold_file_frame_to_svg_file_meta(lua_State* L) {
 	parameters.image_grow_size = luaL_optnumber(L, 28, parameters.image_grow_size);
 	parameters.stroke_width = luaL_optnumber(L, 29, parameters.stroke_width);
 
-	parameters.stroke_dash_scale = luaL_optnumber(L, 30, parameters.stroke_dash_scale);
-	parameters.stroke_dash_enabled = lua_toboolean(L, 31);
+	parameters.enable_stroke_dash = lua_toboolean(L, 30);
+	parameters.stroke_dash_scale = luaL_optnumber(L, 31,
+		parameters.stroke_dash_scale);
+
+	parameters.enable_vertices = lua_toboolean(L, 32);
+	parameters.enable_vertices_index = lua_toboolean(L, 33);
+	parameters.disable_vertices_color = lua_toboolean(L, 34);
+	parameters.vertices_scale = luaL_optnumber(L, 35,
+		parameters.vertices_scale);
+
+	parameters.disable_edges = lua_toboolean(L, 36);
+	parameters.enable_edges_index = lua_toboolean(L, 37);
+	parameters.enable_edges_fold_angle = lua_toboolean(L, 38);
+	parameters.enable_edges_length = lua_toboolean(L, 39);
+	parameters.edges_annotations_scale = luaL_optnumber(L, 40,
+		parameters.edges_annotations_scale);
+
+	parameters.disable_faces = lua_toboolean(L, 41);
+	parameters.enable_faces_index = lua_toboolean(L, 42);
+	parameters.enable_faces_material = lua_toboolean(L, 43);
+	parameters.faces_annotations_scale = luaL_optnumber(L, 44,
+		parameters.faces_annotations_scale);
 
 	Error result = fold_file_frame_to_svg(file, frame_index,
 		(void*)output_file_path, &parameters);

@@ -79,14 +79,6 @@ void* array_get(const Array* array, usize index) {
 	return _array_get(array, index);
 }
 
-void* array_get_start(const Array* array) {
-	return array_get(array, 0);
-}
-
-void* array_get_end(const Array* array) {
-	return array_get(array, array->size - 1);
-}
-
 void array_set(Array* array, usize index, const void* element) {
 	ASSERT(NOT(array->is_view));
 	ASSERT(index < array->size);
@@ -112,14 +104,6 @@ void array_set(Array* array, usize index, const void* element) {
 	memcpy(old_element, element, array->element_size);
 }
 
-void array_set_start(Array* array, const void* element) {
-	array_set(array, 0, element);
-}
-
-void array_set_end(Array* array, const void* element) {
-	array_set(array, array->size - 1, element);
-}
-
 /* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */
@@ -138,6 +122,7 @@ Error array_resize(Array* array, usize size) {
 	if (new_data == NULL && size > 0) return ERROR_OUT_OF_MEMORY;
 
 	if (size > old_size) {
+		/* IMPORTANT: safely clearing out of bounds memory */
 		memset((u8*)new_data + old_size * array->element_size, 0,
 			(size - old_size) * array->element_size);
 	}
@@ -357,10 +342,6 @@ void array_remove_range(Array* array, usize start, usize end) {
 	array->size -= (end - start);
 }
 
-void array_reverse(Array* array) {
-	return array_reverse_range(array, 0, array->size);
-}
-
 void array_reverse_range(Array* array, usize start, usize end) {
 	ASSERT(NOT(array->is_view));
 	ASSERT(end <= array->size);
@@ -378,10 +359,6 @@ void array_reverse_range(Array* array, usize start, usize end) {
 		right_element -= array->element_size;
 		left_element += array->element_size;
 	}
-}
-
-void array_shift(Array* array, isize shift) {
-	return array_shift_range(array, shift, 0, array->size);
 }
 
 void array_shift_range(Array* array, isize shift, usize start, usize end) {

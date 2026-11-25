@@ -16,8 +16,24 @@ struct FoldFileFrameToSVGParameters {
 	f32 image_grow_size;
 	f32 stroke_width;
 
-	f32 stroke_dash_scale;
-	bool stroke_dash_enabled;
+	bool enable_stroke_dash;
+	real stroke_dash_scale;
+
+	bool enable_vertices;
+	bool enable_vertices_index;
+	bool disable_vertices_color;
+	real vertices_scale;
+
+	bool disable_edges;
+	bool enable_edges_index;
+	bool enable_edges_fold_angle;
+	bool enable_edges_length;
+	real edges_annotations_scale;
+
+	bool disable_faces;
+	bool enable_faces_index;
+	bool enable_faces_material;
+	real faces_annotations_scale;
 };
 
 static inline
@@ -68,8 +84,24 @@ void fold_file_frame_to_svg_parameters_default(
 	parameters->image_grow_size = 64.0;
 	parameters->stroke_width = 1.0;
 
+	parameters->enable_stroke_dash = false;
 	parameters->stroke_dash_scale = 1.0;
-	parameters->stroke_dash_enabled = false;
+
+	parameters->enable_vertices = false;
+	parameters->enable_vertices_index = false;
+	parameters->disable_vertices_color = false;
+	parameters->vertices_scale = 1.0;
+
+	parameters->disable_edges = false;
+	parameters->enable_edges_index = false;
+	parameters->enable_edges_fold_angle = false;
+	parameters->enable_edges_length = false;
+	parameters->edges_annotations_scale = 1.0;
+
+	parameters->disable_faces = false;
+	parameters->enable_faces_index = false;
+	parameters->enable_faces_material = false;
+	parameters->faces_annotations_scale = 1.0;
 }
 
 Error fold_file_frame_to_svg(FoldFile* file, usize index, void* NULLABLE(SVG),
