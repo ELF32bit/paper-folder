@@ -11,9 +11,7 @@
 /* ========================================================================= */
 
 void string_create(String* string) {
-	string->data = NULL;
-	string->length = 0;
-	string->is_view = false;
+	memset(string, 0, sizeof(String));
 }
 
 void string_destroy(String* string) {
@@ -21,15 +19,10 @@ void string_destroy(String* string) {
 	string_create(string);
 }
 
-void string_recreate(String* string) {
-	string_destroy(string);
-}
-
 void string_view(String* string, const String* source) {
 	if (string == source) return;
 	string_destroy(string);
-	string->data = source->data;
-	string->length = source->length;
+	*string = *source;
 	string->is_view = true;
 }
 

@@ -108,7 +108,7 @@ Error fold_graph_to_svg(FoldGraph* graph, void* SVG,
 	f32 svg_grow_size = MAX(parameters->image_grow_size, 0.0);
 	f32 svg_content_size = MAX(svg_min_size - svg_grow_size, 0.0);
 
-	Array VC;
+	Array VC = {0};
 	array_view(&VC, &graph->VC);
 	if (fold_graph_is_abstract(graph)) {
 		if (parameters->abstract_seed != 0) {

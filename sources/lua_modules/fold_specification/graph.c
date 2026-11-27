@@ -79,6 +79,43 @@ GENERATE_GET_ARRAY_SIZE(FN)
 GENERATE_GET_ARRAY_SIZE(FM)
 
 /* ========================================================================= */
+/* Recreation                                                                */
+/* ========================================================================= */
+
+#define GENERATE_ARRAY_RECREATE(AA, A) \
+int l_fold_graph_##AA##_recreate_meta(lua_State* L) { \
+	LuaFoldGraph* wrapper = luaL_checkudata(L, 1, FOLD_GRAPH_METATABLE); \
+	array##A##_recreate(&wrapper->graph->AA); \
+	return 0; \
+}
+
+GENERATE_ARRAY_RECREATE(VC,);
+GENERATE_ARRAY_RECREATE(VV,2);
+GENERATE_ARRAY_RECREATE(VE,2);
+GENERATE_ARRAY_RECREATE(VF,2);
+GENERATE_ARRAY_RECREATE(EV,);
+GENERATE_ARRAY_RECREATE(EF,2);
+GENERATE_ARRAY_RECREATE(EA,);
+GENERATE_ARRAY_RECREATE(EFA,);
+GENERATE_ARRAY_RECREATE(EL,);
+GENERATE_ARRAY_RECREATE(EO,);
+GENERATE_ARRAY_RECREATE(FV,2);
+GENERATE_ARRAY_RECREATE(FE,2);
+GENERATE_ARRAY_RECREATE(FF,2);
+GENERATE_ARRAY_RECREATE(FO,);
+
+GENERATE_ARRAY_RECREATE(PC,);
+GENERATE_ARRAY_RECREATE(TC,);
+GENERATE_ARRAY_RECREATE(T2C,);
+GENERATE_ARRAY_RECREATE(NC,);
+GENERATE_ARRAY_RECREATE(MN,);
+GENERATE_ARRAY_RECREATE(VP,);
+GENERATE_ARRAY_RECREATE(FT,2);
+GENERATE_ARRAY_RECREATE(FT2,2);
+GENERATE_ARRAY_RECREATE(FN,2);
+GENERATE_ARRAY_RECREATE(FM,);
+
+/* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */
 

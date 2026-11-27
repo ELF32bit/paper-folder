@@ -1,4 +1,4 @@
-local command = { name = "generate", group = "Generation Commands" }
+local command = { name = "generate", group = "Experimental" }
 local FoldGeneration = require("fold.generation_C")
 local to_svg = require("commands.to.svg")
 

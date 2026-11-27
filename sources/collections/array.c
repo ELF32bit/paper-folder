@@ -13,13 +13,8 @@
 
 void array_create(Array* array, usize element_size) {
 	ASSERT(element_size != 0);
-	array->data = NULL;
-	array->capacity = 0;
-	array->size = 0;
+	memset(array, 0, sizeof(Array));
 	array->element_size = element_size;
-	array->destroy = NULL;
-	array->copy = NULL;
-	array->is_view = false;
 }
 
 void array_create_managed(Array* array, usize element_size,
@@ -56,12 +51,7 @@ void array_recreate(Array* array) {
 void array_view(Array* array, const Array* source) {
 	if (array == source) return;
 	array_destroy(array);
-	array->data = source->data;
-	array->capacity = source->capacity;
-	array->size = source->size;
-	array->element_size = source->element_size;
-	array->destroy = source->destroy;
-	array->copy = source->copy;
+	*array = *source;
 	array->is_view = true;
 }
 
@@ -121,8 +111,8 @@ Error array_resize(Array* array, usize size) {
 	void* new_data = realloc(array->data, size * array->element_size);
 	if (new_data == NULL && size > 0) return ERROR_OUT_OF_MEMORY;
 
+	/* IMPORTANT: safely clearing out of bounds memory */
 	if (size > old_size) {
-		/* IMPORTANT: safely clearing out of bounds memory */
 		memset((u8*)new_data + old_size * array->element_size, 0,
 			(size - old_size) * array->element_size);
 	}

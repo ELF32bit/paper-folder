@@ -42,43 +42,33 @@ void fold_graph_create(FoldGraph* graph) {
 
 static
 void fold_graph_extensions_destroy(FoldGraphExtensions* extensions) {
-#define _GENERATE(A, a) \
-	array##a##_destroy(&extensions->A);
-
-	_GENERATE(PC,)
-	_GENERATE(TC,)
-	_GENERATE(T2C,)
-	_GENERATE(NC,)
-	_GENERATE(MN,)
-	_GENERATE(VP,)
-	_GENERATE(FT,2)
-	_GENERATE(FT2,2)
-	_GENERATE(FN,2)
-	_GENERATE(FM,)
-
-#undef _GENERATE
+	array_destroy(&extensions->PC);
+	array_destroy(&extensions->TC);
+	array_destroy(&extensions->T2C);
+	array_destroy(&extensions->NC);
+	array_destroy(&extensions->MN);
+	array_destroy(&extensions->VP);
+	array2_destroy(&extensions->FT);
+	array2_destroy(&extensions->FT2);
+	array2_destroy(&extensions->FN);
+	array_destroy(&extensions->FM);
 }
 
 void fold_graph_destroy(FoldGraph* graph) {
-#define _GENERATE(A, a) \
-	array##a##_destroy(&graph->A);
-
-	_GENERATE(VC,)
-	_GENERATE(VV,2)
-	_GENERATE(VE,2)
-	_GENERATE(VF,2)
-	_GENERATE(EV,)
-	_GENERATE(EF,2)
-	_GENERATE(EA,)
-	_GENERATE(EFA,)
-	_GENERATE(EL,)
-	_GENERATE(EO,)
-	_GENERATE(FV,2)
-	_GENERATE(FE,2)
-	_GENERATE(FF,2)
-	_GENERATE(FO,)
-
-#undef _GENERATE
+	array_destroy(&graph->VC);
+	array2_destroy(&graph->VV);
+	array2_destroy(&graph->VE);
+	array2_destroy(&graph->VF);
+	array_destroy(&graph->EV);
+	array2_destroy(&graph->EF);
+	array_destroy(&graph->EA);
+	array_destroy(&graph->EFA);
+	array_destroy(&graph->EL);
+	array_destroy(&graph->EO);
+	array2_destroy(&graph->FV);
+	array2_destroy(&graph->FE);
+	array2_destroy(&graph->FF);
+	array_destroy(&graph->FO);
 	fold_graph_extensions_destroy(&graph->extensions);
 }
 
@@ -90,44 +80,35 @@ static
 Error fold_graph_extensions_copy(FoldGraphExtensions* extensions,
 	const FoldGraphExtensions* source)
 {
-#define _GENERATE(A, a) \
-	TRY(array##a##_copy(&extensions->A, &source->A));
-
-	_GENERATE(PC,)
-	_GENERATE(TC,)
-	_GENERATE(T2C,)
-	_GENERATE(NC,)
-	_GENERATE(MN,)
-	_GENERATE(VP,)
-	_GENERATE(FT,2)
-	_GENERATE(FT2,2)
-	_GENERATE(FN,2)
-	_GENERATE(FM,)
-
-#undef _GENERATE
+	TRY(array_copy(&extensions->PC, &source->PC));
+	TRY(array_copy(&extensions->TC, &source->TC));
+	TRY(array_copy(&extensions->T2C, &source->T2C));
+	TRY(array_copy(&extensions->NC, &source->NC));
+	TRY(array_copy(&extensions->MN, &source->MN));
+	TRY(array_copy(&extensions->VP, &source->VP));
+	TRY(array2_copy(&extensions->FT, &source->FT));
+	TRY(array2_copy(&extensions->FT2, &source->FT2));
+	TRY(array2_copy(&extensions->FN, &source->FN));
+	TRY(array_copy(&extensions->FM, &source->FM));
 	return OK;
 }
 
 Error fold_graph_copy(FoldGraph* graph, const FoldGraph* source) {
-#define _GENERATE(A, a) \
-	TRY(array##a##_copy(&graph->A, &source->A));
+	TRY(array_copy(&graph->VC, &source->VC));
+	TRY(array2_copy(&graph->VV, &source->VV));
+	TRY(array2_copy(&graph->VE, &source->VE));
+	TRY(array2_copy(&graph->VF, &source->VF));
+	TRY(array_copy(&graph->EV, &source->EV));
+	TRY(array2_copy(&graph->EF, &source->EF));
+	TRY(array_copy(&graph->EA, &source->EA));
+	TRY(array_copy(&graph->EFA, &source->EFA));
+	TRY(array_copy(&graph->EL, &source->EL));
+	TRY(array_copy(&graph->EO, &source->EO));
+	TRY(array2_copy(&graph->FV, &source->FV));
+	TRY(array2_copy(&graph->FE, &source->FE));
+	TRY(array2_copy(&graph->FF, &source->FF));
+	TRY(array_copy(&graph->FO, &source->FO));
 
-	_GENERATE(VC,)
-	_GENERATE(VV,2)
-	_GENERATE(VE,2)
-	_GENERATE(VF,2)
-	_GENERATE(EV,)
-	_GENERATE(EF,2)
-	_GENERATE(EA,)
-	_GENERATE(EFA,)
-	_GENERATE(EL,)
-	_GENERATE(EO,)
-	_GENERATE(FV,2)
-	_GENERATE(FE,2)
-	_GENERATE(FF,2)
-	_GENERATE(FO,)
-
-#undef _GENERATE
 	TRY(fold_graph_extensions_copy(
 		&graph->extensions, &source->extensions));
 
@@ -186,48 +167,35 @@ void fold_graph_inherit(FoldGraph* graph, const FoldGraph* source) {
 static
 bool fold_graph_extensions_is_inherited(const FoldGraphExtensions* extensions)
 {
-#define _GENERATE(A) \
-	if (extensions->A.is_view) { \
-		return true; \
-	}
-
-	_GENERATE(PC)
-	_GENERATE(TC)
-	_GENERATE(T2C)
-	_GENERATE(NC)
-	_GENERATE(MN)
-	_GENERATE(VP)
-	_GENERATE(FT)
-	_GENERATE(FT2)
-	_GENERATE(FN)
-	_GENERATE(FM)
-
-#undef _GENERATE
+	if (extensions->PC.is_view) return true;
+	if (extensions->TC.is_view) return true;
+	if (extensions->T2C.is_view) return true;
+	if (extensions->NC.is_view) return true;
+	if (extensions->MN.is_view) return true;
+	if (extensions->VP.is_view) return true;
+	if (extensions->FT.is_view) return true;
+	if (extensions->FT2.is_view) return true;
+	if (extensions->FN.is_view) return true;
+	if (extensions->FM.is_view) return true;
 	return false;
 }
 
 bool fold_graph_is_inherited(const FoldGraph* graph) {
-#define _GENERATE(A) \
-	if (graph->A.is_view) { \
-		return true; \
-	}
+	if (graph->VC.is_view) return true;
+	if (graph->VV.is_view) return true;
+	if (graph->VE.is_view) return true;
+	if (graph->VF.is_view) return true;
+	if (graph->EV.is_view) return true;
+	if (graph->EF.is_view) return true;
+	if (graph->EA.is_view) return true;
+	if (graph->EFA.is_view) return true;
+	if (graph->EL.is_view) return true;
+	if (graph->EO.is_view) return true;
+	if (graph->FV.is_view) return true;
+	if (graph->FE.is_view) return true;
+	if (graph->FF.is_view) return true;
+	if (graph->FO.is_view) return true;
 
-	_GENERATE(VC)
-	_GENERATE(VV)
-	_GENERATE(VE)
-	_GENERATE(VF)
-	_GENERATE(EV)
-	_GENERATE(EF)
-	_GENERATE(EA)
-	_GENERATE(EFA)
-	_GENERATE(EL)
-	_GENERATE(EO)
-	_GENERATE(FV)
-	_GENERATE(FE)
-	_GENERATE(FF)
-	_GENERATE(FO)
-
-#undef _GENERATE
 	if (fold_graph_extensions_is_inherited(
 		&graph->extensions)) return true;
 

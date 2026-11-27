@@ -62,6 +62,36 @@ int l_fold_graph_get_FN_size_meta(lua_State* L);
 int l_fold_graph_get_FM_size_meta(lua_State* L);
 
 /* ========================================================================= */
+/* Recreation                                                                */
+/* ========================================================================= */
+
+int l_fold_graph_VC_recreate_meta(lua_State* L);
+int l_fold_graph_VV_recreate_meta(lua_State* L);
+int l_fold_graph_VE_recreate_meta(lua_State* L);
+int l_fold_graph_VF_recreate_meta(lua_State* L);
+int l_fold_graph_EV_recreate_meta(lua_State* L);
+int l_fold_graph_EF_recreate_meta(lua_State* L);
+int l_fold_graph_EA_recreate_meta(lua_State* L);
+int l_fold_graph_EFA_recreate_meta(lua_State* L);
+int l_fold_graph_EL_recreate_meta(lua_State* L);
+int l_fold_graph_EO_recreate_meta(lua_State* L);
+int l_fold_graph_FV_recreate_meta(lua_State* L);
+int l_fold_graph_FE_recreate_meta(lua_State* L);
+int l_fold_graph_FF_recreate_meta(lua_State* L);
+int l_fold_graph_FO_recreate_meta(lua_State* L);
+
+int l_fold_graph_PC_recreate_meta(lua_State* L);
+int l_fold_graph_TC_recreate_meta(lua_State* L);
+int l_fold_graph_T2C_recreate_meta(lua_State* L);
+int l_fold_graph_NC_recreate_meta(lua_State* L);
+int l_fold_graph_MN_recreate_meta(lua_State* L);
+int l_fold_graph_VP_recreate_meta(lua_State* L);
+int l_fold_graph_FT_recreate_meta(lua_State* L);
+int l_fold_graph_FT2_recreate_meta(lua_State* L);
+int l_fold_graph_FN_recreate_meta(lua_State* L);
+int l_fold_graph_FM_recreate_meta(lua_State* L);
+
+/* ========================================================================= */
 /* Methods                                                                   */
 /* ========================================================================= */
 

@@ -23,9 +23,9 @@ State | Module | Commentary
 🟨 | fold_deserialization   | No support for SVG triangulation yet.<br>Math module needs BVH2 and Bezier2.<br>
 ✅ | fold_generation        | Desperate for clever math optimizations.<br>Set Kawasaki error very high to see results!<br>
 ❌ | fold_graph             | Work in progress! Basic methods only.<br>`fold_graph_VV_from_FV` see 2D example.<br>`fold_graph_VF_from_VV` convoluted walk.<br>`fold_graph_EF_from_FV` nasty projection.<br>`fold_graph_FV_*` family not complete.<br>
-✅ | fold_serialization     | SVG can support more display modes.<br>
+✅ | fold_serialization     | SVG can support more display modes.<br>SVG does not respect `faceOrders` array.<br>SVG faces can be sorted by depth in 3D.<br>
 ❌ | fold_simulation        | Considering a different approach.<br>More research is necessary.<br>
-✅ | fold_specification     | Pretty much complete.<br>Supports generic mesh arrays.<br>
+✅ | fold_specification     | Supports common mesh arrays.<br>
 ✅ | fold_validation        | 100% bullet-proof, very fast.<br>
 ✅ | lua_modules            | Lua bindings, see the [example](https://github.com/ELF32bit/c-lua-template/blob/main/sources/lua_modules/example.h).<br>
 ✅ | lua_scripts            | Command line parsing routines.<br>

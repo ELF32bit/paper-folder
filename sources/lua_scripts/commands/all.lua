@@ -4,6 +4,7 @@ local argformat = require("argformat")
 
 local commands = {
 	(require("commands.generate")),
+	(require("commands.clear")),
 	(require("commands.from.fold")),
 	(require("commands.from.json")),
 	(require("commands.from.svg")),

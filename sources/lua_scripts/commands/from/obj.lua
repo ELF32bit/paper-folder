@@ -1,4 +1,4 @@
-local command = { name = "from-obj", group = "Conversion From Commands" }
+local command = { name = "from-obj", group = "Conversion From" }
 local from_fold = require("commands.from.fold")
 local to_fold = require("commands.to.fold")
 local FoldFile = require("fold.file_C")

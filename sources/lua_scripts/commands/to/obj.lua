@@ -1,4 +1,4 @@
-local command = { name = "to-obj", group = "Conversion To Commands" }
+local command = { name = "to-obj", group = "Conversion To" }
 local from_fold = require("commands.from.fold")
 local validate = require("commands.validate")
 

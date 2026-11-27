@@ -25,7 +25,11 @@ void string_create(String* string);
 #define String_destroy string_destroy
 void string_destroy(String* string);
 
-void string_recreate(String* string);
+static inline
+void string_recreate(String* string) {
+	string_destroy(string);
+	string_create(string);
+}
 
 void string_view(String* string, const String* source);
 

@@ -10,6 +10,7 @@ typedef int (*ArraySortFunction)(const void*, const void*);
 
 typedef struct Array {
 	usize size;
+	/* ... */
 	void* data;
 	usize capacity;
 	usize element_size;

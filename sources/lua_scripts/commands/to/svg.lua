@@ -1,4 +1,4 @@
-local command = { name = "to-svg", group = "Conversion To Commands" }
+local command = { name = "to-svg", group = "Conversion To" }
 local from_fold = require("commands.from.fold")
 local validate = require("commands.validate")
 local describe = require("commands.describe")
@@ -53,7 +53,7 @@ function command.register(parser)
 		:target("disable_vertices_color"),
 
 		convert:option("--vertices_scale"):argname("<float>")
-		:description("vertices scale")
+		:description("scale vertices")
 		:convert(tonumber)
 		:default("1.0")
 		:show_default(true)
@@ -61,7 +61,7 @@ function command.register(parser)
 
 	convert:group("Edges Options",
 		convert:flag("--disable_edges")
-		:description("omit creases lines"),
+		:description("omit edges creases"),
 
 		convert:flag("--enable_edges_indices")
 		:description("write edges array indices")
@@ -76,7 +76,7 @@ function command.register(parser)
 		:target("enable_edges_length"),
 
 		convert:option("--edges_scale"):argname("<float>")
-		:description("edges annotations scale")
+		:description("scale edges annotations")
 		:convert(tonumber)
 		:default("1.0")
 		:show_default(true)
@@ -242,7 +242,7 @@ function command.register(parser)
 		:target("enable_faces_material"),
 
 		convert:option("--faces_scale"):argname("<float>")
-		:description("faces annotations scale")
+		:description("scale faces annotations")
 		:convert(tonumber)
 		:default("1.0")
 		:show_default(true)

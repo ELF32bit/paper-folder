@@ -1,10 +1,10 @@
-local command = { name = "to", group = "Conversion To Commands" }
+local command = { name = "to", group = "Conversion To" }
 local from_fold = require("commands.from.fold")
 local from_json = require("commands.from.json")
 
 function command.register(parser)
 	local convert = parser:command(command.name)
-		:description("to FOLD file")
+		:description("to FOLD file (pipeable)")
 
 	convert:argument("input"):args("?")
 		:description("path to the FOLD source")

@@ -53,15 +53,12 @@ Error fold_frame_metadata_copy(FoldFrameMetadata* metadata,
 }
 
 Error fold_frame_copy(FoldFrame* frame, const FoldFrame* source) {
-#define _GENERATE(P, type) \
-	TRY(type##_copy(&frame->P, &source->P));
-
-	_GENERATE(author, string)
-	_GENERATE(title, string)
-	_GENERATE(description, string)
-	_GENERATE(classes, array)
-	_GENERATE(attributes, array)
-	_GENERATE(unit, string)
+	TRY(string_copy(&frame->author, &source->author));
+	TRY(string_copy(&frame->title, &source->title));
+	TRY(string_copy(&frame->description, &source->description));
+	TRY(array_copy(&frame->classes, &source->classes));
+	TRY(array_copy(&frame->attributes, &source->attributes));
+	TRY(string_copy(&frame->unit, &source->unit));
 
 	TRY(fold_graph_copy(
 		&frame->graph, &source->graph));
@@ -69,7 +66,6 @@ Error fold_frame_copy(FoldFrame* frame, const FoldFrame* source) {
 	frame->parent = source->parent;
 	frame->inherit = source->inherit;
 
-#undef _GENERATE
 	TRY(fold_frame_metadata_copy(
 		&frame->metadata, &source->metadata));
 
